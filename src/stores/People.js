@@ -27,7 +27,7 @@ export const usePeopleStore = defineStore('people', () => {
 
   const listWithStatus = computed(() => {
     return list.value.map(person => ({
-      name: person.paid ? `${person.name} (จ่ายแล้ว)` : person.name,
+      name: person.name,
       paid: person.paid
     }));
   });

@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
+import { usePeopleStore } from './People';
 
 export const useBillStore = defineStore('bill', () => {
   const bills = ref(JSON.parse(localStorage.getItem('billList')) || []);
@@ -76,7 +77,7 @@ export const useBillStore = defineStore('bill', () => {
     const amounts = {};
 
     bills.value.forEach(bill => {
-      const splitAmount = bill.amount / bill.payers.length;
+      const splitAmount = bill.payers.length ? bill.amount / bill.payers.length : 0;
       bill.payers.forEach(payer => {
         if (!amounts[payer.name]) {
           amounts[payer.name] = 0;

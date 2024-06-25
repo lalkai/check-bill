@@ -83,17 +83,24 @@ function switchView(view) {
 
 <style scoped>
 .btn {
-  padding: 8px 16px; 
-  border-radius: 80px; 
-  transition: background-color 0.3s ease;
+  padding: 12px 20px;
+  border-radius: 40px;
+  transition: background-color;
+  font-size: 16px; 
+  touch-action: manipulation;
 }
 
-.btn:hover {
-  background-color: #e2e8f0; 
-}
+
 
 .btn-active {
-  background-color: #4a90e2; 
-  color: #ffffff; 
+  background-color: #4a90e2;
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .btn {
+    padding: 8px 16px; 
+    font-size: 16px; 
+  }
 }
 </style>
