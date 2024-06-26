@@ -1,8 +1,10 @@
 <script setup>
 import { ref } from "vue";
 import { usePeopleStore } from "../stores/People";
+import { useBillStore } from "../stores/Bills";
 
 const peopleStore = usePeopleStore();
+const billStore = useBillStore();
 const newPersonName = ref("");
 
 function addPerson() {
@@ -13,7 +15,24 @@ function addPerson() {
 }
 
 function removePerson(index) {
-  peopleStore.remove(index);
+  const personName = peopleStore.list[index].name;
+  const billsWithPerson = billStore.bills.filter(bill =>
+    bill.payers.some(payer => payer.name === personName)
+  );
+
+  if (billsWithPerson.length > 0) {
+    const billDescriptions = billsWithPerson.map(bill => bill.description).join(", ");
+    const confirmMessage = `คุณ ${personName} มีชื่ออยู่ในบิล: [${billDescriptions}] การลบอาจส่งผลต่อการคำนวณค่าใช้จ่าย คุณต้องการลบ ${personName} จริงหรือไม่?`;
+
+    if (confirm(confirmMessage)) {
+      peopleStore.remove(index);
+      billsWithPerson.forEach(bill => {
+        billStore.removePayerFromBill(bill.id, personName);
+      });
+    }
+  } else {
+    peopleStore.remove(index);
+  }
 }
 
 function togglePaid(index) {
@@ -72,7 +91,7 @@ function togglePaid(index) {
             {{ person.paid ? "จ่ายแล้ว" : "ยังไม่จ่าย" }}
           </button>
 
-          <button @click="removePerson(index)" class="btn btn-error btn-md ">
+          <button @click="removePerson(index)" class="btn btn-error btn-md">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -94,4 +113,3 @@ function togglePaid(index) {
     
   </div>
 </template>
-

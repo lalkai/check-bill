@@ -1,6 +1,5 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
-import { usePeopleStore } from './People';
 
 export const useBillStore = defineStore('bill', () => {
   const bills = ref(JSON.parse(localStorage.getItem('billList')) || []);
@@ -38,6 +37,13 @@ export const useBillStore = defineStore('bill', () => {
       bill.payers = bill.payers.filter(payer => payer.name !== payerName);
       saveToLocalStorage();
     }
+  }
+
+  function removePayerFromAllBills(payerName) {
+    bills.value.forEach(bill => {
+      bill.payers = bill.payers.filter(payer => payer.name !== payerName);
+    });
+    saveToLocalStorage();
   }
 
   function togglePayerStatus(billId, payerName) {
@@ -99,6 +105,7 @@ export const useBillStore = defineStore('bill', () => {
     removeBill,
     addPayerToBill,
     removePayerFromBill,
+    removePayerFromAllBills, 
     togglePayerStatus,
     updateBill,
     removeAllPayersFromBill,

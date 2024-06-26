@@ -1,8 +1,10 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
+import { useBillStore } from './Bills';  // Import the Bill Store
 
 export const usePeopleStore = defineStore('people', () => {
   const list = ref(JSON.parse(localStorage.getItem('peopleList')) || []);
+  const billStore = useBillStore();  // Reference the Bill Store
 
   function saveToLocalStorage() {
     localStorage.setItem('peopleList', JSON.stringify(list.value));
@@ -16,8 +18,10 @@ export const usePeopleStore = defineStore('people', () => {
   }
 
   function remove(index) {
+    const removedPerson = list.value[index];
     list.value.splice(index, 1);
     saveToLocalStorage();
+    billStore.removePayerFromAllBills(removedPerson.name); 
   }
 
   function togglePaidStatus(index) {
