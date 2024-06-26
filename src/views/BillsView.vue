@@ -100,7 +100,7 @@ function menuPeoplePay(person) {
           class="input input-bordered w-full"
         />
       </div>
-      <button @click="addBill" class="btn btn-primary ml-auto">
+      <button @click="addBill" class="btn btn-outline btn-success ml-auto">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -132,7 +132,7 @@ function menuPeoplePay(person) {
             <span class="text-xl font-bold">{{ bill.amount }} บาท</span>
           </div>
           <div class="flex flex-wrap items-center mt-2 space-x-2">
-            <button @click="removeBill(bill.id)" class="btn btn-error btn-sm">
+            <button @click="removeBill(bill.id)" class="btn btn-outline btn-error btn-sm">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -149,7 +149,7 @@ function menuPeoplePay(person) {
               </svg>
               ลบ
             </button>
-            <button @click="openEditModal(bill)" class="btn btn-primary btn-sm">
+            <button @click="openEditModal(bill)" class="btn btn-outline btn-primary btn-sm">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -187,7 +187,7 @@ function menuPeoplePay(person) {
   <!-- Modal for editing bill -->
   <div
     v-if="editingBillId !== null"
-    class="fixed inset-0 z-50 flex items-center justify-center overflow-x-auto overflow-y-auto bg-black bg-opacity-50"
+    class="fixed inset-0 z-50 flex items-center justify-center overflow-x-auto overflow-y-auto bg-gray-500 bg-opacity-75"
   >
     <div class="bg-base-100 rounded-lg p-6 max-w-md w-full mx-4">
       <h3 class="text-2xl font-bold mb-4">แก้ไขบิล</h3>

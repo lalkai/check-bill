@@ -51,7 +51,7 @@ function togglePaid(index) {
           class="input input-bordered w-full"
         />
       </div>
-      <button @click="addPerson" class="btn btn-primary">
+      <button @click="addPerson" class="btn btn-outline btn-success">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -68,7 +68,7 @@ function togglePaid(index) {
         </svg>
       </button>
     </div>
-    <ul class="list-disc">
+    <ul class="list-disc bg-base-100 rounded-lg shadow-sm p-4">
       <li
         v-for="(person, index) in peopleStore.list"
         :key="index"
@@ -91,7 +91,7 @@ function togglePaid(index) {
             {{ person.paid ? "จ่ายแล้ว" : "ยังไม่จ่าย" }}
           </button>
 
-          <button @click="removePerson(index)" class="btn btn-error btn-md">
+          <button @click="removePerson(index)" class="btn btn-outline btn-error btn-md">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"

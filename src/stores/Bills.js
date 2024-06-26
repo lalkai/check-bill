@@ -17,7 +17,7 @@ export const useBillStore = defineStore('bill', () => {
     });
     saveToLocalStorage();
   }
-
+  
   function removeBill(billId) {
     bills.value = bills.value.filter(bill => bill.id !== billId);
     saveToLocalStorage();
