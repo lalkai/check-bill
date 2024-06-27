@@ -55,6 +55,17 @@ const generateQRCode = () => {
   showPopup.value = false;
 };
 
+const cancelQRCode = () => {
+  localStorage.removeItem("promptpayID");
+  inputPromptpay.value = "";
+  const canvas = document.getElementById("qrcode-img");
+  if (canvas) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  document.getElementById("PromptpayID").innerHTML = "";
+};
+
 onMounted(() => {
   const storedPromptpayID = localStorage.getItem("promptpayID");
   if (storedPromptpayID) {
@@ -66,18 +77,6 @@ onMounted(() => {
 
 <template>
   <div class="mt-8">
-    <ul class="space-y-2">
-      <li
-        v-for="(payer, index) in payerAmounts"
-        :key="index"
-        :class="payer.paid ? 'bg-success' : 'bg-error'"
-        class="p-4 mb-2 text-white rounded-lg shadow-lg flex justify-between items-center"
-      >
-        <span>{{ payer.name }} ({{ payer.paid ? "จ่ายแล้ว" : "ยังไม่จ่าย" }})</span>
-        <span>{{ payer.amount ? payer.amount.toFixed(2) : "0.00" }} บาท</span>
-      </li>
-    </ul>
-    
     <div class="flex justify-center mt-8">
       <div class="bg-base-100 p-6 rounded-lg shadow-lg text-center">
         <h3 class="text-xl font-semibold mb-4">PromptPay QR Code</h3>
@@ -89,16 +88,29 @@ onMounted(() => {
         </p>
       </div>
     </div>
-    
-    <div class="flex justify-center mt-6">
+
+    <div class="flex justify-center mt-6 space-x-4">
       <button @click="showPopup = true" class="btn btn-outline btn-info">
         ใส่พร้อมเพย์
       </button>
+      <button @click="cancelQRCode" class="btn btn-outline btn-danger">
+        ยกเลิก QR Code
+      </button>
     </div>
     
-   
+    <ul class="space-y-2 mt-4">
+      <li
+        v-for="(payer, index) in payerAmounts"
+        :key="index"
+        :class="payer.paid ? 'bg-success' : 'bg-error'"
+        class="p-4 mb-2 text-white rounded-lg shadow-lg flex justify-between items-center"
+      >
+        <span>{{ payer.name }} ({{ payer.paid ? "จ่ายแล้ว" : "ยังไม่จ่าย" }})</span>
+        <span>{{ payer.amount ? payer.amount.toFixed(2) : "0.00" }} บาท</span>
+      </li>
+    </ul>
+
     <div
-    
       v-if="showPopup"
       class="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75"
     >
@@ -115,12 +127,14 @@ onMounted(() => {
             placeholder="PromptPay ID"
             class="input input-bordered w-full mb-4"
           />
-          <button @click="generateQRCode" class="btn btn-outline btn-info w-full">
+          <button
+            @click="generateQRCode"
+            class="btn btn-outline btn-info w-full"
+          >
             Generate QR Code
           </button>
         </div>
       </div>
     </div>
-    
   </div>
 </template>
