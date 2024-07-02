@@ -4,158 +4,227 @@ import { useBillStore } from "../stores/Bills";
 import { usePeopleStore } from "../stores/People";
 import generatePayload from "promptpay-qr";
 import qrcode from "qrcode";
+import html2canvas from "html2canvas-pro"; 
 
 const billStore = useBillStore();
 const peopleStore = usePeopleStore();
+const selectedDate = ref(null);
 
-const payerAmounts = computed(() => {
+const filteredPayerAmounts = computed(() => {
   const amounts = billStore.payerAmounts;
   const peopleList = peopleStore.list;
 
-  return Object.entries(amounts).map(([name, amount]) => {
+  return Object.entries(amounts).map(([name, dates]) => {
     const person = peopleList.find((person) => person.name === name);
+    const filteredDates = selectedDate.value ? { [selectedDate.value]: dates[selectedDate.value] || 0 } : dates;
+    const totalAmountDue = Object.values(filteredDates).reduce((acc, amount) => acc + amount, 0);
     return {
       name,
-      amount: amount || 0,
+      dates: filteredDates || {},
       paid: person ? person.paid : false,
+      totalAmountDue
     };
   });
 });
 
 const inputPromptpay = ref("");
-const showPopup = ref(false);
+const showAddQrCodePopup = ref(false);
 const showQrCode = ref(false);
 
 const generateQRCode = async () => {
   if (!inputPromptpay.value) {
-    alert("โปรดป้อนข้อมูลให้ครบ!");
+    alert('โปรดป้อนข้อมูลให้ครบ!');
     return;
   }
 
   showQrCode.value = true;
-  localStorage.setItem("promptpayID", inputPromptpay.value);
+  localStorage.setItem('promptpayID', inputPromptpay.value);
 
   const amount = 0;
   const promptNumber = inputPromptpay.value;
   const payload = generatePayload(promptNumber, { amount });
   const opts = {
-    type: "image/png",
+    type: 'image/png',
     margin: 1,
     width: 120,
   };
 
   await nextTick();
 
-  const canvas = document.getElementById("qrcode-img");
+  const canvas = document.getElementById('qrcode-img');
   if (canvas) {
-    qrcode.toCanvas(canvas, payload, opts, (err) => {
-      if (err) console.log("Error: ", err);
+    qrcode.toCanvas(canvas, payload, opts, err => {
+      if (err) console.log('Error generating QR Code: ', err);
     });
   } else {
-    console.error("Canvas element not found!");
+    console.error('Canvas element not found!');
   }
 
-  const promptpayIDElement = document.getElementById("PromptpayID");
+  const promptpayIDElement = document.getElementById('PromptpayID');
   if (promptpayIDElement) {
-    promptpayIDElement.innerHTML = promptNumber;
+    promptpayIDElement.textContent = promptNumber;
   } else {
-    console.error("PromptpayID element not found!");
+    console.error('PromptpayID element not found!');
   }
 
-  showPopup.value = false;
+  showAddQrCodePopup.value = false;
 };
 
 const cancelQRCode = () => {
-  localStorage.removeItem("promptpayID");
-  inputPromptpay.value = "";
+  localStorage.removeItem('promptpayID');
+  inputPromptpay.value = '';
 
-  const canvas = document.getElementById("qrcode-img");
+  const canvas = document.getElementById('qrcode-img');
   if (canvas) {
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (ctx) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
   }
 
-  const promptpayIDElement = document.getElementById("PromptpayID");
+  const promptpayIDElement = document.getElementById('PromptpayID');
   if (promptpayIDElement) {
-    promptpayIDElement.innerHTML = "";
+    promptpayIDElement.textContent = ''; 
   }
 
   showQrCode.value = false;
 };
 
+const capturePage = async () => {
+  try {
+    await nextTick();
+
+    const element = document.getElementById('app');
+
+    if (!element) {
+      throw new Error('Element with ID "app" not found.');
+    }
+
+    const canvas = await html2canvas(element, {
+      useCORS: true,
+      scale: window.devicePixelRatio,
+      logging: true,
+      allowTaint: true,
+      foreignObjectRendering: true,
+      ignoreElements: (element) => {
+        return window.getComputedStyle(element).display === 'none';
+      },
+      onclone: (clonedDoc) => {
+        Array.from(clonedDoc.querySelectorAll('.modal, .dropdown, .tooltip')).forEach(el => {
+          el.style.display = 'block';
+          el.style.opacity = '1';
+          el.style.visibility = 'visible';
+        });
+      }
+    });
+
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'สรุปยอดบิล.png'; 
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+    }, 'image/png', 1.0);
+
+  } catch (error) {
+    console.error('Error capturing page:', error);
+  }
+};
+
+
 onMounted(() => {
-  const storedPromptpayID = localStorage.getItem("promptpayID");
+  const storedPromptpayID = localStorage.getItem('promptpayID');
   if (storedPromptpayID) {
     inputPromptpay.value = storedPromptpayID;
     generateQRCode();
   }
 });
+
+const togglePaymentStatus = (payer, date) => {
+  peopleStore.togglePaidStatus(payer.name, date);
+};
 </script>
 
 <template>
+  
   <div class="mt-8">
-    <div v-if="showQrCode" class="flex justify-center mt-8">
-      <div class="bg-base-100 p-6 rounded-lg shadow-lg text-center">
-        <h3 class="text-xl font-semibold mb-4">PromptPay QR Code</h3>
-        <div class="mb-4">
-          <canvas id="qrcode-img" class="mx-auto"></canvas>
+    
+      <div class="flex justify-center mt-6 space-x-4">
+        <button @click="showAddQrCodePopup = true" class="btn btn-outline btn-info">
+          ใส่พร้อมเพย์
+        </button>
+        <button @click="cancelQRCode" class="btn btn-outline btn-danger">
+          ยกเลิก QR Code
+        </button>
+        <button @click="capturePage" class="btn btn-outline btn-primary">
+          ดาวน์โหลด
+        </button>
+      </div>
+     
+      <div v-if="showQrCode" class="card bg-base-100 shadow-xl p-4 mt-4">
+        <h3 class="text-2xl font-semibold mb-4 text-center">PromptPay QR Code</h3>
+        <div class="flex justify-center mb-4">
+          <canvas id="qrcode-img" class="border-4 border-blue-200 rounded-lg"></canvas>
         </div>
-        <p class="text-sm text-gray-600">
+        <p class="text-center text-gray-700">
           PromptPay ID: <span id="PromptpayID" class="font-medium"></span>
         </p>
       </div>
-    </div>
 
-    <div class="flex justify-center mt-6 space-x-4">
-      <button @click="showPopup = true" class="btn btn-outline btn-info">
-        ใส่พร้อมเพย์
-      </button>
-      <button @click="cancelQRCode" class="btn btn-outline btn-danger">
-        ยกเลิก QR Code
-      </button>
-    </div>
-
-    <ul class="space-y-2 mt-4">
-      <li
-        v-for="(payer, index) in payerAmounts"
-        :key="index"
-        :class="payer.paid ? 'bg-success' : 'bg-error'"
-        class="p-4 mb-2 text-white rounded-lg shadow-lg flex justify-between items-center"
-      >
-        <span
-          >{{ payer.name }} ({{ payer.paid ? "จ่ายแล้ว" : "ยังไม่จ่าย" }})</span
+      <div class="grid gap-4 mt-4">
+        <div
+          v-for="(payer, index) in filteredPayerAmounts"
+          :key="index"
+          :class="payer.paid ? 'bg-success text-success-content' : 'bg-error text-error-content'"
+          class="card shadow-lg transition-all duration-300 hover:shadow-xl"
         >
-        <span>{{ payer.amount ? payer.amount.toFixed(2) : "0.00" }} บาท</span>
-      </li>
-    </ul>
-
-    <div
-      v-if="showPopup"
-      class="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75"
-    >
-      <div class="bg-base-100 p-4 rounded-lg shadow-lg w-96">
-        <div class="flex justify-end">
-          <button @click="showPopup = false" class="text-gray-500">
-            &times;
-          </button>
+          <div class="card-body">
+            <h2 class="card-title">
+              {{ payer.name }}
+              <div class="badge badge-lg">
+                {{ payer.paid ? "จ่ายครบแล้ว" : "ยังจ่ายไม่ครบ" }}
+              </div>
+            </h2>
+            <p class="text-lg">
+              ยอดรวม: {{ payer.totalAmountDue.toFixed(2) }} บาท
+            </p>
+            <ul class="space-y-2">
+              <li
+                v-for="(amount, date) in payer.dates"
+                :key="date"
+                class="flex justify-between items-center bg-white text-black p-2 rounded-md shadow"
+              >
+                <span class="font-medium">{{ date }}</span>
+                <span>{{ amount ? amount.toFixed(2) : "0.00" }} บาท</span>
+                <button
+                  @click="togglePaymentStatus(payer, date)"
+                  :class="peopleStore.getPaidStatusByDate(payer.name, date) ? 'btn-success' : 'btn-error'"
+                  class="btn btn-sm"
+                >
+                  {{ peopleStore.getPaidStatusByDate(payer.name, date) ? 'จ่ายแล้ว' : 'ยังไม่จ่าย' }}
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div class="mt-4">
-          <input
-            v-model="inputPromptpay"
-            type="text"
-            placeholder="PromptPay ID"
-            class="input input-bordered w-full mb-4"
-          />
-          <button
-            @click="generateQRCode"
-            class="btn btn-outline btn-info w-full"
-          >
-            Generate QR Code
-          </button>
+      </div>
+
+      <div v-if="showAddQrCodePopup" class="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75">
+        <div class="bg-base-100 p-4 rounded-lg shadow-lg w-96">
+          <div class="flex justify-end">
+            <button @click="showAddQrCodePopup = false" class="text-gray-500">
+              &times;
+            </button>
+          </div>
+          <div class="mt-4">
+            <input v-model="inputPromptpay" type="text" placeholder="PromptPay ID" class="input input-bordered w-full mb-4" />
+            <button @click="generateQRCode" class="btn btn-outline btn-info w-full">
+              สร้าง QR Code
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 </template>

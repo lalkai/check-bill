@@ -8,19 +8,23 @@ const peopleStore = usePeopleStore();
 
 const newBillDescription = ref("");
 const newBillAmount = ref("");
+const newBillDate = ref("");
 const editingBillId = ref(null);
 const editedBillDescription = ref("");
 const editedBillAmount = ref("");
+const editedBillDate = ref(""); 
 const selectedPeople = ref([]);
 
 function addBill() {
   if (newBillDescription.value.trim()) {
     billStore.addBill(
       newBillDescription.value.trim(),
-      Number(newBillAmount.value)
+      Number(newBillAmount.value),
+      newBillDate.value
     );
     newBillDescription.value = "";
     newBillAmount.value = "";
+    newBillDate.value = ""; 
   }
 }
 
@@ -32,6 +36,7 @@ function openEditModal(bill) {
   editingBillId.value = bill.id;
   editedBillDescription.value = bill.description;
   editedBillAmount.value = bill.amount.toString();
+  editedBillDate.value = bill.date; // ตั้งค่าเป็นวันที่เดิม
   selectedPeople.value = bill.payers.map((payer) => payer.name);
 }
 
@@ -40,7 +45,8 @@ function saveEditedBill() {
     billStore.updateBill(
       editingBillId.value,
       editedBillDescription.value.trim(),
-      Number(editedBillAmount.value)
+      Number(editedBillAmount.value),
+      editedBillDate.value 
     );
     billStore.removeAllPayersFromBill(editingBillId.value);
     selectedPeople.value.forEach((person) => {
@@ -54,6 +60,7 @@ function closeModal() {
   editingBillId.value = null;
   editedBillDescription.value = "";
   editedBillAmount.value = "";
+  editedBillDate.value = ""; 
   selectedPeople.value = [];
 }
 
@@ -67,21 +74,8 @@ function menuPeoplePay(person) {
 }
 </script>
 
-<style scoped>
-.btn-sm {
-  @apply text-xs px-3 py-2;
-}
-
-@media (max-width: 640px) {
-  .btn-sm {
-    @apply px-2 py-1;
-  }
-}
-</style>
-
 <template>
   <div class="mt-8">
-    <!-- เพิ่มบิลใหม่ -->
      <div class="mb-4">
     <div class="flex flex-wrap gap-4 items-center">
       <div class="form-control flex-grow">
@@ -119,7 +113,7 @@ function menuPeoplePay(person) {
       </button>
     </div>
   </div>
-    <!-- รายการบิล -->
+
     <div class="space-y-4">
       <div
         v-for="bill in billStore.bills"
@@ -130,6 +124,9 @@ function menuPeoplePay(person) {
           <div class="flex items-center justify-between mb-2">
             <h3 class="text-lg font-semibold">{{ bill.description }}</h3>
             <span class="text-xl font-bold">{{ bill.amount }} บาท</span>
+          </div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-500">{{ bill.date }}</span>
           </div>
           <div class="flex flex-wrap items-center mt-2 space-x-2">
             <button @click="removeBill(bill.id)" class="btn btn-outline btn-error btn-sm">
@@ -184,7 +181,6 @@ function menuPeoplePay(person) {
     </div>
   </div>
 
-  <!-- Modal for editing bill -->
   <div
     v-if="editingBillId !== null"
     class="fixed inset-0 z-50 flex items-center justify-center overflow-x-auto overflow-y-auto bg-gray-500 bg-opacity-75"
@@ -209,6 +205,16 @@ function menuPeoplePay(person) {
           <input
             v-model="editedBillAmount"
             type="number"
+            class="input input-bordered w-full"
+          />
+        </div>
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">วันที่</span>
+          </label>
+          <input
+            v-model="editedBillDate"
+            type="date"
             class="input input-bordered w-full"
           />
         </div>

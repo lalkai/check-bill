@@ -34,10 +34,6 @@ function removePerson(index) {
     peopleStore.remove(index);
   }
 }
-
-function togglePaid(index) {
-  peopleStore.togglePaidStatus(index);
-}
 </script>
 
 <template>
@@ -79,21 +75,6 @@ function togglePaid(index) {
     >
       <span :class="{ 'text-2xl': true , 'line-through': person.paid }">{{ person.name }}</span>
       <div class="flex items-center space-x-2">
-        <button
-          @click="togglePaid(index)"
-          :class="[
-            'btn',
-            'btn-md',
-            person.paid ? 'btn-success' : 'btn-outline',
-            'rounded-full',
-            'text-sm',
-            'py-2',
-            'px-4'
-          ]"
-        >
-          {{ person.paid ? "จ่ายแล้ว" : "ยังไม่จ่าย" }}
-        </button>
-        
         <button @click="removePerson(index)" class="btn btn-outline btn-error btn-md">
           <svg
             xmlns="http://www.w3.org/2000/svg"

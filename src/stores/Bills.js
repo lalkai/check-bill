@@ -8,16 +8,16 @@ export const useBillStore = defineStore('bill', () => {
     localStorage.setItem('billList', JSON.stringify(bills.value));
   }
 
-  function addBill(description, amount) {
+  function addBill(description, amount, date) {
     bills.value.push({
       id: Date.now(),
       description,
       amount,
+      date: date || new Date().toISOString().split('T')[0],
       payers: []
     });
     saveToLocalStorage();
   }
-  
   function removeBill(billId) {
     bills.value = bills.value.filter(bill => bill.id !== billId);
     saveToLocalStorage();
@@ -57,11 +57,12 @@ export const useBillStore = defineStore('bill', () => {
     }
   }
 
-  function updateBill(billId, description, amount) {
+  function updateBill(billId, description, amount, date) {
     const bill = bills.value.find(bill => bill.id === billId);
     if (bill) {
       bill.description = description;
       bill.amount = amount;
+      bill.date = date;
       saveToLocalStorage();
     }
   }
@@ -86,9 +87,12 @@ export const useBillStore = defineStore('bill', () => {
       const splitAmount = bill.payers.length ? bill.amount / bill.payers.length : 0;
       bill.payers.forEach(payer => {
         if (!amounts[payer.name]) {
-          amounts[payer.name] = 0;
+          amounts[payer.name] = {};
         }
-        amounts[payer.name] += splitAmount;
+        if (!amounts[payer.name][bill.date]) {
+          amounts[payer.name][bill.date] = 0;
+        }
+        amounts[payer.name][bill.date] += splitAmount;
       });
     });
 

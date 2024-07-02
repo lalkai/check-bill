@@ -11,6 +11,7 @@ const billStore = useBillStore();
 function switchView(view) {
   currentView.value = view;
 }
+
 </script>
 
 <template>
@@ -111,9 +112,11 @@ function switchView(view) {
         <div v-else-if="currentView === 'bills'">
           <BillsView />
         </div>
+        
         <div v-else-if="currentView === 'payerAmounts'">
           <PayerAmountsView />
-        </div>
+          
+      </div>
       </div>
     </div>
   </div>
