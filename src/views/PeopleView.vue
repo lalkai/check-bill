@@ -73,7 +73,7 @@ function removePerson(index) {
       :key="index"
       class="flex items-center justify-between mb-2"
     >
-      <span :class="{ 'text-2xl': true , 'line-through': person.paid }">{{ person.name }}</span>
+      <span class="text-2xl">{{ person.name }}</span>
       <div class="flex items-center space-x-2">
         <button @click="removePerson(index)" class="btn btn-outline btn-error btn-md">
           <svg
