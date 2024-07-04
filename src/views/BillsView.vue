@@ -76,7 +76,8 @@ function menuPeoplePay(person) {
 </script>
 
 <template>
-  <div class="mt-8">
+  <div class="mt-4">
+    <div class="card bg-base-100 p-4">
     <div class="flex flex-row gap-2">
       <div class="basis-2/3">
         <input
@@ -95,8 +96,9 @@ function menuPeoplePay(person) {
         />
       </div>
     </div>
+    
     <div class="flex flex-row gap-2 mt-4">
-      <div class="basis-1/2">
+      <div class="basis-2/3">
         <input
           v-model="newBillDate"
           type="date"
@@ -105,25 +107,12 @@ function menuPeoplePay(person) {
       </div>
       <button
         @click="addBill"
-        class="btn btn-success ml-auto text-white basis-1/2"
+        class="btn btn-success text-white basis-1/3"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="w-6 h-6"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M12 4.5v15m7.5-7.5h-15"
-          />
-        </svg>
         เพิ่มบิล
       </button>
     </div>
+  </div>
 
     <div class="space-y-4 mt-4">
       <div

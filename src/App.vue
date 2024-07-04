@@ -14,7 +14,7 @@ function switchView(view) {
 </script>
 
 <template>
-  <div class="flex justify-center min-h-screen bg-gray-20">
+  <div class="flex justify-center min-h-screen">
     <div
       class="w-full px-4 py-6 max-w-screen-sm bg-base-300 shadow-md rounded-lg"
     >

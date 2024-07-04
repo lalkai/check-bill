@@ -194,7 +194,7 @@ const togglePaymentStatus = (payer, date) => {
             ? 'bg-success text-success-content'
             : 'bg-error text-error-content'
         "
-        class="card shadow-lg transition-all duration-300 hover:shadow-xl"
+        class="card transition-all duration-300"
       >
         <div class="card-body">
           <h2 class="card-title">

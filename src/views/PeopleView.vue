@@ -37,9 +37,10 @@ function removePerson(index) {
 </script>
 
 <template>
-  <div class="mt-8">
-    <div class="flex flex-wrap gap-4 mt-4">
-      <div class="form-control mb-4 flex-grow">
+  <div class="mt-4">
+    <div class="card bg-base-100 p-4">
+    <div class="flex flex-wrap gap-4">
+      <div class="form-control flex-grow">
         <input
           v-model="newPersonName"
           type="text"
@@ -64,6 +65,8 @@ function removePerson(index) {
         </svg>
       </button>
     </div>
+  </div>
+  <div class="mt-4">
     <ul 
     v-if="peopleStore.list.length > 0"
     class="list-disc bg-base-100 rounded-lg p-4 space-y-2"
@@ -94,5 +97,6 @@ function removePerson(index) {
       </div>
     </li>
   </ul>
+</div>
   </div>
 </template>
