@@ -8,7 +8,7 @@ const peopleStore = usePeopleStore();
 
 const newBillDescription = ref("");
 const newBillAmount = ref("");
-const newBillDate = ref("");
+const newBillDate = ref(new Date().toISOString().split('T')[0]);
 const editingBillId = ref(null);
 const editedBillDescription = ref("");
 const editedBillAmount = ref("");
@@ -36,7 +36,7 @@ function openEditModal(bill) {
   editingBillId.value = bill.id;
   editedBillDescription.value = bill.description;
   editedBillAmount.value = bill.amount.toString();
-  editedBillDate.value = bill.date; // ตั้งค่าเป็นวันที่เดิม
+  editedBillDate.value = bill.date;
   selectedPeople.value = bill.payers.map((payer) => payer.name);
 }
 
