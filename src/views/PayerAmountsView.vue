@@ -185,7 +185,7 @@ const togglePaymentStatus = (payer, date) => {
       </p>
     </div>
 
-    <div class="grid gap-4 mt-4">
+  <div class="grid gap-4 mt-4">
   <div
     v-for="(payer, index) in filteredPayerAmounts"
     :key="index"
@@ -206,7 +206,7 @@ const togglePaymentStatus = (payer, date) => {
       <p class="text-lg">
         ยอดรวม: {{ payer.totalAmountDue.toFixed(2) }} บาท
       </p>
-      <ul class="">
+      <ul class="space-y-2">
         <li
           v-for="(amount, date) in payer.dates"
           :key="date"
