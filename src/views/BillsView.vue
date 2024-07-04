@@ -24,7 +24,7 @@ function addBill() {
     );
     newBillDescription.value = "";
     newBillAmount.value = "";
-    newBillDate.value = "";
+    newBillDate.value = new Date().toISOString().split('T')[0];
   }
 }
 
@@ -53,6 +53,7 @@ function saveEditedBill() {
       billStore.addPayerToBill(editingBillId.value, person);
     });
     closeModal();
+    
   }
 }
 

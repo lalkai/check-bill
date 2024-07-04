@@ -117,7 +117,7 @@ function switchView(view) {
 
 <style scoped>
 .btn {
-  @apply py-3 px-6 rounded-full transition-colors text-base;
+  @apply py-3 px-6 rounded-full transition-colors text-black bg-base-100;
   font-size: 16px;
 }
 
