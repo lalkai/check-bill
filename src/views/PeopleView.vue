@@ -47,7 +47,7 @@ function removePerson(index) {
           class="input input-bordered w-full"
         />
       </div>
-      <button @click="addPerson" class="btn btn-outline btn-success">
+      <button @click="addPerson" class="btn btn-success text-white">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -66,16 +66,16 @@ function removePerson(index) {
     </div>
     <ul 
     v-if="peopleStore.list.length > 0"
-    class="list-disc bg-base-100 rounded-lg shadow-sm p-4"
+    class="list-disc bg-base-100 rounded-lg p-4 space-y-2"
   >
     <li
       v-for="(person, index) in peopleStore.list"
       :key="index"
-      class="flex items-center justify-between mb-2"
+      class="flex items-center justify-between"
     >
       <span class="text-2xl">{{ person.name }}</span>
-      <div class="flex items-center space-x-2">
-        <button @click="removePerson(index)" class="btn btn-outline btn-error btn-md">
+      <div class="flex items-center">
+        <button @click="removePerson(index)" class="btn btn-error btn-sm text-white">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"

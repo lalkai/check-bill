@@ -12,7 +12,7 @@ const newBillDate = ref("");
 const editingBillId = ref(null);
 const editedBillDescription = ref("");
 const editedBillAmount = ref("");
-const editedBillDate = ref(""); 
+const editedBillDate = ref("");
 const selectedPeople = ref([]);
 
 function addBill() {
@@ -24,7 +24,7 @@ function addBill() {
     );
     newBillDescription.value = "";
     newBillAmount.value = "";
-    newBillDate.value = ""; 
+    newBillDate.value = "";
   }
 }
 
@@ -46,7 +46,7 @@ function saveEditedBill() {
       editingBillId.value,
       editedBillDescription.value.trim(),
       Number(editedBillAmount.value),
-      editedBillDate.value 
+      editedBillDate.value
     );
     billStore.removeAllPayersFromBill(editingBillId.value);
     selectedPeople.value.forEach((person) => {
@@ -60,7 +60,7 @@ function closeModal() {
   editingBillId.value = null;
   editedBillDescription.value = "";
   editedBillAmount.value = "";
-  editedBillDate.value = ""; 
+  editedBillDate.value = "";
   selectedPeople.value = [];
 }
 
@@ -76,9 +76,8 @@ function menuPeoplePay(person) {
 
 <template>
   <div class="mt-8">
-     <div class="mb-4">
-    <div class="flex flex-wrap gap-4 items-center">
-      <div class="form-control flex-grow">
+    <div class="flex flex-row gap-2">
+      <div class="basis-2/3">
         <input
           v-model="newBillDescription"
           type="text"
@@ -86,7 +85,7 @@ function menuPeoplePay(person) {
           class="input input-bordered w-full"
         />
       </div>
-      <div class="form-control flex-grow">
+      <div class="basis-1/3">
         <input
           v-model="newBillAmount"
           type="number"
@@ -94,7 +93,19 @@ function menuPeoplePay(person) {
           class="input input-bordered w-full"
         />
       </div>
-      <button @click="addBill" class="btn btn-outline btn-success ml-auto">
+    </div>
+    <div class="flex flex-row gap-2 mt-4">
+      <div class="basis-1/2">
+        <input
+          v-model="newBillDate"
+          type="date"
+          class="input input-bordered w-full"
+        />
+      </div>
+      <button
+        @click="addBill"
+        class="btn btn-success ml-auto text-white basis-1/2"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -112,9 +123,8 @@ function menuPeoplePay(person) {
         เพิ่มบิล
       </button>
     </div>
-  </div>
 
-    <div class="space-y-4">
+    <div class="space-y-4 mt-4">
       <div
         v-for="bill in billStore.bills"
         :key="bill.id"
@@ -129,7 +139,10 @@ function menuPeoplePay(person) {
             <span class="text-sm text-gray-500">{{ bill.date }}</span>
           </div>
           <div class="flex flex-wrap items-center mt-2 space-x-2">
-            <button @click="removeBill(bill.id)" class="btn btn-outline btn-error btn-sm">
+            <button
+              @click="removeBill(bill.id)"
+              class="btn btn-error btn-sm text-white"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -146,7 +159,10 @@ function menuPeoplePay(person) {
               </svg>
               ลบ
             </button>
-            <button @click="openEditModal(bill)" class="btn btn-outline btn-primary btn-sm">
+            <button
+              @click="openEditModal(bill)"
+              class="btn btn-primary btn-sm text-white"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -168,6 +184,9 @@ function menuPeoplePay(person) {
         <div class="bg-base-200 p-4">
           <h4 class="font-semibold mb-2">ผู้จ่าย:</h4>
           <div class="flex flex-wrap gap-2">
+            <span v-if="bill.payers.length === 0" class="text-gray-500">
+              ยังไม่มี
+            </span>
             <span
               v-for="payer in bill.payers"
               :key="payer.name"
