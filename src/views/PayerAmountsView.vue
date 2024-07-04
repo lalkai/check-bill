@@ -171,7 +171,7 @@ const togglePaymentStatus = (payer, date) => {
     </button>
   </div>
     </div>
-
+    
     <div v-if="showQrCode" class="card bg-base-100 p-6 mt-4">
       <h3 class="text-2xl font-semibold mb-4 text-center">PromptPay QR Code</h3>
       <div class="flex justify-center mb-4">
@@ -186,54 +186,55 @@ const togglePaymentStatus = (payer, date) => {
     </div>
 
     <div class="grid gap-4 mt-4">
-      <div
-        v-for="(payer, index) in filteredPayerAmounts"
-        :key="index"
-        :class="
-          payer.paid
-            ? 'bg-success text-success-content'
-            : 'bg-error text-error-content'
-        "
-        class="card transition-all duration-300"
-      >
-        <div class="card-body">
-          <h2 class="card-title">
-            {{ payer.name }}
-            <div class="badge badge-lg">
-              {{ payer.paid ? "จ่ายครบแล้ว" : "ยังจ่ายไม่ครบ" }}
-            </div>
-          </h2>
-          <p class="text-lg">
-            ยอดรวม: {{ payer.totalAmountDue.toFixed(2) }} บาท
-          </p>
-          <ul class="space-y-2">
-            <li
-              v-for="(amount, date) in payer.dates"
-              :key="date"
-              class="flex justify-between items-center bg-white text-black p-2 rounded-md shadow"
-            >
-              <span class="font-medium">{{ date }}</span>
-              <span>{{ amount ? amount.toFixed(2) : "0.00" }} บาท</span>
-              <button
-                @click="togglePaymentStatus(payer, date)"
-                :class="
-                  peopleStore.getPaidStatusByDate(payer.name, date)
-                    ? 'btn-success'
-                    : 'btn-error'
-                "
-                class="btn btn-sm"
-              >
-                {{
-                  peopleStore.getPaidStatusByDate(payer.name, date)
-                    ? "จ่ายแล้ว"
-                    : "ยังไม่จ่าย"
-                }}
-              </button>
-            </li>
-          </ul>
+  <div
+    v-for="(payer, index) in filteredPayerAmounts"
+    :key="index"
+    :class="
+      payer.paid
+        ? 'bg-success text-success-content'
+        : 'bg-error text-error-content'
+    "
+    class="card transition-all duration-300"
+  >
+    <div class="card-body">
+      <h2 class="card-title">
+        {{ payer.name }}
+        <div class="badge badge-lg">
+          {{ payer.paid ? "จ่ายครบแล้ว" : "ยังจ่ายไม่ครบ" }}
         </div>
-      </div>
+      </h2>
+      <p class="text-lg">
+        ยอดรวม: {{ payer.totalAmountDue.toFixed(2) }} บาท
+      </p>
+      <ul class="">
+        <li
+          v-for="(amount, date) in payer.dates"
+          :key="date"
+          class="flex justify-between items-center bg-white text-black p-2 rounded-md"
+        >
+          <span class="font-medium">{{ date }}</span>
+          <span>{{ amount ? amount.toFixed(2) : "0.00" }} บาท</span>
+          <button
+            @click="togglePaymentStatus(payer, date)"
+            :class="
+              peopleStore.getPaidStatusByDate(payer.name, date)
+                ? 'btn-success text-center'
+                : 'btn-error text-center'
+            "
+            class="btn btn-sm"
+          >
+            {{
+              peopleStore.getPaidStatusByDate(payer.name, date)
+                ? "จ่ายแล้ว"
+                : "ยังไม่จ่าย"
+            }}
+          </button>
+        </li>
+      </ul>
     </div>
+  </div>
+</div>
+
 
     <div
       v-if="showAddQrCodePopup"
@@ -262,13 +263,7 @@ const togglePaymentStatus = (payer, date) => {
 
 
 <style scoped>
-.btn {
-  padding: 12px 20px;
-  border-radius: 20px;
-  transition: background-color;
-  font-size: 16px;
-  touch-action: manipulation;
-}
+
 
 .btn-black {
   background-color: black;
