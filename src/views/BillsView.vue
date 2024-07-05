@@ -88,9 +88,6 @@ function saveEditedBill() {
   }
 }
 
-
-
-
 function closeModal() {
   editingBillId.value = null;
   editedBillDescription.value = "";
