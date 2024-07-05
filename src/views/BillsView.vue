@@ -56,7 +56,7 @@ function saveEditedBill() {
     );
 
     billStore.removeAllPayersFromBill(editingBillId.value);
-    
+
     selectedPeople.value.forEach((person) => {
       billStore.addPayerToBill(editingBillId.value, person);
     });
@@ -66,15 +66,14 @@ function saveEditedBill() {
       return personPaidStatus && !personPaidStatus.paid;
     });
 
-    if (!anyUnpaid) {
-      selectedPeople.value.forEach(personName => {
-        peopleStore.resetPaidStatus([personName], editedBillDate.value, false);
-      });
-    }
+    selectedPeople.value.forEach(personName => {
+      peopleStore.resetPaidStatus([personName], editedBillDate.value, !anyUnpaid);
+    });
 
     closeModal();
   }
 }
+
 
 
 function closeModal() {
