@@ -43,21 +43,39 @@ function openEditModal(bill) {
 
 function saveEditedBill() {
   if (editedBillDescription.value.trim()) {
+    const initialPaidStatus = selectedPeople.value.map(personName => ({
+      name: personName,
+      paid: peopleStore.getPaidStatusByDate(personName, editedBillDate.value)
+    }));
+
     billStore.updateBill(
       editingBillId.value,
       editedBillDescription.value.trim(),
       Number(editedBillAmount.value),
       editedBillDate.value
     );
-    
+
     billStore.removeAllPayersFromBill(editingBillId.value);
+    
     selectedPeople.value.forEach((person) => {
       billStore.addPayerToBill(editingBillId.value, person);
     });
-    peopleStore.resetPaidStatus(selectedPeople.value, editedBillDate.value, false);
+
+    const anyUnpaid = selectedPeople.value.some(personName => {
+      const personPaidStatus = initialPaidStatus.find(payer => payer.name === personName);
+      return personPaidStatus && !personPaidStatus.paid;
+    });
+
+    if (!anyUnpaid) {
+      selectedPeople.value.forEach(personName => {
+        peopleStore.resetPaidStatus([personName], editedBillDate.value, false);
+      });
+    }
+
     closeModal();
   }
 }
+
 
 function closeModal() {
   editingBillId.value = null;
