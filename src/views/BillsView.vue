@@ -28,8 +28,9 @@ function addBill() {
   }
 }
 
-function removeBill(billId) {
-  billStore.removeBill(billId);
+function removeBill(bill) {
+  peopleStore.resetPaidStatus(bill.payers.map((payer) => payer.name), bill.date, true);
+  billStore.removeBill(bill.id);
 }
 
 function openEditModal(bill) {
@@ -48,12 +49,13 @@ function saveEditedBill() {
       Number(editedBillAmount.value),
       editedBillDate.value
     );
+    
     billStore.removeAllPayersFromBill(editingBillId.value);
     selectedPeople.value.forEach((person) => {
       billStore.addPayerToBill(editingBillId.value, person);
     });
+    peopleStore.resetPaidStatus(selectedPeople.value, editedBillDate.value, false);
     closeModal();
-    
   }
 }
 
@@ -130,7 +132,7 @@ function menuPeoplePay(person) {
           </div>
           <div class="flex flex-wrap items-center mt-2 space-x-2">
             <button
-              @click="removeBill(bill.id)"
+              @click="removeBill(bill)"
               class="btn btn-error btn-sm text-white"
             >
               <svg

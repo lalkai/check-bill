@@ -34,6 +34,18 @@ export const usePeopleStore = defineStore("people", () => {
     }
   }
 
+  function resetPaidStatus(payers, date, boolean) {
+    payers.forEach((payer) => {
+      const person = list.value.find((p) => p.name === payer);
+      if (person) {
+        if (!person.dates) person.dates = {};
+        person.dates[date] = boolean;
+        updateOverallPaidStatus(person); 
+        saveToLocalStorage();
+      }
+    });
+  }
+
   function updateOverallPaidStatus(person) {
     const allDates = Object.keys(billStore.payerAmounts[person.name] || {});
     person.paid = allDates.every((date) => person.dates[date]);
@@ -57,6 +69,7 @@ export const usePeopleStore = defineStore("people", () => {
     add,
     remove,
     togglePaidStatus,
+    resetPaidStatus,
     getPaidStatusByDate,
     saveToLocalStorage,
   };
