@@ -29,7 +29,6 @@ function addBill() {
 }
 
 function removeBill(bill) {
-  peopleStore.resetPaidStatus(bill.payers.map((payer) => payer.name), bill.date, true);
   billStore.removeBill(bill.id);
 }
 
@@ -47,6 +46,9 @@ function saveEditedBill() {
       name: personName,
       paid: peopleStore.getPaidStatusByDate(personName, editedBillDate.value)
     }));
+
+    const originalBill = billStore.bills.find(bill => bill.id === editingBillId.value);
+    const originalPayers = originalBill ? originalBill.payers.map(payer => payer.name) : [];
 
     billStore.updateBill(
       editingBillId.value,
@@ -66,13 +68,26 @@ function saveEditedBill() {
       return personPaidStatus && !personPaidStatus.paid;
     });
 
-    selectedPeople.value.forEach(personName => {
-      peopleStore.resetPaidStatus([personName], editedBillDate.value, !anyUnpaid);
+    const allPayers = new Set([...originalPayers, ...selectedPeople.value]);
+
+    allPayers.forEach(personName => {
+      const wasPayer = originalPayers.includes(personName);
+      const isPayer = selectedPeople.value.includes(personName);
+      const personPaidStatus = initialPaidStatus.find(payer => payer.name === personName);
+      
+      if (wasPayer && isPayer) {
+        peopleStore.resetPaidStatus([personName], editedBillDate.value, personPaidStatus ? personPaidStatus.paid : false);
+      } else if (isPayer) {
+        peopleStore.resetPaidStatus([personName], editedBillDate.value, !anyUnpaid);
+      } else if (wasPayer) {
+        peopleStore.resetPaidStatus([personName], editedBillDate.value, false);
+      }
     });
 
     closeModal();
   }
 }
+
 
 
 
