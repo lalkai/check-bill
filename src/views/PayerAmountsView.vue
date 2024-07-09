@@ -36,6 +36,7 @@ const inputPromptpay = ref("");
 const showAddQrCodePopup = ref(false);
 const showQrCode = ref(false);
 
+
 const generateQRCode = async () => {
   if (!inputPromptpay.value) {
     alert("โปรดป้อนข้อมูลให้ครบ!");
@@ -56,14 +57,19 @@ const generateQRCode = async () => {
 
   await nextTick();
 
-  const canvas = document.getElementById("qrcode-img");
-  if (canvas) {
-    qrcode.toCanvas(canvas, payload, opts, (err) => {
-      if (err) console.log("Error generating QR Code: ", err);
-    });
-  } else {
-    console.error("Canvas element not found!");
-  }
+  const canvas = document.createElement("canvas");
+  qrcode.toCanvas(canvas, payload, opts, (err) => {
+    if (err) console.log("Error generating QR Code: ", err);
+    const canvasContainer = document.getElementById("qrcode-img-container");
+    if (canvasContainer) {
+      canvas.id = "qrcode-img";
+      canvas.className = "border-4 border-primary rounded-lg";
+      canvasContainer.innerHTML = "";
+      canvasContainer.appendChild(canvas);
+    } else {
+      console.error("Canvas container element not found!");
+    }
+  });
 
   const promptpayIDElement = document.getElementById("PromptpayID");
   if (promptpayIDElement) {
@@ -79,12 +85,14 @@ const deleteQRCode = () => {
   localStorage.removeItem("promptpayID");
   inputPromptpay.value = "";
 
-  const canvas = document.getElementById("qrcode-img");
-  if (canvas) {
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
+  const img = document.getElementById("qrcode-img-img");
+  if (img) {
+    img.remove();
+  }
+
+  const canvasContainer = document.getElementById("qrcode-img-container");
+  if (canvasContainer) {
+    canvasContainer.innerHTML = '<canvas id="qrcode-img" class="border-4 border-primary rounded-lg"></canvas>';
   }
 
   const promptpayIDElement = document.getElementById("PromptpayID");
@@ -155,86 +163,81 @@ const togglePaymentStatus = (payer, date) => {
   peopleStore.togglePaidStatus(payer.name, date);
 };
 </script>
-
 <template>
   <div class="container mx-auto mt-4">
     <div class="card bg-base-100  p-4">
       <div class="flex justify-center space-x-2">
-    <button @click="showAddQrCodePopup = true" class="btn btn-black">
-      ใส่พร้อมเพย์
-    </button>
-    <button @click="deleteQRCode" class="btn btn-black">
-      ลบ QR Code
-    </button>
-    <button @click="capturePage" class="btn btn-black">
-      ดาวน์โหลด
-    </button>
-  </div>
+        <button @click="showAddQrCodePopup = true" class="btn btn-accent">
+          ใส่พร้อมเพย์
+        </button>
+        <button @click="deleteQRCode" class="btn btn-accent">
+          ลบ QR Code
+        </button>
+        <button @click="capturePage" class="btn btn-accent">
+          ดาวน์โหลด
+        </button>
+      </div>
     </div>
     
     <div v-if="showQrCode" class="card bg-base-100 p-6 mt-4">
       <h3 class="text-2xl font-semibold mb-4 text-center">PromptPay QR Code</h3>
-      <div class="flex justify-center mb-4">
-        <canvas
-          id="qrcode-img"
-          class="border-4 border-primary rounded-lg"
-        ></canvas>
+      <div class="flex justify-center mb-4" id="qrcode-img-container">
+        <canvas id="qrcode-img" class="border-4 border-primary rounded-lg"></canvas>
       </div>
       <p class="text-center text-gray-700">
         PromptPay ID: <span id="PromptpayID" class="font-medium"></span>
       </p>
     </div>
 
-  <div class="grid gap-4 mt-4">
-  <div
-    v-for="(payer, index) in filteredPayerAmounts"
-    :key="index"
-    :class="
-      payer.paid
-        ? 'bg-success text-success-content'
-        : 'bg-error text-error-content'
-    "
-    class="card transition-all duration-300"
-  >
-    <div class="card-body">
-      <h2 class="card-title">
-        {{ payer.name }}
-        <div class="badge badge-lg">
-          {{ payer.paid ? "จ่ายครบแล้ว" : "ยังจ่ายไม่ครบ" }}
+    <div class="grid gap-4 mt-4">
+      <div
+        v-for="(payer, index) in filteredPayerAmounts"
+        :key="index"
+        :class="
+          payer.paid
+            ? 'bg-success text-success-content'
+            : 'bg-error text-error-content'
+        "
+        class="card transition-all duration-300"
+      >
+        <div class="card-body">
+          <h2 class="card-title">
+            {{ payer.name }}
+            <div class="badge badge-lg">
+              {{ payer.paid ? "จ่ายครบแล้ว" : "ยังจ่ายไม่ครบ" }}
+            </div>
+          </h2>
+          <p class="text-lg">
+            ยอดรวม: {{ payer.totalAmountDue.toFixed(2) }} บาท
+          </p>
+          <ul class="space-y-2">
+            <li
+              v-for="(amount, date) in payer.dates"
+              :key="date"
+              class="flex justify-between items-center bg-white text-black p-2 rounded-md"
+            >
+              <span class="font-medium">{{ date }}</span>
+              <span>{{ amount ? amount.toFixed(2) : "0.00" }} บาท</span>
+              <button
+                @click="togglePaymentStatus(payer, date)"
+                :class="
+                  peopleStore.getPaidStatusByDate(payer.name, date)
+                    ? 'btn-success text-center'
+                    : 'btn-error text-center'
+                "
+                class="btn btn-sm"
+              >
+                {{
+                  peopleStore.getPaidStatusByDate(payer.name, date)
+                    ? "จ่ายแล้ว"
+                    : "ยังไม่จ่าย"
+                }}
+              </button>
+            </li>
+          </ul>
         </div>
-      </h2>
-      <p class="text-lg">
-        ยอดรวม: {{ payer.totalAmountDue.toFixed(2) }} บาท
-      </p>
-      <ul class="space-y-2">
-        <li
-          v-for="(amount, date) in payer.dates"
-          :key="date"
-          class="flex justify-between items-center bg-white text-black p-2 rounded-md"
-        >
-          <span class="font-medium">{{ date }}</span>
-          <span>{{ amount ? amount.toFixed(2) : "0.00" }} บาท</span>
-          <button
-            @click="togglePaymentStatus(payer, date)"
-            :class="
-              peopleStore.getPaidStatusByDate(payer.name, date)
-                ? 'btn-success text-center'
-                : 'btn-error text-center'
-            "
-            class="btn btn-sm"
-          >
-            {{
-              peopleStore.getPaidStatusByDate(payer.name, date)
-                ? "จ่ายแล้ว"
-                : "ยังไม่จ่าย"
-            }}
-          </button>
-        </li>
-      </ul>
+      </div>
     </div>
-  </div>
-</div>
-
 
     <div
       v-if="showAddQrCodePopup"
@@ -260,19 +263,3 @@ const togglePaymentStatus = (payer, date) => {
     </div>
   </div>
 </template>
-
-
-<style scoped>
-
-
-.btn-black {
-  background-color: black;
-  color: white;
-}
-
-@media (max-width: 768px) {
-  .btn {
-    font-size: 12px;
-  }
-}
-</style>

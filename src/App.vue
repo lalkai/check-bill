@@ -122,7 +122,11 @@ function switchView(view) {
 }
 
 .btn-active {
-  @apply bg-black text-white;
+  @apply bg-black text-white border-2 border-black;
+}
+
+.btn-outline {
+  @apply border-2 border-black;
 }
 
 @media (max-width: 768px) {
@@ -132,3 +136,4 @@ function switchView(view) {
   }
 }
 </style>
+
