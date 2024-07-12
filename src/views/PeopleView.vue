@@ -37,7 +37,7 @@ function removePerson(index) {
 </script>
 
 <template>
-  <div class="mt-4">
+  <div class="container mx-auto mt-4">
     <div class="card bg-base-100 p-4">
     <div class="flex flex-wrap gap-4">
       <div class="form-control flex-grow">

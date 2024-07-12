@@ -107,7 +107,7 @@ function menuPeoplePay(person) {
 </script>
 
 <template>
-  <div class="mt-4">
+  <div class="container mx-auto mt-4">
     <div class="card bg-base-100 p-4">
     <div class="flex flex-row gap-2">
       <div class="basis-2/3">

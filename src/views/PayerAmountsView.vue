@@ -163,6 +163,7 @@ const togglePaymentStatus = (payer, date) => {
   peopleStore.togglePaidStatus(payer.name, date);
 };
 </script>
+
 <template>
   <div class="container mx-auto mt-4">
     <div class="card bg-base-100  p-4">
