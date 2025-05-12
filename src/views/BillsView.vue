@@ -113,7 +113,7 @@ function menuPeoplePay(person) {
       <h2 class="a-header">เพิ่มบิลใหม่</h2>
       
       <div class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label for="bill-description" class="block text-sm font-medium text-neutral-500 mb-1">รายการ</label>
             <input
@@ -180,7 +180,7 @@ function menuPeoplePay(person) {
         :key="bill.id"
         class="a-card"
       >
-        <div class="flex flex-wrap items-start justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0">
           <div>
             <h3 class="text-lg font-medium text-neutral-700">{{ bill.description }}</h3>
             <div class="flex items-center mt-1">
@@ -232,7 +232,7 @@ function menuPeoplePay(person) {
                 d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
               />
             </svg>
-            แก้ไข
+            รายละเอียด
           </button>
         </div>
         
@@ -260,17 +260,19 @@ function menuPeoplePay(person) {
     
     <!-- Edit Modal -->
     <div v-if="editingBillId" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="flex items-end sm:items-center justify-center min-h-screen sm:p-0 px-4 pt-4 pb-10">
         <!-- Background overlay -->
         <div class="fixed inset-0 bg-neutral-700/75 transition-opacity" aria-hidden="true" @click="closeModal"></div>
 
         <!-- Modal panel -->
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full sm:max-w-lg">
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="sm:flex sm:items-start">
-              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+              <div class="mt-3 sm:mt-0 sm:text-left w-full">
                 <h3 class="text-lg leading-6 font-medium text-neutral-700" id="modal-title">
-                  แก้ไขบิล
+                  <div class="text-center">
+                      แก้ไขบิล
+                  </div>
                 </h3>
                 <div class="mt-4">
                   <div class="space-y-4">
@@ -303,21 +305,23 @@ function menuPeoplePay(person) {
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-neutral-500 mb-1">คนจ่าย</label>
-                      <div class="border border-neutral-300 rounded-lg p-2 max-h-36 overflow-y-auto bg-neutral-50">
-                        <div 
-                          v-for="person in peopleStore.list" 
-                          :key="person.name"
-                          @click="menuPeoplePay(person)"
-                          class="flex items-center p-2 rounded-md cursor-pointer hover:bg-neutral-200/50 transition-colors"
-                          :class="{ 'bg-primary/10': selectedPeople.includes(person.name) }"
-                        >
-                          <div class="flex-shrink-0 w-5 h-5 border border-neutral-300 rounded flex items-center justify-center"
-                               :class="{ 'bg-primary border-primary': selectedPeople.includes(person.name) }">
-                            <svg v-if="selectedPeople.includes(person.name)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4 text-white">
-                              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="m5 12 5 5L20 7"></path>
-                            </svg>
+                      <div class="border border-neutral-300 rounded-lg p-3 bg-neutral-50">
+                        <div class="flex flex-wrap gap-2">
+                          <div 
+                            v-for="person in peopleStore.list" 
+                            :key="person.name"
+                            @click="menuPeoplePay(person)"
+                            class="flex items-center px-3 py-2 rounded-md cursor-pointer hover:bg-neutral-200/50 transition-colors"
+                            :class="{ 'bg-primary/10': selectedPeople.includes(person.name) }"
+                          >
+                            <div class="flex-shrink-0 w-5 h-5 border border-neutral-300 rounded flex items-center justify-center"
+                                 :class="{ 'bg-primary border-primary': selectedPeople.includes(person.name) }">
+                              <svg v-if="selectedPeople.includes(person.name)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4 text-white">
+                                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="m5 12 5 5L20 7"></path>
+                              </svg>
+                            </div>
+                            <span class="ml-2 text-neutral-700">{{ person.name }}</span>
                           </div>
-                          <span class="ml-2 text-neutral-700">{{ person.name }}</span>
                         </div>
                       </div>
                     </div>
@@ -326,14 +330,14 @@ function menuPeoplePay(person) {
               </div>
             </div>
           </div>
-          <div class="bg-neutral-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <div class="bg-neutral-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-2">
             <button type="button" 
-                    class="a-button-primary w-full sm:ml-3 sm:w-auto" 
+                    class="a-button-primary" 
                     @click="saveEditedBill">
               บันทึก
             </button>
             <button type="button" 
-                    class="a-button-secondary mt-3 sm:mt-0 w-full sm:w-auto" 
+                    class="a-button-secondary" 
                     @click="closeModal">
               ยกเลิก
             </button>

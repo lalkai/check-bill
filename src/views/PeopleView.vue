@@ -41,7 +41,7 @@ function removePerson(index) {
     <!-- Add Person Card -->
     <div class="a-card mb-6">
       <h2 class="a-header mb-4">เพิ่มคนจ่าย</h2>
-      <div class="flex flex-wrap gap-4">
+      <div class="flex flex-col sm:flex-row gap-4">
         <div class="flex-grow">
           <input
             v-model="newPersonName"
@@ -51,7 +51,7 @@ function removePerson(index) {
             @keyup.enter="addPerson"
           />
         </div>
-        <button @click="addPerson" class="a-button-success min-w-24 flex items-center justify-center">
+        <button @click="addPerson" class="a-button-success min-w-24 w-full sm:w-auto flex items-center justify-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -97,11 +97,11 @@ function removePerson(index) {
                 />
               </svg>
             </div>
-            <span class="text-lg font-medium text-neutral-700">{{ person.name }}</span>
+            <span class="text-lg font-medium text-neutral-700 break-words">{{ person.name }}</span>
           </div>
           <button 
             @click="removePerson(index)" 
-            class="ml-2 p-2 text-neutral-400 hover:text-error transition-colors"
+            class="ml-2 p-2 text-neutral-400 hover:text-error transition-colors flex-shrink-0"
             aria-label="ลบคนนี้"
           >
             <svg
@@ -125,7 +125,11 @@ function removePerson(index) {
     
     <div v-if="peopleStore.list.length === 0" class="a-card">
       <div class="text-center py-8 text-neutral-400">
-        ยังไม่มีรายชื่อคนจ่าย
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 mx-auto mb-2 opacity-50">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+        </svg>
+        <p class="text-lg">ยังไม่มีรายชื่อคนจ่าย</p>
+        <p class="text-sm">เพิ่มรายชื่อคนจ่ายได้ด้านบน</p>
       </div>
     </div>
   </div>
