@@ -1,12 +1,22 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import PeopleView from "./views/PeopleView.vue";
 import BillsView from "./views/BillsView.vue";
 import PayerAmountsView from "./views/PayerAmountsView.vue";
+import SharedView from "./views/SharedView.vue";
 import { useBillStore } from "./stores/Bills";
 
 const currentView = ref("people");
 const billStore = useBillStore();
+const isSharedView = ref(false);
+
+onMounted(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('payer_info')) {
+    isSharedView.value = true;
+    currentView.value = 'shared'; 
+  }
+});
 
 function switchView(view) {
   currentView.value = view;
@@ -14,7 +24,14 @@ function switchView(view) {
 </script>
 
 <template>
-  <div class="min-h-screen bg-neutral-100 flex flex-col">
+  <div v-if="isSharedView" class="min-h-screen bg-neutral-100 flex flex-col animate-fadeIn">
+    <main class="flex-grow py-6 pb-24 sm:pb-6">
+      <div class="max-w-screen-md mx-auto py-6 px-6">
+        <SharedView />
+      </div>
+    </main>
+  </div>
+  <div v-else class="min-h-screen bg-neutral-100 flex flex-col">
     <header class="bg-white/90 backdrop-blur-sm border-b border-neutral-200 sticky top-0 z-10">
       <div class="max-w-screen-md mx-auto px-4 py-5">
         <div class="flex flex-col items-center space-y-4">
@@ -83,7 +100,6 @@ function switchView(view) {
         </div>
       </div>
     </main>
-
     <!-- Bottom Navigation for Mobile -->
     <div class="sm:hidden fixed bottom-0 inset-x-0 bg-white shadow-a-hover border-t border-neutral-200 py-2 z-10">
       <div class="flex justify-around">

@@ -1,10 +1,9 @@
 <script setup>
-import { ref, computed, onMounted, nextTick } from "vue";
+import { ref, computed, onMounted, nextTick, watch } from "vue";
 import { useBillStore } from "../stores/Bills";
 import { usePeopleStore } from "../stores/People";
 import generatePayload from "promptpay-qr";
 import qrcode from "qrcode";
-import html2canvas from "html2canvas-pro";
 
 const billStore = useBillStore();
 const peopleStore = usePeopleStore();
@@ -35,6 +34,119 @@ const filteredPayerAmounts = computed(() => {
 const inputPromptpay = ref("");
 const showAddQrCodePopup = ref(false);
 const showQrCode = ref(false);
+const showSharePopup = ref(false);
+const shareUrl = ref("");
+
+watch(showSharePopup, async (newValue) => {
+  if (newValue && shareUrl.value) {
+    await nextTick();
+    const shareQrCodeContainer = document.getElementById("share-qrcode");
+    if (shareQrCodeContainer) {
+        generateShareQRCode(shareUrl.value);
+    } else {
+        console.warn("share-qrcode container not found when trying to regenerate QR via watcher.");
+    }
+  }
+});
+
+const sharePayer = () => {
+  if (filteredPayerAmounts.value.length === 0) {
+    alert("ไม่มีข้อมูลให้แชร์");
+    return;
+  }
+  shareUrl.value = "";
+  showSharePopup.value = true;
+  generateShareUrl(); 
+};
+
+const generateShareUrl = async () => {
+  try {
+    const allPayersData = filteredPayerAmounts.value.map(payer => {
+      const billItems = [];
+      billStore.bills.forEach(bill => {
+        const isPayerInBill = bill.payers.some(p => p.name === payer.name);
+        if (isPayerInBill) {
+          billItems.push({
+            description: bill.description,
+            amount: bill.amount / bill.payers.length,
+            date: bill.date
+          });
+        }
+      });
+      return {
+        name: payer.name,
+        dates: payer.dates,
+        paid: payer.paid,
+        totalAmountDue: payer.totalAmountDue,
+        billItems: billItems
+      };
+    });
+
+    if (allPayersData.length === 0) {
+      alert("ไม่พบข้อมูลผู้จ่าย");
+      return;
+    }
+    
+    const promptpayID = localStorage.getItem("promptpayID");
+    
+    const sharedData = {
+      payers: allPayersData,
+      promptpayID: promptpayID || ""
+    };
+    
+    const jsonString = JSON.stringify(sharedData);
+    const encodedSharedData = btoa(encodeURIComponent(jsonString));
+    
+    const baseUrl = window.location.origin + window.location.pathname;
+    shareUrl.value = `${baseUrl}?payer_info=${encodedSharedData}`;
+    
+    await navigator.clipboard.writeText(shareUrl.value).catch(e => {
+      console.error("Could not copy to clipboard:", e);
+    });
+    
+    await nextTick();
+    generateShareQRCode(shareUrl.value);
+    
+  } catch (error) {
+    console.error("Error generating share URL:", error);
+    alert("เกิดข้อผิดพลาดในการสร้าง URL สำหรับแชร์");
+  }
+};
+
+const generateShareQRCode = (url) => {
+  const shareQrCodeContainer = document.getElementById("share-qrcode");
+  if (!shareQrCodeContainer) {
+    console.warn("share-qrcode container not found when trying to generate QR.");
+    return;
+  }
+
+  while (shareQrCodeContainer.firstChild) {
+    shareQrCodeContainer.removeChild(shareQrCodeContainer.firstChild);
+  }
+
+  const canvas = document.createElement('canvas');
+  shareQrCodeContainer.appendChild(canvas);
+
+  const opts = {
+    errorCorrectionLevel: 'M',
+    type: 'image/png',
+    margin: 1,
+    width: 180,
+    color: {
+      dark: '#000000',
+      light: '#ffffff'
+    }
+  };
+
+  qrcode.toCanvas(canvas, url, opts, (err) => {
+    if (err) {
+      console.error("Error generating share QR Code:", err);
+      if (shareQrCodeContainer.contains(canvas)) {
+        shareQrCodeContainer.removeChild(canvas);
+      }
+    }
+  });
+};
 
 const generateQRCode = async () => {
   if (!inputPromptpay.value) {
@@ -102,61 +214,6 @@ const deleteQRCode = () => {
   showQrCode.value = false;
 };
 
-const capturePage = async () => {
-  try {
-    await nextTick();
-
-    const mainContent = document.querySelector('main');
-
-    if (!mainContent) {
-      throw new Error('Main content element not found.');
-    }
-
-    const canvas = await html2canvas(mainContent, {
-      useCORS: true,
-      scale: window.devicePixelRatio,
-      logging: true,
-      allowTaint: true,
-      foreignObjectRendering: true,
-      ignoreElements: (element) => {
-        return window.getComputedStyle(element).display === "none" || 
-               element.classList.contains('sm:hidden') ||
-               element.tagName === 'NAV';
-      },
-      onclone: (clonedDoc) => {
-        Array.from(
-          clonedDoc.querySelectorAll(".modal, .dropdown, .tooltip")
-        ).forEach((el) => {
-          el.style.display = "block";
-          el.style.opacity = "1";
-          el.style.visibility = "visible";
-        });
-        
-        const bottomNav = clonedDoc.querySelector('.fixed.bottom-0.inset-x-0');
-        if (bottomNav) {
-          bottomNav.style.display = "none";
-        }
-      },
-    });
-
-    canvas.toBlob(
-      (blob) => {
-        if (blob) {
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download = "สรุปยอดบิล.png";
-          link.click();
-          URL.revokeObjectURL(link.href);
-        }
-      },
-      "image/png",
-      1.0
-    );
-  } catch (error) {
-    console.error("Error capturing page:", error);
-  }
-};
-
 onMounted(() => {
   const storedPromptpayID = localStorage.getItem("promptpayID");
   if (storedPromptpayID) {
@@ -168,14 +225,21 @@ onMounted(() => {
 const togglePaymentStatus = (payer, date) => {
   peopleStore.togglePaidStatus(payer.name, date);
 };
+
+const openShareLink = () => {
+  if (shareUrl.value) {
+    window.open(shareUrl.value, '_blank');
+  } else {
+    alert("ยังไม่ได้สร้างลิงก์สำหรับแชร์");
+  }
+};
 </script>
 
 <template>
   <div>
     <!-- Summary Tools -->
     <div class="a-card mb-6">
-      <h2 class="a-header">เครื่องมือ</h2>
-      <div class="flex flex-wrap gap-3 justify-center">
+      <h2 class="a-header">เครื่องมือ</h2>      <div class="flex flex-wrap gap-3 justify-center">
         <button @click="showAddQrCodePopup = true" class="a-button-primary flex-grow sm:flex-grow-0">
           <div class="flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1.5">
@@ -195,12 +259,12 @@ const togglePaymentStatus = (payer, date) => {
           </div>
         </button>
         
-        <button @click="capturePage" class="a-button-primary flex-grow sm:flex-grow-0">
+        <button @click="sharePayer" class="a-button-primary flex-grow sm:flex-grow-0">
           <div class="flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
             </svg>
-            ดาวน์โหลด
+            แชร์
           </div>
         </button>
       </div>
@@ -292,10 +356,10 @@ const togglePaymentStatus = (payer, date) => {
       </div>
     </div>
 
-    <!-- Add QR Code Modal -->
+  <!-- Add QR Code Modal -->
     <div
       v-if="showAddQrCodePopup"
-      class="fixed inset-0 flex items-center justify-center bg-neutral-700/75 backdrop-blur-sm z-50 transition-all"
+      class="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50 transition-all"
     >
       <div class="bg-white rounded-2xl shadow-a-hover w-full max-w-md p-6 m-4">
         <h2 class="text-xl font-medium text-neutral-700 mb-5">เพิ่ม PromptPay QR Code</h2>
@@ -316,7 +380,52 @@ const togglePaymentStatus = (payer, date) => {
           <button @click="showAddQrCodePopup = false" class="a-button-secondary w-full sm:w-auto">
             ยกเลิก
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div
+      v-if="showSharePopup"
+      class="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50 transition-all"
+    >
+      <div class="bg-white rounded-2xl shadow-a-hover w-full max-w-md p-6 m-4">
+        <h2 class="text-xl font-medium text-neutral-700 mb-5">แชร์ข้อมูลการชำระเงิน</h2>
+        
+        <!-- Share URL -->
+        <div v-if="shareUrl" class="mb-5">
+          <label class="block text-sm font-medium text-neutral-500 mb-1">ลิงก์สำหรับแชร์ข้อมูลทั้งหมด</label>
+          <div class="flex">
+            <input
+              type="text"
+              readonly
+              :value="shareUrl"
+              class="a-input flex-grow mr-2"
+            />
+          </div>
+          <p class="text-accent text-sm mt-2">คัดลอกลิงก์ไปแล้ว! แชร์กับผู้อื่นได้เลย</p>
           
+          <!-- Share QR Code -->
+          <div class="mt-5 flex flex-col items-center">
+            <h3 class="text-sm font-medium text-neutral-500 mb-3">สแกนเพื่อเปิด</h3>
+            <div id="share-qrcode" class="bg-white p-3 rounded-lg shadow-a"></div>
+          </div>
+        </div>
+        <div v-else class="mb-5 text-center">
+          <p class="text-neutral-500">กำลังสร้างลิงก์สำหรับแชร์...</p>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row justify-end gap-3">
+          <button 
+            v-if="shareUrl"
+            @click="openShareLink"
+            class="a-button-primary w-full sm:w-auto"
+          >
+            เปิดลิงก์แชร์
+          </button>
+          <button @click="showSharePopup = false" class="a-button-secondary w-full sm:w-auto">
+            ปิด
+          </button>
         </div>
       </div>
     </div>
