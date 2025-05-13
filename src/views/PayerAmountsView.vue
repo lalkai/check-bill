@@ -284,7 +284,7 @@ const togglePaymentStatus = (payer, date) => {
       <div v-if="filteredPayerAmounts.length === 0" class="a-card py-12">
         <div class="text-center text-neutral-400">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 mx-auto mb-2 opacity-50">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9.75m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75m-8.25-3v1.5m0 0v1.5m0-1.5h1.5m-1.5 0h-1.5M6.75 3v3H5.25m11.25 9v3H15" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-3-3v6m-6 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
           <p class="text-lg">ยังไม่มีข้อมูลสรุปยอด</p>
           <p class="text-sm">เพิ่มคนจ่ายและบิลก่อน</p>

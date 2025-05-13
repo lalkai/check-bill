@@ -29,7 +29,13 @@ function addBill() {
 }
 
 function removeBill(bill) {
-  billStore.removeBill(bill.id);
+  if (bill.payers && bill.payers.length > 0) {
+    if (confirm("บิลนี้มีคนจ่ายอยู่ คุณต้องการลบจริงหรือไม่?")) {
+      billStore.removeBill(bill.id);
+    }
+  } else {
+    billStore.removeBill(bill.id);
+  }
 }
 
 function openEditModal(bill) {
