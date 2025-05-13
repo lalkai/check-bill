@@ -260,7 +260,7 @@ function menuPeoplePay(person) {
     
     <!-- Edit Modal -->
     <div v-if="editingBillId" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div class="flex items-end sm:items-center justify-center min-h-screen sm:p-0 px-4 pt-4 pb-10">
+      <div class="flex items-center justify-center min-h-screen sm:p-0 px-4 pt-4 pb-10">
         <!-- Background overlay -->
         <div class="fixed inset-0 bg-neutral-700/75 transition-opacity" aria-hidden="true" @click="closeModal"></div>
 
