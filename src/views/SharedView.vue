@@ -2,6 +2,7 @@
 import { ref, onMounted, computed, nextTick } from "vue";
 import generatePayload from "promptpay-qr";
 import qrcode from "qrcode";
+import LZString from "lz-string";
 
 const allSharedData = ref(null);
 const error = ref(null);
@@ -21,21 +22,45 @@ onMounted(() => {
       return;
     }
     
-    const decodedInfo = decodeURIComponent(atob(sharedDataParam));
-    const parsedData = JSON.parse(decodedInfo);
-    
-    if (!parsedData || !parsedData.payers) {
-      error.value = "ข้อมูลไม่ถูกต้อง หรือไม่มีข้อมูลผู้จ่าย";
+    try {
+      const decompressedData = LZString.decompressFromEncodedURIComponent(sharedDataParam);
+      const parsedData = JSON.parse(decompressedData);
+      
+      if (!parsedData || !parsedData.payers) {
+        throw new Error("Invalid data format");
+      }
+      
+      allSharedData.value = parsedData;
+      
+      if (parsedData.promptpayID) {
+        overallPromptpayID.value = parsedData.promptpayID;
+      }
+      
       loading.value = false;
-      return;
+    } catch (lzError) {
+      console.warn("Failed to decompress with LZString, trying legacy format:", lzError);
+      
+      try {
+        const decodedInfo = decodeURIComponent(atob(sharedDataParam));
+        const parsedData = JSON.parse(decodedInfo);
+        
+        if (!parsedData || !parsedData.payers) {
+          error.value = "ข้อมูลไม่ถูกต้อง หรือไม่มีข้อมูลผู้จ่าย";
+          loading.value = false;
+          return;
+        }
+        
+        allSharedData.value = parsedData;
+        
+        if (parsedData.promptpayID) {
+          overallPromptpayID.value = parsedData.promptpayID;
+        }
+        
+        loading.value = false;
+      } catch (legacyError) {
+        throw legacyError; 
+      }
     }
-    allSharedData.value = parsedData;
-    
-    if (parsedData.promptpayID) {
-      overallPromptpayID.value = parsedData.promptpayID;
-    }
-    
-    loading.value = false;
   } catch (e) {
     console.error("Error parsing shared data:", e);
     error.value = "เกิดข้อผิดพลาดในการแสดงข้อมูล";

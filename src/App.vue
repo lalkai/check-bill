@@ -76,10 +76,8 @@ function switchView(view) {
           <button @click="switchView('payerAmounts')"
             :class="['a-tab', currentView === 'payerAmounts' ? 'a-tab-active' : 'a-tab-inactive']">
             <div class="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-5 h-5 mr-1.5">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm2.498-6.75h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V13.5Zm0 2.25h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V18Zm2.504-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5Zm0 2.25h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V18Zm2.498-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5Z" />
+               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.5 5.5C8.5 5.5 8.5 8 8.5 8V9.5M6.5 5.5C4.5 5.5 4.5 8 4.5 8L4.5 9.5H8.5M6.5 5.5C6.5 5.5 15.8 5.5 17.7 5.5C19.5 5.5 19.5 8.5 19.5 8.5V20L17.7 19L15.8 20L14 19L12.2 20L10.3 19L8.5 20V9.5M11 12.5H15M11 9.5H16M11 15.5H16" />
               </svg>
               สรุปยอด
             </div>

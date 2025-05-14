@@ -4,6 +4,7 @@ import { useBillStore } from "../stores/Bills";
 import { usePeopleStore } from "../stores/People";
 import generatePayload from "promptpay-qr";
 import qrcode from "qrcode";
+import LZString from "lz-string";
 
 const billStore = useBillStore();
 const peopleStore = usePeopleStore();
@@ -95,10 +96,11 @@ const generateShareUrl = async () => {
     };
     
     const jsonString = JSON.stringify(sharedData);
-    const encodedSharedData = btoa(encodeURIComponent(jsonString));
+
+    const compressedData = LZString.compressToEncodedURIComponent(jsonString);
     
     const baseUrl = window.location.origin + window.location.pathname;
-    shareUrl.value = `${baseUrl}?payer_info=${encodedSharedData}`;
+    shareUrl.value = `${baseUrl}?payer_info=${compressedData}`;
     
     await navigator.clipboard.writeText(shareUrl.value).catch(e => {
       console.error("Could not copy to clipboard:", e);
