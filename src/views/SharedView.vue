@@ -229,27 +229,6 @@ const closePaymentModal = () => {
           </button>
         </div>
       </div>
-
-      <!-- Payment QR Code Modal -->
-      <div
-        v-if="showQrCodeModalForPayer"
-        class="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50 transition-all"
-        @click.self="closePaymentModal" 
-      >
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-xs p-6 m-4 transform transition-all duration-300 scale-100 opacity-100">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold text-neutral-700">สแกนเพื่อชำระเงิน</h2>
-            <button @click="closePaymentModal" class="text-neutral-400 hover:text-neutral-600 transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <p class="text-center text-neutral-600 mb-1">สำหรับ: <span class="font-medium">{{ showQrCodeModalForPayer.name }}</span></p>
-          <div :id="`payment-qrcode-container-${showQrCodeModalForPayer.name.replace(/\s+/g, '-')}`" class="bg-white p-2 rounded-lg shadow-inner min-h-[200px] flex flex-col justify-center items-center"></div>
-        </div>
-      </div>
-
     </div>
 
     <!-- No Data State -->
@@ -260,6 +239,26 @@ const closePaymentModal = () => {
         </svg>
         <p class="text-lg">ไม่พบข้อมูล</p>
       </div>
+    </div>
+  </div>
+
+  <!-- Payment QR Code Modal -->
+  <div
+    v-if="showQrCodeModalForPayer"
+    class="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50 transition-all"
+    @click.self="closePaymentModal" 
+  >
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-xs p-6 m-4 transform transition-all duration-300 scale-100 opacity-100">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold text-neutral-700">สแกนเพื่อชำระเงิน</h2>
+        <button @click="closePaymentModal" class="text-neutral-400 hover:text-neutral-600 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <p class="text-center text-neutral-600 mb-1">สำหรับ: <span class="font-medium">{{ showQrCodeModalForPayer.name }}</span></p>
+      <div :id="`payment-qrcode-container-${showQrCodeModalForPayer.name.replace(/\s+/g, '-')}`" class="bg-white p-2 rounded-lg shadow-inner min-h-[200px] flex flex-col justify-center items-center"></div>
     </div>
   </div>
 </template>
