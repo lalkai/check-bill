@@ -239,7 +239,8 @@ function startOcrOver() {
       ></div>
       <!-- Modal panel -->
       <div
-        class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
+        class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
+        :class="ocrStep === 3 ? 'max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl' : 'max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl'"
       >
         <div class="bg-white p-3 sm:p-4 md:p-6">
           <!-- Modal Header -->
@@ -511,31 +512,31 @@ function startOcrOver() {
             </div>
           </div>
           <!-- Step 3: Review -->
-          <div v-if="ocrStep === 3" class="space-y-6">
-            <div class="text-center mb-4">
-              <h2 class="text-xl sm:text-2xl font-bold text-neutral-800 mb-2">
+          <div v-if="ocrStep === 3" class="space-y-4">
+            <div class="text-center mb-3">
+              <h2 class="text-lg sm:text-xl font-bold text-neutral-800 mb-2">
                 ตรวจสอบรายการ
               </h2>
-              <p class="text-neutral-600 text-sm sm:text-base">
+              <p class="text-neutral-600 text-sm">
                 กรุณาตรวจสอบและแก้ไขข้อมูลก่อนเพิ่มเข้าระบบ
               </p>
             </div>
 
             <!-- Summary Card -->
             <div
-              class="bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20 rounded-lg p-4"
+              class="bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20 rounded-lg p-3"
             >
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-lg sm:text-xl font-semibold text-neutral-800">
+                  <h3 class="text-base sm:text-lg font-semibold text-neutral-800">
                     สรุปรายการ
                   </h3>
-                  <p class="text-sm sm:text-base text-neutral-600">
+                  <p class="text-xs sm:text-sm text-neutral-600">
                     พบ {{ extractedItems.length }} รายการ
                   </p>
                 </div>
                 <div class="text-right">
-                  <div class="text-xl sm:text-2xl font-bold text-primary">
+                  <div class="text-lg sm:text-xl font-bold text-primary">
                     {{
                       extractedItems
                         .filter((item) => item.selected)
@@ -544,7 +545,7 @@ function startOcrOver() {
                     }}
                     บาท
                   </div>
-                  <p class="text-sm sm:text-base text-neutral-600">
+                  <p class="text-xs sm:text-sm text-neutral-600">
                     เลือกแล้ว
                     {{ extractedItems.filter((item) => item.selected).length }}
                     รายการ
@@ -553,38 +554,38 @@ function startOcrOver() {
               </div>
             </div>
             <!-- Items List -->
-            <div class="space-y-4 max-h-96 overflow-y-auto">
+            <div class="space-y-3 max-h-64 sm:max-h-80 overflow-y-auto">
               <div
                 v-for="(item, index) in extractedItems"
                 :key="index"
-                class="border rounded-lg p-4 hover:shadow-md transition-all duration-300"
+                class="border rounded-lg p-3 hover:shadow-md transition-all duration-300"
                 :class="{ 'ring-2 ring-primary/20': item.selected }"
               >
-                <div class="flex items-start gap-4">
+                <div class="flex items-start gap-3">
                   <div class="flex-shrink-0 pt-1">
                     <input
                       type="checkbox"
                       v-model="item.selected"
-                      class="w-5 h-5 text-primary rounded border-neutral-300 focus:ring-primary/20"
+                      class="w-4 h-4 text-primary rounded border-neutral-300 focus:ring-primary/20"
                     />
                   </div>
 
-                  <div class="flex-grow space-y-3">
+                  <div class="flex-grow space-y-2">
                     <div>
                       <label
-                        class="block text-sm font-medium text-neutral-700 mb-1"
+                        class="block text-xs font-medium text-neutral-700 mb-1"
                         >รายการ</label
                       >
                       <input
                         type="text"
                         v-model="item.description"
-                        class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
+                        class="w-full px-2 py-1.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs"
                         placeholder="ชื่อรายการ"
                       />
                     </div>
                     <div>
                       <label
-                        class="block text-sm font-medium text-neutral-700 mb-1"
+                        class="block text-xs font-medium text-neutral-700 mb-1"
                         >จำนวนเงิน (บาท)</label
                       >
                       <input
@@ -592,7 +593,7 @@ function startOcrOver() {
                         v-model.number="item.amount"
                         step="0.01"
                         min="0"
-                        class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
+                        class="w-full px-2 py-1.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs"
                         placeholder="0.00"
                       />
                     </div>
@@ -601,7 +602,7 @@ function startOcrOver() {
                   <div class="flex-shrink-0">
                     <button
                       @click="removeOcrItem(index)"
-                      class="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                      class="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                       title="ลบรายการ"
                     >
                       <svg
@@ -610,7 +611,7 @@ function startOcrOver() {
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
                         stroke="currentColor"
-                        class="w-5 h-5"
+                        class="w-4 h-4"
                       >
                         <path
                           stroke-linecap="round"
@@ -624,10 +625,10 @@ function startOcrOver() {
               </div>
             </div>
             <!-- Action Buttons -->
-            <div class="flex gap-4 pt-4">
+            <div class="flex gap-3 pt-3">
               <button
                 @click="startOcrOver"
-                class="flex-1 px-6 py-3 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-all text-sm font-medium"
+                class="flex-1 px-4 py-2.5 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-all text-xs font-medium"
               >
                 เริ่มใหม่
               </button>
@@ -636,7 +637,7 @@ function startOcrOver() {
                 :disabled="
                   extractedItems.filter((item) => item.selected).length === 0
                 "
-                class="flex-1 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-light disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-sm"
+                class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-light disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-xs"
               >
                 เพิ่มรายการ ({{
                   extractedItems.filter((item) => item.selected).length
