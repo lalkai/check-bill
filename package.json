@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "checkbill": "file:",
     "dom-to-image-more": "^3.3.0",
     "html2canvas-pro": "^1.5.1",

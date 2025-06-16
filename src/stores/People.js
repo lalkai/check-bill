@@ -1,13 +1,42 @@
 import { ref, computed } from "vue";
-import { useBillStore } from "./Bills";
 import { defineStore } from "pinia";
 
 export const usePeopleStore = defineStore("people", () => {
-  const list = ref(JSON.parse(localStorage.getItem("peopleList")) || []);
-  const billStore = useBillStore();
+  // Initialize people with error handling
+  const initializePeople = () => {
+    try {
+      const stored = localStorage.getItem("peopleList");
+      if (!stored) return [];
+      
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) {
+        console.warn('Invalid people data in localStorage, resetting...');
+        return [];
+      }
+      
+      return parsed.map(person => ({
+        name: String(person.name || '').trim(),
+        paid: Boolean(person.paid),
+        dates: typeof person.dates === 'object' && person.dates !== null ? person.dates : {}
+      })).filter(person => person.name); 
+    } catch (error) {
+      console.error('Error loading people from localStorage:', error);
+      return [];
+    }
+  };
+  const list = ref(initializePeople());
 
   function saveToLocalStorage() {
-    localStorage.setItem("peopleList", JSON.stringify(list.value));
+    try {
+      const validPeople = list.value.filter(person => 
+        person && 
+        person.name && 
+        typeof person.name === 'string'
+      );
+        localStorage.setItem("peopleList", JSON.stringify(validPeople));
+    } catch (error) {
+      console.error('Error saving people to localStorage:', error);
+    }
   }
 
   function add(name) {
@@ -16,12 +45,18 @@ export const usePeopleStore = defineStore("people", () => {
       saveToLocalStorage();
     }
   }
-
   function remove(index) {
-    const removedPerson = list.value[index];
-    list.value.splice(index, 1);
-    saveToLocalStorage();
-    billStore.removePayerFromAllBills(removedPerson.name);
+    try {
+      const removedPerson = list.value[index];      if (removedPerson) {
+        list.value.splice(index, 1);
+        saveToLocalStorage();
+        return removedPerson;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error removing person:', error);
+      return null;
+    }
   }
 
   function togglePaidStatus(name, date) {
@@ -45,10 +80,9 @@ export const usePeopleStore = defineStore("people", () => {
       }
     });
   }
-
   function updateOverallPaidStatus(person) {
-    const allDates = Object.keys(billStore.payerAmounts[person.name] || {});
-    person.paid = allDates.every((date) => person.dates[date]);
+    const datesArray = Object.values(person.dates || {});
+    person.paid = datesArray.length > 0 && datesArray.every(paid => paid);
   }
 
   function getPaidStatusByDate(personName, date) {

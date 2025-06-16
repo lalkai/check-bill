@@ -1,0 +1,48 @@
+<script setup>
+import { ref } from "vue";
+import { usePeopleStore } from "../../stores/People";
+
+const peopleStore = usePeopleStore();
+const newPersonName = ref("");
+
+function addPerson() {
+  if (newPersonName.value.trim()) {
+    peopleStore.add(newPersonName.value.trim());
+    newPersonName.value = "";
+  }
+}
+</script>
+
+<template>
+  <div class="a-card mb-6">
+    <h2 class="a-header mb-4">เพิ่มคนจ่าย</h2>
+    <div class="flex flex-col sm:flex-row gap-4">
+      <div class="flex-grow">
+        <input
+          v-model="newPersonName"
+          type="text"
+          placeholder="ชื่อคนจ่าย"
+          class="a-input"
+          @keyup.enter="addPerson"
+        />
+      </div>
+      <button @click="addPerson" class="a-button-success min-w-24 w-full sm:w-auto flex items-center justify-center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-5 h-5 mr-1.5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"
+          />
+        </svg>
+        เพิ่ม
+      </button>
+    </div>
+  </div>
+</template>
