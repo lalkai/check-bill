@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+server/node_modules/
 .DS_Store
 dist
 dist-ssr
@@ -29,5 +30,11 @@ coverage
 
 *.tsbuildinfo
 
+# Environment variables (contains sensitive data)
 .env
+.env.local
+.env.production
+server/.env
+server/.env.production
+
 package-lock.json

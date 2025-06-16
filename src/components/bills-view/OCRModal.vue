@@ -1,6 +1,5 @@
 <script setup>
 import { ref, watch } from "vue";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { useBillStore } from "../../stores/Bills";
 
 const billStore = useBillStore();
@@ -14,7 +13,6 @@ const props = defineProps({
   },
 });
 
-// OCR functionality
 const receiptImageFile = ref(null);
 const ocrProcessing = ref(false);
 const ocrError = ref("");
@@ -24,8 +22,7 @@ const previewUrl = ref("");
 const ocrStep = ref(1);
 const isDragOver = ref(false);
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
+const API_BASE_URL = "https://satjawat.com";
 
 watch(
   () => props.show,
@@ -45,17 +42,33 @@ function handleImageUpload(event) {
   successMessage.value = "";
   extractedItems.value = "";
   const file = event.target?.files?.[0] || event.dataTransfer?.files?.[0];
-  if (file && file.type.startsWith("image/")) {
-    receiptImageFile.value = file;
-    previewUrl.value = URL.createObjectURL(file);
-    ocrStep.value = 1;
-  } else if (file) {
-    ocrError.value = "กรุณาเลือกไฟล์รูปภาพเท่านั้น";
-  } else {
+  
+  if (!file) {
     receiptImageFile.value = null;
     previewUrl.value = "";
     ocrStep.value = 1;
+    return;
+  }  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const maxFileSize = 10 * 1024 * 1024;
+  
+  if (!allowedTypes.includes(file.type.toLowerCase())) {
+    ocrError.value = "กรุณาเลือกไฟล์รูปภาพเท่านั้น (JPG, PNG, WebP)";
+    return;
   }
+  
+  if (file.size > maxFileSize) {
+    ocrError.value = "ขนาดไฟล์ใหญ่เกินไป (สูงสุด 10MB)";
+    return;
+  }
+  
+  if (file.name.length > 255) {
+    ocrError.value = "ชื่อไฟล์ยาวเกินไป";
+    return;
+  }
+
+  receiptImageFile.value = file;
+  previewUrl.value = URL.createObjectURL(file);
+  ocrStep.value = 1;
 }
 
 function handleDrop(event) {
@@ -79,10 +92,6 @@ async function processReceiptImage() {
     ocrError.value = "กรุณาเลือกรูปภาพใบเสร็จ";
     return;
   }
-  if (!API_KEY) {
-    ocrError.value = "ไม่พบ API Key สำหรับ Gemini";
-    return;
-  }
 
   ocrStep.value = 2;
   ocrProcessing.value = true;
@@ -90,67 +99,34 @@ async function processReceiptImage() {
   successMessage.value = "";
   extractedItems.value = [];
 
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = `
-      Extract all distinct items from this receipt image. For each item, provide its description and amount.
-      Respond in JSON format with a single key "items" which is an array of objects.
-      Each object in the array should have "description" (string) and "amount" (number) keys.
-      If a clear itemization is not available, try to identify the store name as a description and the total amount.
-      Example: { "items": [ { "description": "Milk 1L", "amount": 2.50 }, { "description": "Bread", "amount": 1.75 } ] }
-      If only a total is found, use that: { "items": [ { "description": "Total Purchase at Store XYZ", "amount": 4.25 } ] }
-      If no items can be extracted, return an empty array: { "items": [] }
-    `;
+  try {    const formData = new FormData();
+    formData.append("image", receiptImageFile.value);
 
-    const imageParts = [
-      {
-        inlineData: {
-          data: await readFileAsBase64(receiptImageFile.value),
-          mimeType: receiptImageFile.value.type,
-        },
-      },
-    ];
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    const result = await model.generateContent([prompt, ...imageParts]);
-    const response = await result.response;
-    const text = response.text();
+    const response = await fetch(`${API_BASE_URL}/api/ocr`, {
+      method: "POST",
+      body: formData,
+      signal: controller.signal,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
 
-    let parsedResult;
-    try {
-      const jsonString = text.replace(/```json\n?|\n?```/g, "").trim();
-      parsedResult = JSON.parse(jsonString);
-    } catch (e) {
-      console.error("Failed to parse JSON from Gemini response:", e);
-      ocrError.value = "ไม่สามารถประมวลผลข้อมูลได้ กรุณาลองอีกครั้ง";
-      ocrStep.value = 1;
-      return;
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP ${response.status}: การประมวลผลล้มเหลว`);
+    }    const result = await response.json();
+
+    if (!result || typeof result !== 'object') {
+      throw new Error("ได้รับข้อมูลที่ไม่ถูกต้องจากเซิร์ฟเวอร์");
     }
 
-    if (parsedResult.items && Array.isArray(parsedResult.items)) {
-      extractedItems.value = parsedResult.items
-        .map((item) => {
-          const cleanItem = {
-            description: String(item.description || "รายการไม่ระบุ").trim(),
-            amount: Number(item.amount) || 0,
-            selected: true,
-          };
-
-          if (
-            !cleanItem.description ||
-            cleanItem.description === "รายการไม่ระบุ"
-          ) {
-            cleanItem.description = `รายการ ${Date.now()}`;
-          }
-
-          if (cleanItem.amount <= 0) {
-            console.warn("Item with zero or negative amount:", item);
-            cleanItem.amount = 0;
-            cleanItem.selected = false;
-          }
-
-          return cleanItem;
-        })
-        .filter((item) => item.description && item.amount >= 0);
+    if (result.success && result.items && Array.isArray(result.items)) {
+      extractedItems.value = result.items;
 
       if (extractedItems.value.length === 0) {
         ocrError.value = "ไม่พบรายการที่ถูกต้องในรูปภาพ กรุณาลองรูปภาพอื่น";
@@ -168,20 +144,17 @@ async function processReceiptImage() {
     }
   } catch (error) {
     console.error("Error processing receipt image:", error);
-    ocrError.value = "เกิดข้อผิดพลาดในการประมวลผลรูปภาพ";
+
+    if (error.message.includes("Failed to fetch")) {
+      ocrError.value =
+        "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต";
+    } else {
+      ocrError.value = error.message || "เกิดข้อผิดพลาดในการประมวลผลรูปภาพ";
+    }
     ocrStep.value = 1;
   } finally {
     ocrProcessing.value = false;
   }
-}
-
-function readFileAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(",")[1]);
-    reader.onerror = (error) => reject(error);
-    reader.readAsDataURL(file);
-  });
 }
 
 function addSelectedItemsToBills() {
@@ -192,12 +165,24 @@ function addSelectedItemsToBills() {
     ocrError.value = "กรุณาเลือกรายการที่ต้องการเพิ่ม";
     return;
   }
-
   try {
     itemsToAdd.forEach((item) => {
-      const cleanDescription = String(item.description).trim();
+      const cleanDescription = String(item.description)
+        .trim()
+        .slice(0, 255)
+        .replace(/[<>\"'&]/g, '');
+      
       const cleanAmount = Number(item.amount) || 0;
+      
+      if (cleanAmount < 0 || cleanAmount > 999999.99) {
+        throw new Error(`จำนวนเงินไม่ถูกต้อง: ${cleanAmount}`);
+      }
+      
       const cleanDate = new Date().toISOString().split("T")[0];
+
+      if (!cleanDescription || cleanDescription.length < 1) {
+        throw new Error("รายการต้องมีชื่อ");
+      }
 
       billStore.addBill(cleanDescription, cleanAmount, cleanDate);
     });
@@ -209,7 +194,7 @@ function addSelectedItemsToBills() {
     }, 1500);
   } catch (error) {
     console.error("Error adding OCR bills:", error);
-    ocrError.value = "เกิดข้อผิดพลาดในการเพิ่มรายการ กรุณาลองอีกครั้ง";
+    ocrError.value = error.message || "เกิดข้อผิดพลาดในการเพิ่มรายการ กรุณาลองอีกครั้ง";
   }
 }
 
