@@ -110,7 +110,7 @@ const closePaymentModal = () => {
         v-for="payer in allSharedData.payers" 
         :key="payer.name"
         :payer="payer"
-        :overall-promptpay-id="overallPromptpayID"
+        :overallPromptpayID="overallPromptpayID"
         @open-payment-modal="openPaymentModal"
       />
     </div>
@@ -121,7 +121,7 @@ const closePaymentModal = () => {
     <!-- Payment QR Code Modal -->
     <PaymentQRModal
       :payer="showQrCodeModalForPayer"
-      :promptpay-id="overallPromptpayID"
+      :promptpayID="overallPromptpayID"
       :is-visible="!!showQrCodeModalForPayer"
       @close="closePaymentModal"
     />
