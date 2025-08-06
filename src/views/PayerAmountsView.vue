@@ -39,17 +39,22 @@ const filteredPayerAmounts = computed(() => {
       0
     );
 
-    const unpaidAmountDue = Object.entries(filteredDates).reduce((total, [date, amount]) => {
-      if (!peopleStore.getPaidStatusByDate(name, date)) {
-        return total + amount;
-      }
-      return total;
-    }, 0);
+    const unpaidAmountDue = Object.entries(filteredDates).reduce(
+      (total, [date, amount]) => {
+        if (!peopleStore.getPaidStatusByDate(name, date)) {
+          return total + amount;
+        }
+        return total;
+      },
+      0
+    );
+
+    const isPaid = totalAmountDue > 0 ? unpaidAmountDue === 0 : false;
 
     return {
       name,
       dates: filteredDates || {},
-      paid: person ? person.paid : false,
+      paid: isPaid,
       totalAmountDue,
       unpaidAmountDue,
     };
@@ -68,38 +73,41 @@ const sharePayer = () => {
 const generateShareUrl = async (selectedPayers) => {
   try {
     const allPayersData = filteredPayerAmounts.value
-      .filter(payer => selectedPayers.includes(payer.name))
-      .map(payer => {
+      .filter((payer) => selectedPayers.includes(payer.name))
+      .map((payer) => {
         const billItems = [];
         const datesWithStatus = {};
 
-        Object.keys(payer.dates || {}).forEach(date => {
+        Object.keys(payer.dates || {}).forEach((date) => {
           const amount = payer.dates[date];
           const isPaid = peopleStore.getPaidStatusByDate(payer.name, date);
           datesWithStatus[date] = {
             amount,
-            paid: isPaid
+            paid: isPaid,
           };
         });
 
-        billStore.bills.forEach(bill => {
-          const isPayerInBill = bill.payers.some(p => p.name === payer.name);
+        billStore.bills.forEach((bill) => {
+          const isPayerInBill = bill.payers.some((p) => p.name === payer.name);
           if (isPayerInBill) {
             billItems.push({
               description: bill.description,
               amount: bill.amount / bill.payers.length,
               date: bill.date,
-              paid: peopleStore.getPaidStatusByDate(payer.name, bill.date)
+              paid: peopleStore.getPaidStatusByDate(payer.name, bill.date),
             });
           }
         });
 
-        const unpaidAmount = Object.keys(payer.dates || {}).reduce((total, date) => {
-          if (!peopleStore.getPaidStatusByDate(payer.name, date)) {
-            return total + payer.dates[date];
-          }
-          return total;
-        }, 0);
+        const unpaidAmount = Object.keys(payer.dates || {}).reduce(
+          (total, date) => {
+            if (!peopleStore.getPaidStatusByDate(payer.name, date)) {
+              return total + payer.dates[date];
+            }
+            return total;
+          },
+          0
+        );
 
         return {
           name: payer.name,
@@ -107,7 +115,7 @@ const generateShareUrl = async (selectedPayers) => {
           paid: payer.paid,
           totalAmountDue: payer.totalAmountDue,
           unpaidAmountDue: unpaidAmount,
-          billItems: billItems
+          billItems: billItems,
         };
       });
 
@@ -120,7 +128,7 @@ const generateShareUrl = async (selectedPayers) => {
 
     const sharedData = {
       payers: allPayersData,
-      promptpayID: promptpayID || ""
+      promptpayID: promptpayID || "",
     };
 
     const jsonString = JSON.stringify(sharedData);
@@ -128,7 +136,7 @@ const generateShareUrl = async (selectedPayers) => {
     const baseUrl = window.location.origin + window.location.pathname;
     shareUrl.value = `${baseUrl}?payer_info=${compressedData}`;
 
-    await navigator.clipboard.writeText(shareUrl.value).catch(e => {
+    await navigator.clipboard.writeText(shareUrl.value).catch((e) => {
       console.error("Could not copy to clipboard:", e);
     });
 
@@ -194,7 +202,8 @@ const deleteQRCode = () => {
 
   const canvasContainer = document.getElementById("qrcode-img-container");
   if (canvasContainer) {
-    canvasContainer.innerHTML = '<canvas id="qrcode-img" class="rounded-2xl"></canvas>';
+    canvasContainer.innerHTML =
+      '<canvas id="qrcode-img" class="rounded-2xl"></canvas>';
   }
 
   const promptpayIDElement = document.getElementById("PromptpayID");
@@ -211,7 +220,7 @@ const togglePaymentStatus = (payer, date) => {
 
 const openShareLink = () => {
   if (shareUrl.value) {
-    window.open(shareUrl.value, '_blank');
+    window.open(shareUrl.value, "_blank");
   } else {
     alert("ยังไม่ได้สร้างลิงก์สำหรับแชร์");
   }
@@ -227,28 +236,39 @@ onMounted(() => {
     inputPromptpay.value = storedPromptpayID;
     generateQRCode(storedPromptpayID);
   }
+
+  if (typeof peopleStore.cleanUpDatesWithoutBills === "function") {
+    peopleStore.cleanUpDatesWithoutBills({ bills: billStore.bills });
+  }
 });
+
+watch(
+  () => billStore.bills,
+  () => {
+    if (typeof peopleStore.cleanUpDatesWithoutBills === "function") {
+      peopleStore.cleanUpDatesWithoutBills({ bills: billStore.bills });
+    }
+  },
+  { deep: true }
+);
 </script>
 
 <template>
   <div>
     <!-- Tools Section -->
-    <ToolsSection 
+    <ToolsSection
       @show-qr-popup="showAddQrCodePopup = true"
       @delete-qr="deleteQRCode"
       @share-payer="sharePayer"
     />
 
     <!-- QR Code Display -->
-    <QRCodeDisplay 
-      :show-qr-code="showQrCode"
-      :promptpay-id="inputPromptpay"
-    />
+    <QRCodeDisplay :show-qr-code="showQrCode" :promptpay-id="inputPromptpay" />
 
     <!-- Payer Amounts List -->
     <div class="space-y-4">
       <PayerCard
-        v-for="(payer, index) in filteredPayerAmounts" 
+        v-for="(payer, index) in filteredPayerAmounts"
         :key="index"
         :payer="payer"
         @toggle-payment-status="togglePaymentStatus"

@@ -2,18 +2,18 @@ import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
 
 export const useBillStore = defineStore('bill', () => {
-  // Initialize bills with error handling
+
   const initializeBills = () => {
     try {
       const stored = localStorage.getItem('billList');
       if (!stored) return [];
-      
+
       const parsed = JSON.parse(stored);
       if (!Array.isArray(parsed)) {
         console.warn('Invalid bills data in localStorage, resetting...');
         return [];
       }
-      
+
       return parsed.map(bill => ({
         id: bill.id || Date.now() + Math.random(),
         description: String(bill.description || '').trim(),
@@ -30,17 +30,17 @@ export const useBillStore = defineStore('bill', () => {
     }
   };
   const bills = ref(initializeBills());
-  
+
   function saveToLocalStorage() {
     try {
-      const validBills = bills.value.filter(bill => 
-        bill && 
-        typeof bill.id !== 'undefined' && 
-        bill.description && 
+      const validBills = bills.value.filter(bill =>
+        bill &&
+        typeof bill.id !== 'undefined' &&
+        bill.description &&
         typeof bill.amount === 'number' &&
         Array.isArray(bill.payers)
       );
-        localStorage.setItem('billList', JSON.stringify(validBills));
+      localStorage.setItem('billList', JSON.stringify(validBills));
     } catch (error) {
       console.error('Error saving bills to localStorage:', error);
     }
@@ -50,19 +50,20 @@ export const useBillStore = defineStore('bill', () => {
       const cleanDescription = String(description || '').trim();
       const cleanAmount = Number(amount) || 0;
       const cleanDate = date || new Date().toISOString().split('T')[0];
-      
+
       if (!cleanDescription) {
         console.error('Invalid bill description:', description);
         return false;
       }
-      
+
       const newBill = {
-        id: Date.now() + Math.random(), 
+        id: Date.now() + Math.random(),
         description: cleanDescription,
         amount: cleanAmount,
         date: cleanDate,
-        payers: []      };
-      
+        payers: []
+      };
+
       bills.value.push(newBill);
       saveToLocalStorage();
       return true;
@@ -70,11 +71,16 @@ export const useBillStore = defineStore('bill', () => {
       console.error('Error adding bill:', error);
       return false;
     }
-  }  function removeBill(billId) {
+  } function removeBill(billId, peopleStore = null) {
     try {
       const billToRemove = bills.value.find(bill => bill.id === billId);
-      if (billToRemove) {        bills.value = bills.value.filter(bill => bill.id !== billId);
-        
+      if (billToRemove) {
+        bills.value = bills.value.filter(bill => bill.id !== billId);
+
+        if (peopleStore && typeof peopleStore.cleanUpDatesWithoutBills === 'function') {
+          peopleStore.cleanUpDatesWithoutBills({ bills: bills.value });
+        }
+
         saveToLocalStorage();
         return true;
       }
@@ -84,7 +90,7 @@ export const useBillStore = defineStore('bill', () => {
       return false;
     }
   }
-  
+
   function addPayerToBill(billId, payerName) {
     try {
       const cleanPayerName = String(payerName || '').trim();
@@ -92,13 +98,13 @@ export const useBillStore = defineStore('bill', () => {
         console.error('Invalid payer name:', payerName);
         return false;
       }
-      
+
       const bill = bills.value.find(bill => bill.id === billId);
       if (!bill) {
         console.error('Bill not found:', billId);
         return false;
       }
-      
+
       if (!Array.isArray(bill.payers)) {
         console.warn('Invalid payers array, resetting...');
         bill.payers = [];
@@ -106,11 +112,11 @@ export const useBillStore = defineStore('bill', () => {
       if (bill.payers.some(payer => payer.name === cleanPayerName)) {
         return true;
       }
-        bill.payers.push({ 
-        name: cleanPayerName, 
-        paid: false 
+      bill.payers.push({
+        name: cleanPayerName,
+        paid: false
       });
-      
+
       saveToLocalStorage();
       return true;
     } catch (error) {
@@ -151,19 +157,19 @@ export const useBillStore = defineStore('bill', () => {
         console.error('Bill not found for update:', billId);
         return false;
       }
-      
+
       const cleanDescription = String(description || '').trim();
       const cleanAmount = Number(amount) || 0;
       const cleanDate = date || new Date().toISOString().split('T')[0];
-      
+
       if (!cleanDescription) {
         console.error('Invalid description for update:', description);
         return false;
       }
-        bill.description = cleanDescription;
+      bill.description = cleanDescription;
       bill.amount = cleanAmount;
       bill.date = cleanDate;
-      
+
       saveToLocalStorage();
       return true;
     } catch (error) {
@@ -214,7 +220,7 @@ export const useBillStore = defineStore('bill', () => {
     removeBill,
     addPayerToBill,
     removePayerFromBill,
-    removePayerFromAllBills, 
+    removePayerFromAllBills,
     togglePayerStatus,
     updateBill,
     removeAllPayersFromBill,
