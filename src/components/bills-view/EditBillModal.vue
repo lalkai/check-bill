@@ -143,7 +143,7 @@ function menuPeoplePay(person) {
 <template>
   <div
     v-if="bill"
-    class="fixed inset-0 z-50 overflow-y-auto"
+    class="fixed inset-0 z-50 overflow-y-auto backdrop-blur-sm"
     aria-labelledby="modal-title"
     role="dialog"
     aria-modal="true"
@@ -153,7 +153,7 @@ function menuPeoplePay(person) {
     >
       <!-- Background overlay -->
       <div
-        class="fixed inset-0 bg-neutral-700/75 transition-opacity"
+        class="fixed inset-0 bg-neutral-700/20 transition-opacity"
         aria-hidden="true"
         @click="closeModal"
       ></div>

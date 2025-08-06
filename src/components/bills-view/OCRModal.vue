@@ -225,7 +225,7 @@ function startOcrOver() {
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 z-50 overflow-y-auto"
+    class="fixed inset-0 z-50 overflow-y-auto backdrop-blur-sm"
     aria-labelledby="ocr-modal-title"
     role="dialog"
     aria-modal="true"
@@ -233,7 +233,7 @@ function startOcrOver() {
     <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
       <!-- Background overlay -->
       <div
-        class="fixed inset-0 bg-neutral-700/75 transition-opacity"
+        class="fixed inset-0 bg-neutral-700/20 transition-opacity"
         aria-hidden="true"
         @click="closeOcrModal"
       ></div>
