@@ -35,8 +35,8 @@ function editBill() {
     <div
       class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0"
     >
-      <div>
-        <h3 class="text-lg font-medium text-neutral-700">
+  <div class="flex-1 min-w-0">
+        <h3 class="text-lg font-medium text-neutral-700 break-words">
           {{ bill.description }}
         </h3>
         <div class="flex items-center mt-1">
@@ -57,7 +57,7 @@ function editBill() {
           <span class="text-sm text-neutral-500">{{ bill.date }}</span>
         </div>
       </div>
-      <span class="text-xl font-semibold text-neutral-700"
+      <span class="text-xl font-semibold text-neutral-700 flex-shrink-0 whitespace-nowrap"
         >{{ bill.amount }} บาท</span
       >
     </div>
