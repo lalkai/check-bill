@@ -1,6 +1,7 @@
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onUnmounted } from "vue";
 import { useBillStore } from "../../stores/Bills";
+import { recognizeReceipt, terminateWorker } from "../../utils/ocrEngine.js";
 
 const billStore = useBillStore();
 
@@ -21,8 +22,11 @@ const successMessage = ref("");
 const previewUrl = ref("");
 const ocrStep = ref(1);
 const isDragOver = ref(false);
-
-const API_BASE_URL = "https://satjawat.com";
+const downloadProgress = ref(0);
+const statusMessage = ref("");
+const rawOcrText = ref("");
+const showRawText = ref(false);
+const ocrConfidence = ref(0);
 
 watch(
   () => props.show,
@@ -33,6 +37,11 @@ watch(
   }
 );
 
+// Clean up worker when component unmounts
+onUnmounted(() => {
+  terminateWorker();
+});
+
 function closeOcrModal() {
   emit("close");
 }
@@ -40,27 +49,29 @@ function closeOcrModal() {
 function handleImageUpload(event) {
   ocrError.value = "";
   successMessage.value = "";
-  extractedItems.value = "";
+  extractedItems.value = [];
   const file = event.target?.files?.[0] || event.dataTransfer?.files?.[0];
-  
+
   if (!file) {
     receiptImageFile.value = null;
     previewUrl.value = "";
     ocrStep.value = 1;
     return;
-  }  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  }
+
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   const maxFileSize = 10 * 1024 * 1024;
-  
+
   if (!allowedTypes.includes(file.type.toLowerCase())) {
     ocrError.value = "กรุณาเลือกไฟล์รูปภาพเท่านั้น (JPG, PNG, WebP)";
     return;
   }
-  
+
   if (file.size > maxFileSize) {
     ocrError.value = "ขนาดไฟล์ใหญ่เกินไป (สูงสุด 10MB)";
     return;
   }
-  
+
   if (file.name.length > 255) {
     ocrError.value = "ชื่อไฟล์ยาวเกินไป";
     return;
@@ -98,59 +109,45 @@ async function processReceiptImage() {
   ocrError.value = "";
   successMessage.value = "";
   extractedItems.value = [];
+  rawOcrText.value = "";
+  ocrConfidence.value = 0;
 
-  try {    const formData = new FormData();
-    formData.append("image", receiptImageFile.value);
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-    const response = await fetch(`${API_BASE_URL}/api/ocr`, {
-      method: "POST",
-      body: formData,
-      signal: controller.signal,
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
+  try {
+    const result = await recognizeReceipt(receiptImageFile.value, (progress) => {
+      statusMessage.value = progress.status;
+      downloadProgress.value = progress.progress;
     });
 
-    clearTimeout(timeoutId);
+    // console.log("OCR Result:", result);
+    rawOcrText.value = result.text;
+    ocrConfidence.value = Math.round(result.confidence);
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `HTTP ${response.status}: การประมวลผลล้มเหลว`);
-    }    const result = await response.json();
-
-    if (!result || typeof result !== 'object') {
-      throw new Error("ได้รับข้อมูลที่ไม่ถูกต้องจากเซิร์ฟเวอร์");
-    }
-
-    if (result.success && result.items && Array.isArray(result.items)) {
-      extractedItems.value = result.items;
-
-      if (extractedItems.value.length === 0) {
-        ocrError.value = "ไม่พบรายการที่ถูกต้องในรูปภาพ กรุณาลองรูปภาพอื่น";
-        ocrStep.value = 1;
-      } else {
+    if (result.items.length === 0) {
+      if (result.text && result.text.trim()) {
+        const lines = result.text.split(/\r?\n/).filter(l => l.trim());
+        extractedItems.value = lines.map(line => ({
+          description: line.trim(),
+          amount: 0,
+          selected: false
+        }));
         ocrStep.value = 3;
-        const validItems = extractedItems.value.filter(
-          (item) => item.amount > 0
-        ).length;
-        successMessage.value = `พบ ${extractedItems.value.length} รายการจากรูปภาพ (${validItems} รายการถูกต้อง)`;
+        ocrError.value = "ไม่พบรายการราคาอัตโนมัติ — กรุณาใส่จำนวนเงินเอง หรือดูข้อความดิบด้านล่าง";
+      } else {
+        ocrError.value = "ไม่พบข้อความในรูปภาพ กรุณาลองรูปภาพที่ชัดกว่านี้";
+        ocrStep.value = 1;
       }
     } else {
-      ocrError.value = "ไม่สามารถประมวลผลข้อมูลได้ กรุณาลองอีกครั้ง";
-      ocrStep.value = 1;
+      extractedItems.value = result.items;
+      ocrStep.value = 3;
+      const validItems = extractedItems.value.filter(
+        (item) => item.amount > 0
+      ).length;
+      successMessage.value = `พบ ${extractedItems.value.length} รายการจากรูปภาพ (${validItems} รายการมีราคา) — ความมั่นใจ ${ocrConfidence.value}%`;
     }
+
   } catch (error) {
     console.error("Error processing receipt image:", error);
-
-    if (error.message.includes("Failed to fetch")) {
-      ocrError.value =
-        "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต";
-    } else {
-      ocrError.value = error.message || "เกิดข้อผิดพลาดในการประมวลผลรูปภาพ";
-    }
+    ocrError.value = error.message || "เกิดข้อผิดพลาดในการประมวลผลรูปภาพ";
     ocrStep.value = 1;
   } finally {
     ocrProcessing.value = false;
@@ -171,13 +168,13 @@ function addSelectedItemsToBills() {
         .trim()
         .slice(0, 255)
         .replace(/[<>\"'&]/g, '');
-      
+
       const cleanAmount = Number(item.amount) || 0;
-      
+
       if (cleanAmount < 0 || cleanAmount > 999999.99) {
         throw new Error(`จำนวนเงินไม่ถูกต้อง: ${cleanAmount}`);
       }
-      
+
       const cleanDate = new Date().toISOString().split("T")[0];
 
       if (!cleanDescription || cleanDescription.length < 1) {
@@ -213,6 +210,9 @@ function resetOcrForm() {
   successMessage.value = "";
   ocrStep.value = 1;
   isDragOver.value = false;
+  rawOcrText.value = "";
+  showRawText.value = false;
+  ocrConfidence.value = 0;
   const fileInput = document.getElementById("bill-image-ocr");
   if (fileInput) fileInput.value = "";
 }
@@ -223,122 +223,78 @@ function startOcrOver() {
 </script>
 
 <template>
-  <div
-    v-if="show"
-    class="fixed inset-0 z-50 overflow-y-auto backdrop-blur-sm"
-    aria-labelledby="ocr-modal-title"
-    role="dialog"
-    aria-modal="true"
-  >
+  <div v-if="show" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="ocr-modal-title" role="dialog"
+    aria-modal="true">
     <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
       <!-- Background overlay -->
-      <div
-        class="fixed inset-0 bg-neutral-700/20 transition-opacity"
-        aria-hidden="true"
-        @click="closeOcrModal"
-      ></div>
+      <div class="fixed inset-0 bg-neutral-700/75 transition-opacity" aria-hidden="true" @click="closeOcrModal"></div>
       <!-- Modal panel -->
       <div
         class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
-        :class="ocrStep === 3 ? 'max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl' : 'max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl'"
-      >
+        :class="ocrStep === 3 ? 'max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl' : 'max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl'">
         <div class="bg-white p-3 sm:p-4 md:p-6">
           <!-- Modal Header -->
           <div class="flex items-center justify-between mb-4 sm:mb-6">
-            <h3
-              class="text-lg sm:text-xl md:text-2xl font-semibold text-neutral-800"
-              id="ocr-modal-title"
-            >
+            <h3 class="text-lg sm:text-xl md:text-2xl font-semibold text-neutral-800" id="ocr-modal-title">
               สแกนใบเสร็จด้วย AI
             </h3>
-            <button
-              @click="closeOcrModal"
-              class="text-neutral-400 hover:text-neutral-600 p-1"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-5 h-5 sm:w-6 sm:h-6"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M6 18 18 6M6 6l12 12"
-                />
+            <button @click="closeOcrModal" class="text-neutral-400 hover:text-neutral-600 p-1">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
           <!-- Progress Steps -->
           <div class="mb-6 sm:mb-8">
-            <div
-              class="flex items-center justify-center space-x-2 sm:space-x-4 md:space-x-6"
-            >
+            <div class="flex items-center justify-center space-x-2 sm:space-x-4 md:space-x-6">
               <div class="flex items-center">
                 <div
                   class="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full text-xs sm:text-sm md:text-base font-medium transition-all"
-                  :class="
-                    ocrStep >= 1
-                      ? 'bg-primary text-white'
-                      : 'bg-neutral-200 text-neutral-500'
-                  "
-                >
+                  :class="ocrStep >= 1
+                    ? 'bg-primary text-white'
+                    : 'bg-neutral-200 text-neutral-500'
+                    ">
                   1
                 </div>
-                <span
-                  class="ml-1 sm:ml-2 md:ml-3 text-xs sm:text-sm md:text-base font-medium"
-                  :class="ocrStep >= 1 ? 'text-primary' : 'text-neutral-500'"
-                >
+                <span class="ml-1 sm:ml-2 md:ml-3 text-xs sm:text-sm md:text-base font-medium"
+                  :class="ocrStep >= 1 ? 'text-primary' : 'text-neutral-500'">
                   อัปโหลด
                 </span>
               </div>
 
-              <div
-                class="flex-1 h-1 md:h-1.5 mx-2 sm:mx-4 md:mx-6 rounded-full"
-                :class="ocrStep >= 2 ? 'bg-primary' : 'bg-neutral-200'"
-              ></div>
+              <div class="flex-1 h-1 md:h-1.5 mx-2 sm:mx-4 md:mx-6 rounded-full"
+                :class="ocrStep >= 2 ? 'bg-primary' : 'bg-neutral-200'"></div>
 
               <div class="flex items-center">
                 <div
                   class="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full text-xs sm:text-sm md:text-base font-medium transition-all"
-                  :class="
-                    ocrStep >= 2
-                      ? 'bg-primary text-white'
-                      : 'bg-neutral-200 text-neutral-500'
-                  "
-                >
+                  :class="ocrStep >= 2
+                    ? 'bg-primary text-white'
+                    : 'bg-neutral-200 text-neutral-500'
+                    ">
                   2
                 </div>
-                <span
-                  class="ml-1 sm:ml-2 md:ml-3 text-xs sm:text-sm md:text-base font-medium"
-                  :class="ocrStep >= 2 ? 'text-primary' : 'text-neutral-500'"
-                >
+                <span class="ml-1 sm:ml-2 md:ml-3 text-xs sm:text-sm md:text-base font-medium"
+                  :class="ocrStep >= 2 ? 'text-primary' : 'text-neutral-500'">
                   ประมวลผล
                 </span>
               </div>
 
-              <div
-                class="flex-1 h-1 md:h-1.5 mx-2 sm:mx-4 md:mx-6 rounded-full"
-                :class="ocrStep >= 3 ? 'bg-primary' : 'bg-neutral-200'"
-              ></div>
+              <div class="flex-1 h-1 md:h-1.5 mx-2 sm:mx-4 md:mx-6 rounded-full"
+                :class="ocrStep >= 3 ? 'bg-primary' : 'bg-neutral-200'"></div>
 
               <div class="flex items-center">
                 <div
                   class="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full text-xs sm:text-sm md:text-base font-medium transition-all"
-                  :class="
-                    ocrStep >= 3
-                      ? 'bg-primary text-white'
-                      : 'bg-neutral-200 text-neutral-500'
-                  "
-                >
+                  :class="ocrStep >= 3
+                    ? 'bg-primary text-white'
+                    : 'bg-neutral-200 text-neutral-500'
+                    ">
                   3
                 </div>
-                <span
-                  class="ml-1 sm:ml-2 md:ml-3 text-xs sm:text-sm md:text-base font-medium"
-                  :class="ocrStep >= 3 ? 'text-primary' : 'text-neutral-500'"
-                >
+                <span class="ml-1 sm:ml-2 md:ml-3 text-xs sm:text-sm md:text-base font-medium"
+                  :class="ocrStep >= 3 ? 'text-primary' : 'text-neutral-500'">
                   ตรวจสอบ
                 </span>
               </div>
@@ -354,92 +310,49 @@ function startOcrOver() {
                   ? 'border-primary bg-primary/10'
                   : 'border-neutral-300',
                 previewUrl ? 'border-green-400 bg-green-50' : '',
-              ]"
-              @drop="handleDrop"
-              @dragover="handleDragOver"
-              @dragleave="handleDragLeave"
-              @click="$refs.fileInput.click()"
-            >
+              ]" @drop="handleDrop" @dragover="handleDragOver" @dragleave="handleDragLeave"
+              @click="$refs.fileInput.click()">
               <div class="text-center h-full flex flex-col justify-center">
                 <div v-if="!previewUrl" class="space-y-3 sm:space-y-4">
                   <!-- Upload Icon -->
                   <div
                     class="mx-auto w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 flex items-center justify-center rounded-full"
-                    :class="isDragOver ? 'bg-primary/20' : 'bg-neutral-100'"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12"
-                      :class="isDragOver ? 'text-primary' : 'text-neutral-400'"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18.75 19.5H6.75Z"
-                      />
+                    :class="isDragOver ? 'bg-primary/20' : 'bg-neutral-100'">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                      stroke="currentColor" class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12"
+                      :class="isDragOver ? 'text-primary' : 'text-neutral-400'">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18.75 19.5H6.75Z" />
                     </svg>
                   </div>
                   <!-- Upload Text -->
                   <div>
-                    <h3
-                      class="text-sm sm:text-base md:text-lg lg:text-xl font-semibold text-neutral-800 mb-1"
-                    >
+                    <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-semibold text-neutral-800 mb-1">
                       {{ isDragOver ? "วางไฟล์ที่นี่" : "คลิกเพื่อเลือกไฟล์" }}
                     </h3>
-                    <p
-                      class="text-xs sm:text-sm md:text-base text-neutral-500 hidden sm:block"
-                    >
+                    <p class="text-xs sm:text-sm md:text-base text-neutral-500 hidden sm:block">
                       หรือลากและวางไฟล์มาที่นี่
                     </p>
-                    <p
-                      class="text-xs sm:text-sm md:text-base text-neutral-500 mt-1"
-                    >
+                    <p class="text-xs sm:text-sm md:text-base text-neutral-500 mt-1">
                       JPG, PNG, WebP
                     </p>
                   </div>
 
                   <!-- Hidden File Input -->
-                  <input
-                    ref="fileInput"
-                    id="bill-image-ocr"
-                    type="file"
-                    accept="image/*"
-                    @change="handleImageUpload"
-                    class="hidden"
-                  />
+                  <input ref="fileInput" id="bill-image-ocr" type="file" accept="image/*" @change="handleImageUpload"
+                    class="hidden" />
                 </div>
                 <!-- Image Preview -->
-                <div
-                  v-else
-                  class="space-y-2 sm:space-y-3 h-full flex flex-col justify-center"
-                >
+                <div v-else class="space-y-2 sm:space-y-3 h-full flex flex-col justify-center">
                   <div class="relative flex justify-center">
-                    <img
-                      :src="previewUrl"
-                      alt="Receipt preview"
-                      class="max-w-full max-h-32 sm:max-h-40 md:max-h-48 lg:max-h-56 xl:max-h-64 rounded-lg shadow-lg object-contain"
-                    />
+                    <img :src="previewUrl" alt="Receipt preview"
+                      class="max-w-full max-h-32 sm:max-h-40 md:max-h-48 lg:max-h-56 xl:max-h-64 rounded-lg shadow-lg object-contain" />
                     <!-- Success indicator -->
                     <div
-                      class="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 rounded-full flex items-center justify-center"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="2"
-                        stroke="currentColor"
-                        class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M5 13l4 4L19 7"
-                        />
+                      class="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 rounded-full flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
                   </div>
@@ -449,32 +362,17 @@ function startOcrOver() {
                       ✓ ไฟล์อัปโหลดสำเร็จ
                     </p>
                     <!-- Action Buttons -->
-                    <div
-                      class="flex gap-2 sm:gap-3 md:gap-4 lg:gap-5 justify-center"
-                    >
-                      <button
-                        @click.stop="resetOcrForm"
-                        class="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-3 lg:px-8 lg:py-4 text-sm sm:text-base md:text-lg text-neutral-600 border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-all font-medium"
-                      >
+                    <div class="flex gap-2 sm:gap-3 md:gap-4 lg:gap-5 justify-center">
+                      <button @click.stop="resetOcrForm"
+                        class="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-3 lg:px-8 lg:py-4 text-sm sm:text-base md:text-lg text-neutral-600 border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-all font-medium">
                         เปลี่ยนไฟล์
                       </button>
-                      <button
-                        @click.stop="processReceiptImage"
-                        class="px-4 py-2 sm:px-5 sm:py-3 md:px-8 md:py-3 lg:px-10 lg:py-4 bg-primary text-white rounded-lg hover:bg-primary-light transition-all shadow-sm flex items-center justify-center gap-2 md:gap-3 font-medium text-sm sm:text-base md:text-lg"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="1.5"
-                          stroke="currentColor"
-                          class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"
-                          />
+                      <button @click.stop="processReceiptImage"
+                        class="px-4 py-2 sm:px-5 sm:py-3 md:px-8 md:py-3 lg:px-10 lg:py-4 bg-primary text-white rounded-lg hover:bg-primary-light transition-all shadow-sm flex items-center justify-center gap-2 md:gap-3 font-medium text-sm sm:text-base md:text-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                          stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
                         </svg>
                         สแกน
                       </button>
@@ -487,28 +385,26 @@ function startOcrOver() {
           <!-- Step 2: Processing -->
           <div v-if="ocrStep === 2" class="space-y-4 sm:space-y-6">
             <div
-              class="border-2 border-dashed rounded-lg p-4 sm:p-6 md:p-8 transition-all duration-300 aspect-square mx-auto max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg border-primary/30 bg-primary/5 flex flex-col items-center justify-center text-center"
-            >
+              class="border-2 border-dashed rounded-lg p-4 sm:p-6 md:p-8 transition-all duration-300 aspect-square mx-auto max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg border-primary/30 bg-primary/5 flex flex-col items-center justify-center text-center">
               <div class="mb-4 sm:mb-6">
-                <div
-                  class="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 mx-auto"
-                >
+                <div class="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 mx-auto">
+                  <div class="absolute inset-0 border-4 md:border-6 border-primary/20 rounded-full"></div>
                   <div
-                    class="absolute inset-0 border-4 md:border-6 border-primary/20 rounded-full"
-                  ></div>
-                  <div
-                    class="absolute inset-0 border-4 md:border-6 border-primary border-t-transparent rounded-full animate-spin"
-                  ></div>
+                    class="absolute inset-0 border-4 md:border-6 border-primary border-t-transparent rounded-full animate-spin">
+                  </div>
                 </div>
               </div>
-              <h2
-                class="text-lg sm:text-xl md:text-2xl font-bold text-neutral-800 mb-2 sm:mb-3"
-              >
-                กำลังประมวลผลรูปภาพ
+              <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-neutral-800 mb-2 sm:mb-3">
+                กำลังประมวลผล...
               </h2>
-              <p class="text-sm sm:text-base md:text-lg text-neutral-600">
-                AI กำลังวิเคราะห์และดึงข้อมูล<br />จากใบเสร็จของคุณ...
-              </p>
+
+              <div v-if="downloadProgress > 0" class="w-full max-w-xs mx-auto mt-2">
+                <div class="w-full bg-neutral-200 rounded-full h-2.5">
+                  <div class="bg-primary h-2.5 rounded-full transition-all duration-300"
+                    :style="{ width: Math.min(downloadProgress, 100) + '%' }"></div>
+                </div>
+                <p class="text-sm text-neutral-500 mt-2 font-medium">{{ Math.min(downloadProgress, 100) }}%</p>
+              </div>
             </div>
           </div>
           <!-- Step 3: Review -->
@@ -523,9 +419,7 @@ function startOcrOver() {
             </div>
 
             <!-- Summary Card -->
-            <div
-              class="bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20 rounded-lg p-3"
-            >
+            <div class="bg-gradient-to-r from-primary/5 to-accent/5 border border-primary/20 rounded-lg p-3">
               <div class="flex items-center justify-between">
                 <div>
                   <h3 class="text-base sm:text-lg font-semibold text-neutral-800">
@@ -547,7 +441,7 @@ function startOcrOver() {
                   </div>
                   <p class="text-xs sm:text-sm text-neutral-600">
                     เลือกแล้ว
-                    {{ extractedItems.filter((item) => item.selected).length }}
+                    {{extractedItems.filter((item) => item.selected).length}}
                     รายการ
                   </p>
                 </div>
@@ -555,90 +449,65 @@ function startOcrOver() {
             </div>
             <!-- Items List -->
             <div class="space-y-3 max-h-64 sm:max-h-80 overflow-y-auto">
-              <div
-                v-for="(item, index) in extractedItems"
-                :key="index"
+              <div v-for="(item, index) in extractedItems" :key="index"
                 class="border rounded-lg p-3 hover:shadow-md transition-all duration-300"
-                :class="{ 'ring-2 ring-primary/20': item.selected }"
-              >
+                :class="{ 'ring-2 ring-primary/20': item.selected }">
                 <div class="flex items-start gap-3">
                   <div class="flex-shrink-0 pt-1">
-                    <input
-                      type="checkbox"
-                      v-model="item.selected"
-                      class="w-4 h-4 text-primary rounded border-neutral-300 focus:ring-primary/20"
-                    />
+                    <input type="checkbox" v-model="item.selected"
+                      class="w-4 h-4 text-primary rounded border-neutral-300 focus:ring-primary/20" />
                   </div>
 
                   <div class="flex-grow space-y-2">
                     <div>
-                      <label
-                        class="block text-xs font-medium text-neutral-700 mb-1"
-                        >รายการ</label
-                      >
-                      <input
-                        type="text"
-                        v-model="item.description"
+                      <label class="block text-xs font-medium text-neutral-700 mb-1">รายการ</label>
+                      <input type="text" v-model="item.description"
                         class="w-full px-2 py-1.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs"
-                        placeholder="ชื่อรายการ"
-                      />
+                        placeholder="ชื่อรายการ" />
                     </div>
                     <div>
-                      <label
-                        class="block text-xs font-medium text-neutral-700 mb-1"
-                        >จำนวนเงิน (บาท)</label
-                      >
-                      <input
-                        type="number"
-                        v-model.number="item.amount"
-                        step="0.01"
-                        min="0"
+                      <label class="block text-xs font-medium text-neutral-700 mb-1">จำนวนเงิน (บาท)</label>
+                      <input type="number" v-model.number="item.amount" step="0.01" min="0"
                         class="w-full px-2 py-1.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs"
-                        placeholder="0.00"
-                      />
+                        placeholder="0.00" />
                     </div>
                   </div>
 
                   <div class="flex-shrink-0">
-                    <button
-                      @click="removeOcrItem(index)"
+                    <button @click="removeOcrItem(index)"
                       class="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                      title="ลบรายการ"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                        class="w-4 h-4"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                        />
+                      title="ลบรายการ">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                       </svg>
                     </button>
                   </div>
                 </div>
               </div>
             </div>
+            <!-- Raw OCR Text Toggle -->
+            <div v-if="rawOcrText" class="mt-2">
+              <button @click="showRawText = !showRawText"
+                class="text-xs text-neutral-500 hover:text-neutral-700 underline transition-colors">
+                {{ showRawText ? 'ซ่อนข้อความดิบ' : 'ดูข้อความดิบจาก OCR' }}
+              </button>
+              <div v-if="showRawText"
+                class="mt-2 bg-neutral-50 border border-neutral-200 rounded-lg p-3 max-h-48 overflow-y-auto">
+                <pre
+                  class="text-xs text-neutral-700 whitespace-pre-wrap font-mono leading-relaxed">{{ rawOcrText }}</pre>
+              </div>
+            </div>
             <!-- Action Buttons -->
             <div class="flex gap-3 pt-3">
-              <button
-                @click="startOcrOver"
-                class="flex-1 px-4 py-2.5 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-all text-xs font-medium"
-              >
+              <button @click="startOcrOver"
+                class="flex-1 px-4 py-2.5 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-all text-xs font-medium">
                 เริ่มใหม่
               </button>
-              <button
-                @click="addSelectedItemsToBills"
-                :disabled="
-                  extractedItems.filter((item) => item.selected).length === 0
+              <button @click="addSelectedItemsToBills" :disabled="extractedItems.filter((item) => item.selected).length === 0
                 "
-                class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-light disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-xs"
-              >
+                class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-light disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-xs">
                 เพิ่มรายการ ({{
                   extractedItems.filter((item) => item.selected).length
                 }})
@@ -646,48 +515,26 @@ function startOcrOver() {
             </div>
           </div>
           <!-- Error Messages -->
-          <div
-            v-if="ocrError"
-            class="mt-3 sm:mt-4 bg-red-50 border border-red-200 text-red-700 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg"
-          >
+          <div v-if="ocrError"
+            class="mt-3 sm:mt-4 bg-red-50 border border-red-200 text-red-700 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg">
             <div class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
               </svg>
               <span class="text-xs sm:text-sm">{{ ocrError }}</span>
             </div>
           </div>
 
           <!-- Success Messages -->
-          <div
-            v-if="successMessage"
-            class="mt-3 sm:mt-4 bg-green-50 border border-green-200 text-green-700 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg"
-          >
+          <div v-if="successMessage"
+            class="mt-3 sm:mt-4 bg-green-50 border border-green-200 text-green-700 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg">
             <div class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
               </svg>
               <span class="text-xs sm:text-sm">{{ successMessage }}</span>
             </div>
@@ -700,6 +547,7 @@ function startOcrOver() {
 
 <style scoped>
 @keyframes bounce {
+
   0%,
   20%,
   53%,
@@ -707,13 +555,16 @@ function startOcrOver() {
   100% {
     transform: translate3d(0, 0, 0);
   }
+
   40%,
   43% {
     transform: translate3d(0, -30px, 0);
   }
+
   70% {
     transform: translate3d(0, -15px, 0);
   }
+
   90% {
     transform: translate3d(0, -4px, 0);
   }
