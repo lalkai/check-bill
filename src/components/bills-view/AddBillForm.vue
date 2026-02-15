@@ -1,12 +1,19 @@
 <script setup>
 import { ref } from "vue";
 import { preventNonNumberInput } from "../../utils/common";
+import Calculator from "../common/Calculator.vue";
 
 const emit = defineEmits(['addBill', 'openOcr']);
 
 const newBillDescription = ref("");
 const newBillAmount = ref("");
 const newBillDate = ref(new Date().toISOString().split('T')[0]);
+
+const showCalculator = ref(false);
+
+function applyResult(value) {
+  newBillAmount.value = value;
+}
 
 function addBill() {
   if (newBillDescription.value.trim()) {
@@ -39,17 +46,26 @@ function openOcrModal() {
           <input id="bill-description" v-model="newBillDescription" type="text" placeholder="รายการบิล"
             class="a-input" />
         </div>
-        <div>
+        <div class="relative">
           <label for="bill-amount" class="block text-sm font-medium text-neutral-500 mb-1">จำนวนเงิน</label>
-          <input id="bill-amount" v-model="newBillAmount" type="number" min="0" placeholder="จำนวนเงิน" class="a-input"
+          <input id="bill-amount" v-model="newBillAmount" type="number" min="0" placeholder="จำนวนเงิน"
+            class="a-input pr-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             @keypress="preventNonNumberInput" />
+          <button @click="showCalculator = true"
+            class="absolute right-2 top-8 p-1 text-neutral-500 hover:text-neutral-700">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm0 2.25h.008v.008H8.25v-.008ZM10.5 7.125h-3v1.5m3-1.5v1.5m-3-1.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H13.5m-3.75 0V7.125m0 0h-3" />
+            </svg>
+          </button>
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label for="bill-date" class="block text-sm font-medium text-neutral-500 mb-1">วันที่</label>
-          <input id="bill-date" v-model="newBillDate" type="date" class="a-input" />
+          <input id="bill-date" v-model="newBillDate" type="date" class="a-input cursor-pointer" />
         </div>
         <div class="flex items-end gap-2">
           <button @click="addBill" class="a-button-primary flex-[3]">
@@ -76,5 +92,7 @@ function openOcrModal() {
         </div>
       </div>
     </div>
+
+    <Calculator v-model="showCalculator" @apply="applyResult" />
   </div>
 </template>
