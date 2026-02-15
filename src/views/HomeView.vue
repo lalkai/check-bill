@@ -1,21 +1,14 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { useBillGroupsStore, COLOR_PALETTE } from '../stores/BillGroups';
+import { ref } from 'vue';
 import BillGroupCard from '../components/home-view/BillGroupCard.vue';
 import CreateGroupModal from '../components/home-view/CreateGroupModal.vue';
 import EditGroupModal from '../components/home-view/EditGroupModal.vue';
+import { useBillGroupsStore } from '../stores/BillGroups';
 
 const groupsStore = useBillGroupsStore();
 const emit = defineEmits(['open-group']);
 
 import { formatCurrency } from "../utils/common";
-
-function getTotalAmountClass() {
-    const str = formatCurrency(groupsStore.totalAllGroupsAmount);
-    if (str.length > 20) return 'text-xl';
-    if (str.length > 15) return 'text-2xl';
-    return 'text-3xl';
-}
 
 const showCreateModal = ref(false);
 const editingGroup = ref(null);
@@ -48,9 +41,10 @@ function handleDeleteGroup(groupId) {
 <template>
     <div class="space-y-8">
         <!-- Dashboard Summary -->
-        <div class="grid grid-cols-3 gap-4">
+        <div
+            class="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2 -mx-4 px-4 sm:grid sm:grid-cols-2 sm:mx-0 sm:px-0 sm:overflow-visible">
             <div
-                class="col-span-2 a-card bg-gradient-to-br from-primary to-primary-light text-white flex flex-col justify-center h-32">
+                class="min-w-[85%] sm:min-w-0 snap-center a-card bg-gradient-to-br from-primary to-primary-light text-white flex flex-col justify-center h-32">
                 <div class="flex items-center gap-2 text-white/80 text-sm font-medium mb-1">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-4 h-4">
@@ -59,17 +53,17 @@ function handleDeleteGroup(groupId) {
                     </svg>
                     ยอดรวมทั้งหมด
                 </div>
-                <div class="flex items-baseline overflow-x-auto scrollbar-hide whitespace-nowrap min-w-0"
-                    :class="getTotalAmountClass()">
+                <div class="flex items-baseline overflow-x-auto scrollbar-hide whitespace-nowrap min-w-0 text-2xl">
                     <span class="font-bold">{{ formatCurrency(groupsStore.totalAllGroupsAmount) }}</span>
                     <span class="text-sm font-normal opacity-80 ml-1.5">บาท</span>
                 </div>
             </div>
 
-            <div class="a-card bg-white flex flex-col justify-center h-32">
+            <div class="min-w-[85%] sm:min-w-0 snap-center a-card bg-white flex flex-col justify-center h-32">
                 <div class="text-neutral-500 text-sm font-medium mb-1">กลุ่มทั้งหมด</div>
                 <div class="text-3xl font-bold text-neutral-700 overflow-hidden break-all">
-                    {{ groupsStore.groups.length }} <span class="text-lg font-normal text-neutral-400">กลุ่ม</span>
+                    {{ groupsStore.groups.length }}
+                    <span class="text-sm font-normal text-neutral-400">กลุ่ม</span>
                 </div>
             </div>
         </div>
