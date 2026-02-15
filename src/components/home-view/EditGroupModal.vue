@@ -36,7 +36,7 @@ function handleClose() {
             <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="handleClose"></div>
 
             <!-- Modal -->
-            <div class="relative bg-white rounded-3xl shadow-a-hover w-full max-w-md p-6 animate-modalIn">
+            <div class="relative bg-white rounded-lg shadow-lg w-full max-w-md p-6 animate-modalIn">
                 <h2 class="text-xl font-bold text-neutral-700 mb-6">แก้ไขกลุ่มบิล</h2>
 
                 <!-- Name Input -->

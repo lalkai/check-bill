@@ -108,7 +108,7 @@ const handleReset = () => {
 <template>
   <div v-if="show" class="fixed inset-0 flex items-center justify-center z-50 transition-all">
     <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="$emit('close')"></div>
-    <div class="bg-white rounded-2xl shadow-a-hover w-full max-w-md p-6 m-4 relative z-10">
+    <div class="bg-white rounded-2xl shadow-a-hover w-full max-w-md p-6 m-4 relative z-10 animate-modalIn">
       <h2 class="text-xl font-medium text-neutral-700 mb-5">แชร์ข้อมูลการชำระเงิน</h2>
 
       <!-- Payer Selection -->

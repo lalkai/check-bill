@@ -157,7 +157,7 @@ function menuPeoplePay(person) {
 
       <!-- Modal panel -->
       <div
-        class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full sm:max-w-lg">
+        class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full sm:max-w-lg animate-modalIn">
         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div class="sm:flex sm:items-start">
             <div class="mt-3 sm:mt-0 sm:text-left w-full">
@@ -213,7 +213,7 @@ function menuPeoplePay(person) {
                           </div>
                           <span class="ml-2 text-neutral-700">{{
                             person.name
-                            }}</span>
+                          }}</span>
                         </div>
                       </div>
                     </div>
@@ -223,12 +223,12 @@ function menuPeoplePay(person) {
             </div>
           </div>
         </div>
-        <div class="bg-neutral-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-2">
-          <button type="button" class="a-button-primary" @click="saveEditedBill">
-            บันทึก
-          </button>
-          <button type="button" class="a-button-secondary" @click="closeModal">
+        <div class="bg-neutral-50 px-4 py-3 sm:px-6 flex gap-3">
+          <button type="button" class="a-button-secondary flex-1" @click="closeModal">
             ยกเลิก
+          </button>
+          <button type="button" class="a-button-primary flex-1" @click="saveEditedBill">
+            บันทึก
           </button>
         </div>
         <Calculator v-model="showCalculator" @apply="applyResult" />

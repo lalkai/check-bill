@@ -232,7 +232,7 @@ function startOcrOver() {
       <div class="fixed inset-0 bg-black/40 transition-opacity" aria-hidden="true" @click="closeOcrModal"></div>
       <!-- Modal panel -->
       <div
-        class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
+        class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto animate-modalIn"
         :class="ocrStep === 3 ? 'max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl' : 'max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl'">
         <div class="bg-white p-3 sm:p-4 md:p-6">
           <!-- Modal Header -->
@@ -240,12 +240,6 @@ function startOcrOver() {
             <h3 class="text-lg sm:text-xl md:text-2xl font-semibold text-neutral-800" id="ocr-modal-title">
               สแกนใบเสร็จด้วย AI
             </h3>
-            <button @click="closeOcrModal" class="text-neutral-400 hover:text-neutral-600 p-1">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-              </svg>
-            </button>
           </div>
           <!-- Progress Steps -->
           <div class="mb-6 sm:mb-8">
@@ -302,7 +296,6 @@ function startOcrOver() {
               </div>
             </div>
           </div>
-          <!-- Step 1: Upload -->
           <div v-if="ocrStep === 1" class="space-y-4 sm:space-y-6">
             <!-- Drag and Drop Zone -->
             <div
@@ -364,24 +357,30 @@ function startOcrOver() {
                       ✓ ไฟล์อัปโหลดสำเร็จ
                     </p>
                     <!-- Action Buttons -->
-                    <div class="flex gap-2 sm:gap-3 md:gap-4 lg:gap-5 justify-center">
-                      <button @click.stop="resetOcrForm"
-                        class="px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-3 lg:px-8 lg:py-4 text-sm sm:text-base md:text-lg text-neutral-600 border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-all font-medium">
-                        เปลี่ยนไฟล์
-                      </button>
-                      <button @click.stop="processReceiptImage"
-                        class="px-4 py-2 sm:px-5 sm:py-3 md:px-8 md:py-3 lg:px-10 lg:py-4 bg-primary text-white rounded-lg hover:bg-primary-light transition-all shadow-sm flex items-center justify-center gap-2 md:gap-3 font-medium text-sm sm:text-base md:text-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                          stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6">
-                          <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
-                        </svg>
-                        สแกน
+                    <div class="flex justify-center">
+                      <button @click.stop="resetOcrForm" class="a-button-secondary text-sm px-4 py-2">
+                        เปลี่ยนรูป
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="flex flex-row gap-3 pt-2">
+              <button @click="closeOcrModal" class="a-button-secondary flex-1">
+                ยกเลิก
+              </button>
+              <button @click="processReceiptImage" :disabled="!previewUrl"
+                class="a-button-primary flex-1 flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-500 disabled:shadow-none">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                  stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
+                </svg>
+                สแกน
+              </button>
             </div>
           </div>
           <!-- Step 2: Processing -->
@@ -503,14 +502,15 @@ function startOcrOver() {
               </div>
             </div>
             <!-- Action Buttons -->
-            <div class="flex gap-3 pt-3">
-              <button @click="startOcrOver"
-                class="flex-1 px-4 py-2.5 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-all text-xs font-medium">
+            <div class="flex flex-col-reverse sm:flex-row gap-3 pt-3">
+              <button @click="closeOcrModal" class="a-button-secondary flex-1 text-xs">
+                ยกเลิก
+              </button>
+              <button @click="startOcrOver" class="a-button-secondary flex-1 text-xs border border-neutral-300">
                 เริ่มใหม่
               </button>
               <button @click="addSelectedItemsToBills" :disabled="extractedItems.filter((item) => item.selected).length === 0
-                "
-                class="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-light disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium text-xs">
+                " class="a-button-primary flex-1 text-xs disabled:opacity-50 disabled:cursor-not-allowed">
                 เพิ่มรายการ ({{
                   extractedItems.filter((item) => item.selected).length
                 }})

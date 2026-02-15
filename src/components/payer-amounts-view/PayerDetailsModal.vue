@@ -19,7 +19,8 @@ import { formatCurrency } from "../../utils/common";
   <div v-if="show && payer" class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
     <div class="fixed inset-0 bg-black/40" @click="emit('close')"></div>
 
-    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[85vh] overflow-hidden">
+    <div
+      class="relative bg-white rounded-lg shadow-lg w-full max-w-md mx-4 max-h-[85vh] overflow-hidden animate-modalIn">
       <div class="p-6 pb-4">
         <div class="flex items-center justify-between mb-4">
           <div>

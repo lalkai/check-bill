@@ -129,7 +129,7 @@ const handleBackdropClick = (event) => {
   <div v-if="isVisible && payer" class="fixed inset-0 flex items-center justify-center z-50 transition-all">
     <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="handleBackdropClick"></div>
     <div
-      class="bg-white rounded-xl shadow-2xl w-full max-w-xs p-6 m-4 transform transition-all duration-300 scale-100 opacity-100 relative z-10">
+      class="bg-white rounded-xl shadow-2xl w-full max-w-xs p-6 m-4 transform transition-all duration-300 scale-100 opacity-100 relative z-10 animate-modalIn">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-semibold text-neutral-700">สแกนเพื่อชำระเงิน</h2>
         <button @click="closeModal" class="text-neutral-400 hover:text-neutral-600 transition-colors">
