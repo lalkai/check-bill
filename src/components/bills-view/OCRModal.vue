@@ -526,21 +526,22 @@ function startOcrOver() {
                 <span class="text-xs sm:text-sm">{{ successMessage }}</span>
               </div>
             </div>
-          </div>
-          <!-- Action Buttons -->
-          <div class="flex flex-row gap-3 pt-3">
-            <button @click="closeOcrModal" class="a-button-secondary flex-1 text-xs">
-              ยกเลิก
-            </button>
-            <button @click="startOcrOver" class="a-button-secondary flex-1 text-xs border border-neutral-300">
-              เริ่มใหม่
-            </button>
-            <button @click="addSelectedItemsToBills" :disabled="extractedItems.filter((item) => item.selected).length === 0
-              " class="a-button-primary flex-1 text-xs disabled:opacity-50 disabled:cursor-not-allowed">
-              เพิ่มรายการ ({{
-                extractedItems.filter((item) => item.selected).length
-              }})
-            </button>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-row gap-3 pt-3">
+              <button @click="closeOcrModal" class="a-button-secondary flex-1 text-xs">
+                ยกเลิก
+              </button>
+              <button @click="startOcrOver" class="a-button-secondary flex-1 text-xs border border-neutral-300">
+                เริ่มใหม่
+              </button>
+              <button @click="addSelectedItemsToBills" :disabled="extractedItems.filter((item) => item.selected).length === 0
+                " class="a-button-primary flex-1 text-xs disabled:opacity-50 disabled:cursor-not-allowed">
+                เพิ่มรายการ ({{
+                  extractedItems.filter((item) => item.selected).length
+                }})
+              </button>
+            </div>
           </div>
         </div>
       </div>

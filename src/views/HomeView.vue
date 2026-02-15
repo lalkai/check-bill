@@ -71,7 +71,7 @@ function handleDeleteGroup(groupId) {
         <!-- Groups Section -->
         <div>
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-bold text-neutral-700">กลุ่มของฉัน</h2>
+                <h2 class="text-lg font-bold text-neutral-700">กลุ่มบิล</h2>
                 <button @click="showCreateModal = true"
                     class="text-primary hover:text-primary-dark font-medium text-sm flex items-center gap-1 transition-colors px-2 py-1 -mr-2 rounded-lg hover:bg-neutral-50">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
