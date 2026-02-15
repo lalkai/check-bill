@@ -1,5 +1,10 @@
 # CheckBill
 
+## Demo
+
+Check out the live demo: [https://satjawat.com/check-bill/](https://satjawat.com/check-bill/)
+
+
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
