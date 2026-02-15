@@ -108,7 +108,7 @@ const handleReset = () => {
 <template>
   <div v-if="show" class="fixed inset-0 flex items-center justify-center z-50 transition-all">
     <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="$emit('close')"></div>
-    <div class="bg-white rounded-2xl shadow-a-hover w-full max-w-md p-6 m-4 relative z-10 animate-modalIn">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-4 m-4 relative z-10 animate-modalIn">
       <h2 class="text-xl font-medium text-neutral-700 mb-5">แชร์ข้อมูลการชำระเงิน</h2>
 
       <!-- Payer Selection -->
@@ -136,12 +136,7 @@ const handleReset = () => {
             </label>
           </div>
         </div>
-        <div class="mt-4 flex">
-          <button @click="handleGenerateShareUrl" class="a-button-primary flex-1"
-            :disabled="selectedPayers.length === 0">
-            แชร์ข้อมูลที่เลือก
-          </button>
-        </div>
+
       </div>
 
       <!-- Share URL -->
@@ -170,22 +165,24 @@ const handleReset = () => {
       </div>
 
       <div class="flex flex-col gap-3">
-        <button v-if="shareUrl" @click="$emit('open-share-link')" class="a-button-primary w-full">
-          เปิดลิงก์แชร์
-        </button>
-
         <div v-if="shareUrl" class="flex gap-3">
-          <button @click="handleReset" class="a-button-secondary flex-1 sm:text-sm">
+          <!-- <button @click="handleReset" class="a-button-secondary flex-1 sm:text-sm">
             ย้อนกลับ
-          </button>
+          </button> -->
           <button @click="$emit('close')" class="a-button-secondary flex-1 sm:text-sm">
             ปิด
           </button>
         </div>
 
-        <button v-if="!shareUrl" @click="$emit('close')" class="a-button-secondary w-full">
-          ปิด
-        </button>
+        <div v-if="!shareUrl" class="flex gap-3">
+          <button @click="$emit('close')" class="a-button-secondary flex-1">
+            ปิด
+          </button>
+          <button @click="handleGenerateShareUrl" class="a-button-primary flex-1"
+            :disabled="selectedPayers.length === 0">
+            แชร์ข้อมูล
+          </button>
+        </div>
       </div>
     </div>
   </div>

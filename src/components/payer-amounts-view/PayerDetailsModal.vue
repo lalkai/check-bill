@@ -21,7 +21,7 @@ import { formatCurrency } from "../../utils/common";
 
     <div
       class="relative bg-white rounded-lg shadow-lg w-full max-w-md mx-4 max-h-[85vh] overflow-hidden animate-modalIn">
-      <div class="p-6 pb-4">
+      <div class="p-4">
         <div class="flex items-center justify-between mb-4">
           <div>
             <h2 class="text-xl font-bold text-neutral-800">{{ payer.name }}</h2>

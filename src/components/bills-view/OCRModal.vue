@@ -234,7 +234,7 @@ function startOcrOver() {
       <div
         class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto animate-modalIn"
         :class="ocrStep === 3 ? 'max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl' : 'max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl'">
-        <div class="bg-white p-3 sm:p-4 md:p-6">
+        <div class="bg-white p-4">
           <!-- Modal Header -->
           <div class="flex items-center justify-between mb-4 sm:mb-6">
             <h3 class="text-lg sm:text-xl md:text-2xl font-semibold text-neutral-800" id="ocr-modal-title">
