@@ -10,25 +10,31 @@ defineProps({
   }
 })
 
-const emit = defineEmits(['toggle-payment-status'])
+import { formatCurrency } from "../../utils/common";
+
+const emit = defineEmits(['toggle-payment-status', 'open-details'])
 
 const togglePaymentStatus = (payer, date) => {
   emit('toggle-payment-status', payer, date);
 };
+
+const openDetails = () => {
+  emit('open-details');
+};
 </script>
 
 <template>
-  <div class="a-card transition-all duration-300">
+  <div class="a-card transition-all duration-300 cursor-pointer hover:shadow-md" @click="openDetails">
     <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-2 sm:gap-0">
       <div>
         <h2 class="text-lg font-semibold text-neutral-700 break-words">{{ payer.name }}</h2>
         <p class="text-lg font-medium mt-1">
-          ยอดรวม: <span class="text-primary">{{ payer.totalAmountDue.toFixed(2) }} บาท</span>
+          ยอดรวม: <span class="text-primary">{{ formatCurrency(payer.totalAmountDue) }} บาท</span>
         </p>
       </div>
       <div class="px-3 py-1 rounded-full text-sm font-medium self-start"
         :class="payer.paid ? 'bg-accent/20 text-accent' : 'bg-error/20 text-error'">
-        {{ payer.paid ? "จ่ายครบแล้ว" : `ยอดค้างชำระ: ${payer.unpaidAmountDue.toFixed(2)} บาท` }}
+        {{ payer.paid ? "จ่ายครบแล้ว" : `ยอดค้างชำระ: ${formatCurrency(payer.unpaidAmountDue)} บาท` }}
       </div>
     </div>
 
@@ -46,9 +52,9 @@ const togglePaymentStatus = (payer, date) => {
             </div>
             <div class="flex items-center gap-3">
               <p class="text-sm sm:text-base md:text-lg text-neutral-700 font-medium">
-                {{ amount ? amount.toFixed(2) : "0.00" }} บาท
+                {{ amount ? formatCurrency(amount) : "0.00" }} บาท
               </p>
-              <button @click="togglePaymentStatus(payer, date)"
+              <button @click.stop="togglePaymentStatus(payer, date)"
                 class="flex items-center justify-center px-3 py-1 rounded-full transition-colors text-xs sm:text-sm"
                 :class="peopleStore.getPaidStatusByDate(payer.name, date)
                   ? 'bg-accent/20 text-accent hover:bg-accent/30'

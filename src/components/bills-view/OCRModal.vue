@@ -2,6 +2,7 @@
 import { ref, watch, onUnmounted } from "vue";
 import { useBillStore } from "../../stores/Bills";
 import { recognizeReceipt, terminateWorker } from "../../utils/ocrEngine.js";
+import { preventNonNumberInput, formatCurrency } from "../../utils/common";
 
 const billStore = useBillStore();
 
@@ -220,14 +221,15 @@ function resetOcrForm() {
 function startOcrOver() {
   resetOcrForm();
 }
+
 </script>
 
 <template>
-  <div v-if="show" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="ocr-modal-title" role="dialog"
-    aria-modal="true">
+  <div v-if="show" class="fixed inset-0 z-50 overflow-y-auto backdrop-blur-sm" aria-labelledby="ocr-modal-title"
+    role="dialog" aria-modal="true">
     <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
       <!-- Background overlay -->
-      <div class="fixed inset-0 bg-neutral-700/75 transition-opacity" aria-hidden="true" @click="closeOcrModal"></div>
+      <div class="fixed inset-0 bg-black/40 transition-opacity" aria-hidden="true" @click="closeOcrModal"></div>
       <!-- Modal panel -->
       <div
         class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
@@ -432,10 +434,11 @@ function startOcrOver() {
                 <div class="text-right">
                   <div class="text-lg sm:text-xl font-bold text-primary">
                     {{
-                      extractedItems
-                        .filter((item) => item.selected)
-                        .reduce((sum, item) => sum + item.amount, 0)
-                        .toFixed(2)
+                      formatCurrency(
+                        extractedItems
+                          .filter((item) => item.selected)
+                          .reduce((sum, item) => sum + item.amount, 0)
+                      )
                     }}
                     บาท
                   </div>
@@ -469,7 +472,7 @@ function startOcrOver() {
                       <label class="block text-xs font-medium text-neutral-700 mb-1">จำนวนเงิน (บาท)</label>
                       <input type="number" v-model.number="item.amount" step="0.01" min="0"
                         class="w-full px-2 py-1.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs"
-                        placeholder="0.00" />
+                        placeholder="0.00" @keypress="preventNonNumberInput" />
                     </div>
                   </div>
 

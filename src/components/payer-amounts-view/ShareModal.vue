@@ -17,6 +17,8 @@ const props = defineProps({
   }
 })
 
+import { formatCurrency } from "../../utils/common";
+
 const emit = defineEmits(['close', 'generate-share-url', 'open-share-link', 'reset-share'])
 
 const selectedPayers = ref([]);
@@ -88,7 +90,8 @@ const generateShareQRCode = (url) => {
       if (shareQrCodeContainer.contains(canvas)) {
         shareQrCodeContainer.removeChild(shareQrCodeContainer.firstChild);
       }
-    }  });
+    }
+  });
 };
 
 const handleGenerateShareUrl = () => {
@@ -103,8 +106,9 @@ const handleReset = () => {
 </script>
 
 <template>
-  <div v-if="show" class="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50 transition-all">
-    <div class="bg-white rounded-2xl shadow-a-hover w-full max-w-md p-6 m-4">
+  <div v-if="show" class="fixed inset-0 flex items-center justify-center z-50 transition-all">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="$emit('close')"></div>
+    <div class="bg-white rounded-2xl shadow-a-hover w-full max-w-md p-6 m-4 relative z-10">
       <h2 class="text-xl font-medium text-neutral-700 mb-5">แชร์ข้อมูลการชำระเงิน</h2>
 
       <!-- Payer Selection -->
@@ -112,38 +116,29 @@ const handleReset = () => {
         <div class="flex items-center justify-between mb-3">
           <label class="block text-sm font-medium text-neutral-500">เลือกผู้ที่ต้องการแชร์</label>
           <div class="flex items-center">
-            <input 
-              type="checkbox" 
-              id="select-all" 
-              v-model="selectAllPayers" 
-              @change="toggleSelectAllPayers"
-              class="h-4 w-4 text-primary border-gray-300 rounded" 
-            />
+            <input type="checkbox" id="select-all" v-model="selectAllPayers" @change="toggleSelectAllPayers"
+              class="h-4 w-4 text-primary border-gray-300 rounded" />
             <label for="select-all" class="ml-2 text-sm text-neutral-600">เลือกทั้งหมด</label>
           </div>
         </div>
         <div class="max-h-60 overflow-y-auto border border-neutral-200 rounded-lg p-2">
           <div v-for="payer in payerAmounts" :key="payer.name"
             class="flex items-center p-2 hover:bg-neutral-100 rounded-md">
-            <input 
-              type="checkbox" 
-              :id="'payer-' + payer.name" 
-              :checked="selectedPayers.includes(payer.name)"
-              @click="togglePayerSelection(payer.name)" 
-              class="h-4 w-4 text-primary border-gray-300 rounded" 
-            />
+            <input type="checkbox" :id="'payer-' + payer.name" :checked="selectedPayers.includes(payer.name)"
+              @click="togglePayerSelection(payer.name)" class="h-4 w-4 text-primary border-gray-300 rounded" />
             <label :for="'payer-' + payer.name" class="ml-2 flex-1 flex justify-between cursor-pointer">
               <span class="text-sm text-neutral-700">{{ payer.name }}</span>
               <div class="flex flex-col items-end">
                 <span class="text-sm">
-                  {{ payer.unpaidAmountDue > 0 ? payer.unpaidAmountDue.toFixed(2) + ' บาท' : 'จ่ายครบแล้ว' }}
+                  {{ payer.unpaidAmountDue > 0 ? formatCurrency(payer.unpaidAmountDue) + ' บาท' : 'จ่ายครบแล้ว' }}
                 </span>
               </div>
             </label>
           </div>
         </div>
         <div class="mt-4 flex">
-          <button @click="handleGenerateShareUrl" class="a-button-primary flex-1" :disabled="selectedPayers.length === 0">
+          <button @click="handleGenerateShareUrl" class="a-button-primary flex-1"
+            :disabled="selectedPayers.length === 0">
             แชร์ข้อมูลที่เลือก
           </button>
         </div>

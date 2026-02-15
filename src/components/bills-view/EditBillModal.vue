@@ -2,6 +2,7 @@
 import { ref, watch } from "vue";
 import { useBillStore } from "../../stores/Bills";
 import { usePeopleStore } from "../../stores/People";
+import { preventNonNumberInput } from "../../utils/common";
 
 const billStore = useBillStore();
 const peopleStore = usePeopleStore();
@@ -138,126 +139,66 @@ function menuPeoplePay(person) {
     selectedPeople.value.splice(index, 1);
   }
 }
+
 </script>
 
 <template>
-  <div
-    v-if="bill"
-    class="fixed inset-0 z-50 overflow-y-auto backdrop-blur-sm"
-    aria-labelledby="modal-title"
-    role="dialog"
-    aria-modal="true"
-  >
-    <div
-      class="flex items-center justify-center min-h-screen sm:p-0 px-4 pt-4 pb-10"
-    >
+  <div v-if="bill" class="fixed inset-0 z-50 overflow-y-auto backdrop-blur-sm" aria-labelledby="modal-title"
+    role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen sm:p-0 px-4 pt-4 pb-10">
       <!-- Background overlay -->
-      <div
-        class="fixed inset-0 bg-neutral-700/20 transition-opacity"
-        aria-hidden="true"
-        @click="closeModal"
-      ></div>
+      <div class="fixed inset-0 bg-black/40 transition-opacity" aria-hidden="true" @click="closeModal"></div>
 
       <!-- Modal panel -->
       <div
-        class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full sm:max-w-lg"
-      >
+        class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full sm:max-w-lg">
         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div class="sm:flex sm:items-start">
             <div class="mt-3 sm:mt-0 sm:text-left w-full">
-              <h3
-                class="text-lg leading-6 font-medium text-neutral-700"
-                id="modal-title"
-              >
+              <h3 class="text-lg leading-6 font-medium text-neutral-700" id="modal-title">
                 <div class="text-center">แก้ไขบิล</div>
               </h3>
               <div class="mt-4">
                 <div class="space-y-4">
                   <div>
-                    <label
-                      for="edit-description"
-                      class="block text-sm font-medium text-neutral-500 mb-1"
-                      >รายการ</label
-                    >
-                    <input
-                      id="edit-description"
-                      v-model="editedBillDescription"
-                      type="text"
-                      class="a-input"
-                    />
+                    <label for="edit-description" class="block text-sm font-medium text-neutral-500 mb-1">รายการ</label>
+                    <input id="edit-description" v-model="editedBillDescription" type="text" class="a-input" />
                   </div>
                   <div>
-                    <label
-                      for="edit-amount"
-                      class="block text-sm font-medium text-neutral-500 mb-1"
-                      >จำนวนเงิน</label
-                    >
-                    <input
-                      id="edit-amount"
-                      v-model="editedBillAmount"
-                      type="number"
-                      class="a-input"
-                    />
+                    <label for="edit-amount" class="block text-sm font-medium text-neutral-500 mb-1">จำนวนเงิน</label>
+                    <input id="edit-amount" v-model="editedBillAmount" type="number" min="0" class="a-input"
+                      @keypress="preventNonNumberInput" />
                   </div>
                   <div>
-                    <label
-                      for="edit-date"
-                      class="block text-sm font-medium text-neutral-500 mb-1"
-                      >วันที่</label
-                    >
-                    <input
-                      id="edit-date"
-                      v-model="editedBillDate"
-                      type="date"
-                      class="a-input"
-                    />
+                    <label for="edit-date" class="block text-sm font-medium text-neutral-500 mb-1">วันที่</label>
+                    <input id="edit-date" v-model="editedBillDate" type="date" class="a-input" />
                   </div>
                   <div>
-                    <label
-                      class="block text-sm font-medium text-neutral-500 mb-1"
-                      >คนจ่าย</label
-                    >
-                    <div
-                      class="border border-neutral-300 rounded-lg p-3 bg-neutral-50"
-                    >
+                    <label class="block text-sm font-medium text-neutral-500 mb-1">คนจ่าย</label>
+                    <div class="border border-neutral-300 rounded-lg p-3 bg-neutral-50">
                       <div class="flex flex-wrap gap-2">
-                        <div
-                          v-for="person in peopleStore.list"
-                          :key="person.name"
-                          @click="menuPeoplePay(person)"
+                        <div v-for="person in peopleStore.list" :key="person.name" @click="menuPeoplePay(person)"
                           class="flex items-center px-3 py-2 rounded-md cursor-pointer hover:bg-neutral-200/50 transition-colors"
                           :class="{
                             'bg-primary/10': selectedPeople.includes(
                               person.name
                             ),
-                          }"
-                        >
+                          }">
                           <div
                             class="flex-shrink-0 w-5 h-5 border border-neutral-300 rounded flex items-center justify-center"
                             :class="{
                               'bg-primary border-primary':
                                 selectedPeople.includes(person.name),
-                            }"
-                          >
-                            <svg
-                              v-if="selectedPeople.includes(person.name)"
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              class="w-4 h-4 text-white"
-                            >
-                              <path
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="3"
-                                d="m5 12 5 5L20 7"
-                              ></path>
+                            }">
+                            <svg v-if="selectedPeople.includes(person.name)" xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24" class="w-4 h-4 text-white">
+                              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="3" d="m5 12 5 5L20 7"></path>
                             </svg>
                           </div>
                           <span class="ml-2 text-neutral-700">{{
                             person.name
-                          }}</span>
+                            }}</span>
                         </div>
                       </div>
                     </div>
@@ -267,14 +208,8 @@ function menuPeoplePay(person) {
             </div>
           </div>
         </div>
-        <div
-          class="bg-neutral-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-2"
-        >
-          <button
-            type="button"
-            class="a-button-primary"
-            @click="saveEditedBill"
-          >
+        <div class="bg-neutral-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-2">
+          <button type="button" class="a-button-primary" @click="saveEditedBill">
             บันทึก
           </button>
           <button type="button" class="a-button-secondary" @click="closeModal">

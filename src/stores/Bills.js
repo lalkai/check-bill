@@ -1,218 +1,54 @@
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { defineStore } from 'pinia';
+import { useBillGroupsStore } from './BillGroups';
 
 export const useBillStore = defineStore('bill', () => {
 
-  const initializeBills = () => {
-    try {
-      const stored = localStorage.getItem('billList');
-      if (!stored) return [];
-
-      const parsed = JSON.parse(stored);
-      if (!Array.isArray(parsed)) {
-        console.warn('Invalid bills data in localStorage, resetting...');
-        return [];
-      }
-
-      return parsed.map(bill => ({
-        id: bill.id || Date.now() + Math.random(),
-        description: String(bill.description || '').trim(),
-        amount: Number(bill.amount) || 0,
-        date: bill.date || new Date().toISOString().split('T')[0],
-        payers: Array.isArray(bill.payers) ? bill.payers.map(payer => ({
-          name: String(payer.name || '').trim(),
-          paid: Boolean(payer.paid)
-        })) : []
-      })).filter(bill => bill.description);
-    } catch (error) {
-      console.error('Error loading bills from localStorage:', error);
-      return [];
-    }
-  };
-  const bills = ref(initializeBills());
+  const groupsStore = useBillGroupsStore();
+  const bills = computed(() => groupsStore.activeBills);
 
   function saveToLocalStorage() {
-    try {
-      const validBills = bills.value.filter(bill =>
-        bill &&
-        typeof bill.id !== 'undefined' &&
-        bill.description &&
-        typeof bill.amount === 'number' &&
-        Array.isArray(bill.payers)
-      );
-      localStorage.setItem('billList', JSON.stringify(validBills));
-    } catch (error) {
-      console.error('Error saving bills to localStorage:', error);
-    }
+    groupsStore.saveToLocalStorage();
   }
+
   function addBill(description, amount, date) {
-    try {
-      const cleanDescription = String(description || '').trim();
-      const cleanAmount = Number(amount) || 0;
-      const cleanDate = date || new Date().toISOString().split('T')[0];
+    return groupsStore.addBill(description, amount, date);
+  }
 
-      if (!cleanDescription) {
-        console.error('Invalid bill description:', description);
-        return false;
-      }
-
-      const newBill = {
-        id: Date.now() + Math.random(),
-        description: cleanDescription,
-        amount: cleanAmount,
-        date: cleanDate,
-        payers: []
-      };
-
-      bills.value.push(newBill);
-      saveToLocalStorage();
-      return true;
-    } catch (error) {
-      console.error('Error adding bill:', error);
-      return false;
-    }
-  } function removeBill(billId, peopleStore = null) {
-    try {
-      const billToRemove = bills.value.find(bill => bill.id === billId);
-      if (billToRemove) {
-        bills.value = bills.value.filter(bill => bill.id !== billId);
-
-        if (peopleStore && typeof peopleStore.cleanUpDatesWithoutBills === 'function') {
-          peopleStore.cleanUpDatesWithoutBills({ bills: bills.value });
-        }
-
-        saveToLocalStorage();
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Error removing bill:', error);
-      return false;
-    }
+  function removeBill(billId, peopleStore = null) {
+    return groupsStore.removeBill(billId);
   }
 
   function addPayerToBill(billId, payerName) {
-    try {
-      const cleanPayerName = String(payerName || '').trim();
-      if (!cleanPayerName) {
-        console.error('Invalid payer name:', payerName);
-        return false;
-      }
-
-      const bill = bills.value.find(bill => bill.id === billId);
-      if (!bill) {
-        console.error('Bill not found:', billId);
-        return false;
-      }
-
-      if (!Array.isArray(bill.payers)) {
-        console.warn('Invalid payers array, resetting...');
-        bill.payers = [];
-      }
-      if (bill.payers.some(payer => payer.name === cleanPayerName)) {
-        return true;
-      }
-      bill.payers.push({
-        name: cleanPayerName,
-        paid: false
-      });
-
-      saveToLocalStorage();
-      return true;
-    } catch (error) {
-      console.error('Error adding payer to bill:', error);
-      return false;
-    }
+    return groupsStore.addPayerToBill(billId, payerName);
   }
 
   function removePayerFromBill(billId, payerName) {
-    const bill = bills.value.find(bill => bill.id === billId);
-    if (bill) {
-      bill.payers = bill.payers.filter(payer => payer.name !== payerName);
-      saveToLocalStorage();
-    }
+    groupsStore.removePayerFromBill(billId, payerName);
   }
 
   function removePayerFromAllBills(payerName) {
-    bills.value.forEach(bill => {
-      bill.payers = bill.payers.filter(payer => payer.name !== payerName);
-    });
-    saveToLocalStorage();
+    groupsStore.removePayerFromAllBills(payerName);
   }
 
   function togglePayerStatus(billId, payerName) {
-    const bill = bills.value.find(bill => bill.id === billId);
-    if (bill) {
-      const payer = bill.payers.find(payer => payer.name === payerName);
-      if (payer) {
-        payer.paid = !payer.paid;
-        saveToLocalStorage();
-      }
-    }
+    groupsStore.togglePayerStatus(billId, payerName);
   }
+
   function updateBill(billId, description, amount, date) {
-    try {
-      const bill = bills.value.find(bill => bill.id === billId);
-      if (!bill) {
-        console.error('Bill not found for update:', billId);
-        return false;
-      }
-
-      const cleanDescription = String(description || '').trim();
-      const cleanAmount = Number(amount) || 0;
-      const cleanDate = date || new Date().toISOString().split('T')[0];
-
-      if (!cleanDescription) {
-        console.error('Invalid description for update:', description);
-        return false;
-      }
-      bill.description = cleanDescription;
-      bill.amount = cleanAmount;
-      bill.date = cleanDate;
-
-      saveToLocalStorage();
-      return true;
-    } catch (error) {
-      console.error('Error updating bill:', error);
-      return false;
-    }
+    return groupsStore.updateBill(billId, description, amount, date);
   }
 
   function removeAllPayersFromBill(billId) {
-    const bill = bills.value.find(bill => bill.id === billId);
-    if (bill) {
-      bill.payers = [];
-      saveToLocalStorage();
-    }
+    groupsStore.removeAllPayersFromBill(billId);
   }
 
   function clearAllBills() {
-    bills.value = [];
-    saveToLocalStorage();
+    groupsStore.clearAllBills();
   }
 
-  const payerAmounts = computed(() => {
-    const amounts = {};
-
-    bills.value.forEach(bill => {
-      const splitAmount = bill.payers.length ? bill.amount / bill.payers.length : 0;
-      bill.payers.forEach(payer => {
-        if (!amounts[payer.name]) {
-          amounts[payer.name] = {};
-        }
-        if (!amounts[payer.name][bill.date]) {
-          amounts[payer.name][bill.date] = 0;
-        }
-        amounts[payer.name][bill.date] += splitAmount;
-      });
-    });
-
-    return amounts;
-  });
-
-  const totalAmount = computed(() => {
-    return bills.value.reduce((total, bill) => total + bill.amount, 0);
-  });
+  const payerAmounts = computed(() => groupsStore.payerAmounts);
+  const totalAmount = computed(() => groupsStore.totalAmount);
 
   return {
     bills,

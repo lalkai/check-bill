@@ -12,6 +12,8 @@ const props = defineProps({
   }
 });
 
+import { formatCurrency } from "../../utils/common";
+
 const emit = defineEmits(['openPaymentModal']);
 
 const expandedBillItems = ref(false);
@@ -53,12 +55,12 @@ const handlePaymentClick = () => {
       <div>
         <h2 class="text-xl font-semibold text-neutral-800 break-words">{{ payer.name }}</h2>
         <p class="text-lg font-medium mt-1">
-          ยอดรวม: <span class="text-primary">{{ payer.totalAmountDue.toFixed(2) }} บาท</span>
+          ยอดรวม: <span class="text-primary">{{ formatCurrency(payer.totalAmountDue) }} บาท</span>
         </p>
       </div>
       <div class="px-3 py-1 rounded-full text-sm font-medium self-start"
         :class="payer.paid ? 'bg-accent/20 text-accent' : 'bg-error/20 text-error'">
-        {{ payer.paid ? "จ่ายครบแล้ว" : `ยอดค้างชำระ: ${payer.unpaidAmountDue.toFixed(2)} บาท` }}
+        {{ payer.paid ? "จ่ายครบแล้ว" : `ยอดค้างชำระ: ${formatCurrency(payer.unpaidAmountDue)} บาท` }}
       </div>
     </div>
 
@@ -78,7 +80,7 @@ const handlePaymentClick = () => {
             </div>
             <div class="flex items-center gap-2">
               <p class="text-md text-neutral-700 font-medium">
-                {{ typeof amount.amount === 'number' ? amount.amount.toFixed(2) : "0.00" }} บาท
+                {{ typeof amount.amount === 'number' ? formatCurrency(amount.amount) : "0.00" }} บาท
               </p>
               <div class="px-2 py-0.5 rounded-full text-xs font-medium"
                 :class="amount.paid ? 'bg-accent/20 text-accent' : 'bg-neutral-100 text-neutral-500'">
@@ -101,7 +103,7 @@ const handlePaymentClick = () => {
               <p class="text-sm text-neutral-700">{{ item.description }}</p>
               <p class="text-xs text-neutral-500">วันที่: {{ item.date }}</p>
             </div>
-            <p class="text-sm font-medium text-neutral-700">{{ item.amount.toFixed(2) }} บาท</p>
+            <p class="text-sm font-medium text-neutral-700">{{ formatCurrency(item.amount) }} บาท</p>
           </div>
         </li>
       </ul>
@@ -109,8 +111,8 @@ const handlePaymentClick = () => {
         <button @click="toggleBillItems"
           class="text-primary hover:text-primary-dark transition-colors text-sm font-medium px-4 py-1.5 rounded-md border border-primary/30 hover:bg-primary/5">
           <div class="flex items-center justify-center">
-            <svg v-if="!shouldShowAllItems" xmlns="http://www.w3.org/2000/svg" fill="none"
-              viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1">
+            <svg v-if="!shouldShowAllItems" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M19.5 5.25l-7.5 7.5-7.5-7.5m15 6l-7.5 7.5-7.5-7.5" />
             </svg>

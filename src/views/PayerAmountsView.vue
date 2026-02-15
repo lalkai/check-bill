@@ -11,6 +11,7 @@ import PayerCard from "../components/payer-amounts-view/PayerCard.vue";
 import AddQRCodeModal from "../components/payer-amounts-view/AddQRCodeModal.vue";
 import ShareModal from "../components/payer-amounts-view/ShareModal.vue";
 import EmptyState from "../components/payer-amounts-view/EmptyState.vue";
+import PayerDetailsModal from "../components/payer-amounts-view/PayerDetailsModal.vue";
 
 const billStore = useBillStore();
 const peopleStore = usePeopleStore();
@@ -21,6 +22,8 @@ const showQrCode = ref(false);
 
 const showAddQrCodePopup = ref(false);
 const showSharePopup = ref(false);
+const showPayerDetails = ref(false);
+const selectedPayer = ref(null);
 
 const shareUrl = ref("");
 
@@ -230,6 +233,25 @@ const resetShare = () => {
   shareUrl.value = "";
 };
 
+const openPayerDetails = (payer) => {
+  const billItems = billStore.bills
+    .filter((bill) => bill.payers.some((p) => p.name === payer.name))
+    .map((bill) => ({
+      description: bill.description,
+      amount: bill.amount / bill.payers.length,
+      date: bill.date,
+      paid: peopleStore.getPaidStatusByDate(payer.name, bill.date),
+    }));
+  
+  selectedPayer.value = { ...payer, billItems };
+  showPayerDetails.value = true;
+};
+
+const closePayerDetails = () => {
+  showPayerDetails.value = false;
+  selectedPayer.value = null;
+};
+
 onMounted(() => {
   const storedPromptpayID = localStorage.getItem("promptpayID");
   if (storedPromptpayID) {
@@ -256,43 +278,28 @@ watch(
 <template>
   <div>
     <!-- Tools Section -->
-    <ToolsSection
-      @show-qr-popup="showAddQrCodePopup = true"
-      @delete-qr="deleteQRCode"
-      @share-payer="sharePayer"
-    />
+    <ToolsSection @show-qr-popup="showAddQrCodePopup = true" @delete-qr="deleteQRCode" @share-payer="sharePayer" />
 
     <!-- QR Code Display -->
     <QRCodeDisplay :show-qr-code="showQrCode" :promptpay-id="inputPromptpay" />
 
     <!-- Payer Amounts List -->
     <div class="space-y-4">
-      <PayerCard
-        v-for="(payer, index) in filteredPayerAmounts"
-        :key="index"
-        :payer="payer"
-        @toggle-payment-status="togglePaymentStatus"
-      />
+      <PayerCard v-for="(payer, index) in filteredPayerAmounts" :key="index" :payer="payer"
+        @toggle-payment-status="togglePaymentStatus" @open-details="() => openPayerDetails(payer)" />
 
       <EmptyState v-if="filteredPayerAmounts.length === 0" />
     </div>
 
     <!-- Add QR Code Modal -->
-    <AddQRCodeModal
-      :show="showAddQrCodePopup"
-      @generate-qr="generateQRCode"
-      @close="showAddQrCodePopup = false"
-    />
+    <AddQRCodeModal :show="showAddQrCodePopup" @generate-qr="generateQRCode" @close="showAddQrCodePopup = false" />
 
     <!-- Share Modal -->
-    <ShareModal
-      :show="showSharePopup"
-      :payer-amounts="filteredPayerAmounts"
-      :share-url="shareUrl"
-      @generate-share-url="generateShareUrl"
-      @open-share-link="openShareLink"
-      @reset-share="resetShare"
-      @close="showSharePopup = false"
-    />
+    <ShareModal :show="showSharePopup" :payer-amounts="filteredPayerAmounts" :share-url="shareUrl"
+      @generate-share-url="generateShareUrl" @open-share-link="openShareLink" @reset-share="resetShare"
+      @close="showSharePopup = false" />
+
+    <!-- Payer Details Modal -->
+    <PayerDetailsModal :show="showPayerDetails" :payer="selectedPayer" @close="closePayerDetails" />
   </div>
 </template>
