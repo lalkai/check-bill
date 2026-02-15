@@ -73,7 +73,7 @@ function switchView(view) {
     <header class="bg-white/90 backdrop-blur-sm border-b border-neutral-200 sticky top-0 z-10">
       <div class="max-w-screen-md mx-auto px-4 py-4">
         <!-- Back + Group Name -->
-        <div class="flex items-center gap-3 mb-4">
+        <div class="flex items-center gap-3 mb-2">
           <button @click="goHome"
             class="p-2 rounded-xl hover:bg-neutral-100 text-neutral-500 hover:text-neutral-700 transition-all duration-200 active:scale-95">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"

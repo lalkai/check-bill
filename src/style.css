@@ -67,4 +67,13 @@
   .a-tab-inactive {
     @apply bg-neutral-100 text-neutral-600 hover:bg-neutral-200;
   }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

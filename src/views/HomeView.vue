@@ -12,10 +12,8 @@ import { formatCurrency } from "../utils/common";
 
 function getTotalAmountClass() {
     const str = formatCurrency(groupsStore.totalAllGroupsAmount);
-    if (str.length > 12) return 'text-base';
-    if (str.length > 10) return 'text-lg';
-    if (str.length > 8) return 'text-xl';
-    if (str.length > 6) return 'text-2xl';
+    if (str.length > 20) return 'text-xl';
+    if (str.length > 15) return 'text-2xl';
     return 'text-3xl';
 }
 
@@ -50,8 +48,9 @@ function handleDeleteGroup(groupId) {
 <template>
     <div class="space-y-8">
         <!-- Dashboard Summary -->
-        <div class="grid grid-cols-2 gap-4">
-            <div class="a-card bg-gradient-to-br from-primary to-primary-light text-white ">
+        <div class="grid grid-cols-3 gap-4">
+            <div
+                class="col-span-2 a-card bg-gradient-to-br from-primary to-primary-light text-white flex flex-col justify-center h-32">
                 <div class="flex items-center gap-2 text-white/80 text-sm font-medium mb-1">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-4 h-4">
@@ -60,13 +59,14 @@ function handleDeleteGroup(groupId) {
                     </svg>
                     ยอดรวมทั้งหมด
                 </div>
-                <div class="font-bold overflow-hidden break-all" :class="getTotalAmountClass()">
-                    {{ formatCurrency(groupsStore.totalAllGroupsAmount) }} <span
-                        class="text-lg font-normal opacity-80">บาท</span>
+                <div class="flex items-baseline overflow-x-auto scrollbar-hide whitespace-nowrap min-w-0"
+                    :class="getTotalAmountClass()">
+                    <span class="font-bold">{{ formatCurrency(groupsStore.totalAllGroupsAmount) }}</span>
+                    <span class="text-sm font-normal opacity-80 ml-1.5">บาท</span>
                 </div>
             </div>
 
-            <div class="a-card bg-white flex flex-col justify-center">
+            <div class="a-card bg-white flex flex-col justify-center h-32">
                 <div class="text-neutral-500 text-sm font-medium mb-1">กลุ่มทั้งหมด</div>
                 <div class="text-3xl font-bold text-neutral-700 overflow-hidden break-all">
                     {{ groupsStore.groups.length }} <span class="text-lg font-normal text-neutral-400">กลุ่ม</span>
