@@ -1,34 +1,36 @@
-# CheckBill
+# CheckBill 💸
+A web application designed to help you split bills and share expenses with friends quickly and effortlessly. It features an automated receipt scanning system using OCR, and it can generate PromptPay QR codes for instant payments!
 
-## Demo
+## ✨ Features
+- 🧑‍🤝‍🧑 **Groups & People Management:** Easily create groups and add friends to track everyone's share of the expenses.
+- 🧾 **OCR Receipt Scanner:** Automatically read and process receipt items using `tesseract.js` to simplify data entry.
+- 💸 **PromptPay QR Code Generation:** Instantly generate PromptPay QR codes based on the exact split amounts, allowing friends to scan and pay immediately.
+- 🔗 **Share Results:** Share a summary link directly via URL or QR Code.
+- 📱 **PWA Support (Progressive Web App):** Install the application on your smartphone or tablet for a native app-like experience.
 
-Check out the live demo: [https://satjawat.com/check-bill/](https://satjawat.com/check-bill/)
+## 🛠️ Tech Stack
+- **Frontend:** Vue 3 (Composition API) + Vite
+- **State Management:** Pinia
+- **Styling:** Tailwind CSS + DaisyUI
+- **OCR:** tesseract.js
+- **Utilities:** lz-string, html2canvas-pro, dom-to-image-more, promptpay-qr
 
+## 🚀 Project Setup
 
-This template should help get you started developing with Vue 3 in Vite.
-
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
+**1. Install Dependencies**
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
-
+**2. Compile and Hot-Reload for Development**
 ```sh
 npm run dev
 ```
 
-### Compile and Minify for Production
-
+**3. Compile and Minify for Production**
 ```sh
 npm run build
 ```
+
+## 🌐 Demo
+Check out the live demo: [https://satjawat.com/check-bill/](https://satjawat.com/check-bill/)
