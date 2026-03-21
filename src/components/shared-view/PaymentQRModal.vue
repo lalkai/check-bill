@@ -1,44 +1,47 @@
 <script setup>
-import { nextTick, onMounted, watch } from 'vue';
+import { nextTick, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import generatePayload from "promptpay-qr";
 import qrcode from "qrcode";
 
 const props = defineProps({
   payer: {
     type: Object,
-    default: null
+    default: null,
   },
   promptpayID: {
     type: String,
-    required: true
+    required: true,
   },
   isVisible: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(["close"]);
+const { t: $t } = useI18n();
 
 const generatePaymentQRCode = async () => {
   if (!props.promptpayID || !props.payer) {
-    alert("ไม่สามารถสร้าง QR Code ได้: ไม่มี PromptPay ID หรือข้อมูลผู้จ่ายไม่ถูกต้อง");
+    alert($t("shared.errorGenerateQR"));
     return;
   }
 
   if (props.payer.paid) {
-    alert("ผู้จ่ายรายนี้ได้ชำระเงินครบถ้วนแล้ว");
-    emit('close');
+    alert($t("shared.alreadySettled"));
+    emit("close");
     return;
   }
 
-  const unpaidAmount = typeof props.payer.unpaidAmountDue === 'number' ?
-    props.payer.unpaidAmountDue :
-    props.payer.totalAmountDue;
+  const unpaidAmount =
+    typeof props.payer.unpaidAmountDue === "number"
+      ? props.payer.unpaidAmountDue
+      : props.payer.totalAmountDue;
 
   if (unpaidAmount <= 0) {
-    alert("ไม่มียอดค้างชำระ");
-    emit('close');
+    alert($t("shared.noBalance"));
+    emit("close");
     return;
   }
 
@@ -51,11 +54,13 @@ const generatePaymentQRCode = async () => {
       width: 220,
       color: {
         dark: "#000000",
-        light: "#ffffff"
-      }
+        light: "#ffffff",
+      },
     };
 
-    const qrContainer = document.getElementById(`payment-qrcode-container-${props.payer.name.replace(/\s+/g, '-')}`);
+    const qrContainer = document.getElementById(
+      `payment-qrcode-container-${props.payer.name.replace(/\s+/g, "-")}`
+    );
     if (!qrContainer) {
       console.error("QR Code container not found for payer:", props.payer.name);
       return;
@@ -64,88 +69,112 @@ const generatePaymentQRCode = async () => {
     qrContainer.innerHTML = "";
 
     const canvas = document.createElement("canvas");
-    canvas.className = "rounded-xl mx-auto";
+    canvas.className = "rounded-2xl mx-auto shadow-sm";
 
     qrcode.toCanvas(canvas, payload, opts, (err) => {
       if (err) {
         console.error("Error generating payment QR Code:", err);
-        qrContainer.innerHTML = '<p class="text-error text-center">ไม่สามารถสร้าง QR Code ได้</p>';
+        qrContainer.innerHTML = `<p class="text-red-500 font-bold text-center">${$t(
+          "shared.errorGenerateQR"
+        )}</p>`;
         return;
       }
       qrContainer.appendChild(canvas);
-      const amountText = document.createElement("p");
-      amountText.className = "text-center mt-3 text-neutral-700 font-semibold text-lg";
-      amountText.textContent = `${amount.toLocaleString()} บาท`;
+
+      const amountText = document.createElement("div");
+      amountText.className =
+        "text-center mt-6 text-3xl font-black text-neutral-800 tracking-tight";
+      amountText.innerHTML = `<span class="text-xl opacity-60 mr-1">฿</span>${amount.toLocaleString()}`;
       qrContainer.appendChild(amountText);
 
-      const unpaidDates = [];
-      if (props.payer.dates) {
-        Object.entries(props.payer.dates).forEach(([date, dateData]) => {
-          if (!dateData.paid) {
-            unpaidDates.push(date);
-          }
-        });
-      }
-
-      if (unpaidDates.length > 0) {
-        const unpaidDatesText = document.createElement("p");
-        unpaidDatesText.className = "text-center mt-2 text-neutral-600 text-sm";
-        unpaidDatesText.textContent = `สำหรับวันที่: ${unpaidDates.join(', ')}`;
-        qrContainer.appendChild(unpaidDatesText);
-      }
-
-      const promptpayInfoText = document.createElement("p");
-      promptpayInfoText.className = "text-center mt-1 text-neutral-500 text-sm";
-      promptpayInfoText.textContent = `PromptPay ID: ${props.promptpayID}`;
+      const promptpayInfoText = document.createElement("div");
+      promptpayInfoText.className =
+        "mt-4 inline-flex items-center justify-center bg-neutral-100 px-4 py-2 rounded-xl border border-neutral-200 mx-auto text-[10px] font-black uppercase tracking-widest text-neutral-500 gap-2";
+      promptpayInfoText.innerHTML = `<span>ID</span><span class="text-neutral-700">${props.promptpayID}</span>`;
       qrContainer.appendChild(promptpayInfoText);
     });
   } catch (error) {
     console.error("Error in generatePaymentQRCode:", error);
-    alert("เกิดข้อผิดพลาดในการสร้าง QR Code สำหรับการชำระเงิน");
+    alert($t("shared.errorGenerateQR"));
   }
 };
 
-// Generate QR code when modal opens
-watch(() => props.isVisible, (newValue) => {
-  if (newValue && props.payer) {
-    nextTick(() => {
-      generatePaymentQRCode();
-    });
+watch(
+  () => props.isVisible,
+  (newValue) => {
+    if (newValue && props.payer) {
+      nextTick(() => {
+        generatePaymentQRCode();
+      });
+    }
   }
-});
+);
 
 const closeModal = () => {
-  emit('close');
-};
-
-const handleBackdropClick = (event) => {
-  if (event.target === event.currentTarget) {
-    closeModal();
-  }
+  emit("close");
 };
 </script>
 
 <template>
-  <div v-if="isVisible && payer" class="fixed inset-0 flex items-center justify-center z-50 transition-all">
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="handleBackdropClick"></div>
+  <Teleport to="body">
     <div
-      class="bg-white rounded-xl shadow-2xl w-full max-w-xs p-6 m-4 transform transition-all duration-300 scale-100 opacity-100 relative z-10 animate-modalIn">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-semibold text-neutral-700">สแกนเพื่อชำระเงิน</h2>
-        <button @click="closeModal" class="text-neutral-400 hover:text-neutral-600 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-            class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+      v-if="isVisible && payer"
+      class="fixed inset-0 flex items-center justify-center z-50 transition-all p-4"
+    >
+      <div
+        class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        @click="closeModal"
+      ></div>
+      <div
+        class="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-sm p-8 m-4 relative z-10 animate-modalIn border border-white/20"
+      >
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h2 class="text-2xl font-black text-neutral-800 tracking-tight">
+              {{ $t("shared.scanToPay") }}
+            </h2>
+            <p
+              class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-1"
+            >
+              {{
+                $t("shared.forUser", {
+                  name: payer.name,
+                })
+              }}
+            </p>
+          </div>
+        </div>
+
+        <div
+          :id="`payment-qrcode-container-${payer.name.replace(/\s+/g, '-')}`"
+          class="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm min-h-[300px] flex flex-col justify-center text-center"
+        ></div>
+
+        <button
+          @click="closeModal"
+          class="w-full mt-6 bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg"
+        >
+          {{ $t("actions.done") }}
         </button>
       </div>
-      <p class="text-center text-neutral-600 mb-1">สำหรับ: <span class="font-medium">{{ payer.name }}</span></p>
-      <p v-if="typeof payer.unpaidAmountDue === 'number' && payer.unpaidAmountDue < payer.totalAmountDue"
-        class="text-center text-xs text-accent mb-2">
-        แสดงเฉพาะยอดที่ยังไม่ได้จ่าย
-      </p>
-      <div :id="`payment-qrcode-container-${payer.name.replace(/\s+/g, '-')}`"
-        class="bg-white p-2 rounded-lg shadow-inner min-h-[200px] flex flex-col justify-center items-center"></div>
     </div>
-  </div>
+  </Teleport>
 </template>
+
+<style scoped>
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modalIn {
+  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+</style>

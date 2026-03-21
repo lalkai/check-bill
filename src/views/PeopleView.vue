@@ -8,7 +8,7 @@ const peopleStore = usePeopleStore();
 </script>
 
 <template>
-  <div>
+  <div class="pb-12">
     <AddPersonForm />
     <PeopleList v-if="peopleStore.list.length > 0" />
     <EmptyPeopleState v-else />

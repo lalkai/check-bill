@@ -12,11 +12,7 @@ const editingBill = ref(null);
 const showOcrModal = ref(false);
 
 function handleAddBill(billData) {
-  billStore.addBill(
-    billData.description,
-    billData.amount,
-    billData.date
-  );
+  billStore.addBill(billData.description, billData.amount, billData.date);
 }
 
 function handleOpenOcr() {
@@ -39,28 +35,15 @@ function handleCloseOcrModal() {
 <template>
   <div>
     <!-- Add Bill Form -->
-    <AddBillForm 
-      @add-bill="handleAddBill"
-      @open-ocr="handleOpenOcr"
-    />
+    <AddBillForm @add-bill="handleAddBill" @open-ocr="handleOpenOcr" />
 
     <!-- Bills List -->
-    <BillsList 
-      @edit-bill="handleEditBill"
-    />
-    
+    <BillsList @edit-bill="handleEditBill" />
+
     <!-- Edit Modal -->
-    <EditBillModal 
-      :bill="editingBill"
-      @close="handleCloseEditModal"
-    />
+    <EditBillModal :bill="editingBill" @close="handleCloseEditModal" />
 
     <!-- OCR Modal -->
-    <OCRModal 
-      :show="showOcrModal"
-      @close="handleCloseOcrModal"
-    />
+    <OCRModal :show="showOcrModal" @close="handleCloseOcrModal" />
   </div>
 </template>
-
-

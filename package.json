@@ -1,6 +1,6 @@
 {
   "name": "checkbill",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -19,6 +19,7 @@
     "qrcode": "^1.5.3",
     "tesseract.js": "^7.0.0",
     "vue": "^3.4.29",
+    "vue-i18n": "^9.14.5",
     "vue-router": "^4.3.3"
   },
   "devDependencies": {

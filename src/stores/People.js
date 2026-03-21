@@ -1,9 +1,8 @@
 import { computed } from "vue";
 import { defineStore } from "pinia";
-import { useBillGroupsStore } from './BillGroups';
+import { useBillGroupsStore } from "./BillGroups";
 
 export const usePeopleStore = defineStore("people", () => {
-
   const groupsStore = useBillGroupsStore();
   const list = computed(() => groupsStore.activePeople);
 

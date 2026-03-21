@@ -1,14 +1,27 @@
+<script setup>
+import { useI18n } from "vue-i18n";
+const { t: $t } = useI18n();
+</script>
+
 <template>
-  <div class="a-card py-12">
-    <div class="text-center text-neutral-500">
-      <svg class="animate-spin h-10 w-10 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none"
-        viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-        </path>
-      </svg>
-      <p>กำลังโหลดข้อมูล...</p>
+  <div
+    class="bg-white rounded-[2.5rem] p-12 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50 flex flex-col items-center"
+  >
+    <div
+      class="w-20 h-20 mx-auto mb-6 flex items-center justify-center relative"
+    >
+      <div
+        class="absolute inset-0 border-4 border-primary/10 rounded-full"
+      ></div>
+      <div
+        class="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"
+      ></div>
     </div>
+    <h3 class="text-neutral-700 font-black text-lg mb-2">
+      {{ $t("shared.loading") }}
+    </h3>
+    <p class="text-neutral-400 text-sm font-medium">
+      {{ $t("shared.pleaseWait") }}
+    </p>
   </div>
 </template>

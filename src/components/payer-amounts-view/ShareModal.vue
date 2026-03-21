@@ -1,46 +1,59 @@
 <script setup>
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch, nextTick } from "vue";
+import { useI18n } from "vue-i18n";
 import qrcode from "qrcode";
+
+const { t: $t } = useI18n();
+import { formatCurrency } from "../../utils/common";
 
 const props = defineProps({
   show: {
     type: Boolean,
-    default: false
+    default: false,
   },
   payerAmounts: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   shareUrl: {
     type: String,
-    default: ''
-  }
-})
+    default: "",
+  },
+});
 
-import { formatCurrency } from "../../utils/common";
-
-const emit = defineEmits(['close', 'generate-share-url', 'open-share-link', 'reset-share'])
+const emit = defineEmits([
+  "close",
+  "generate-share-url",
+  "open-share-link",
+  "reset-share",
+]);
 
 const selectedPayers = ref([]);
 const selectAllPayers = ref(true);
 
-watch(() => props.show, (newValue) => {
-  if (newValue) {
-    selectedPayers.value = props.payerAmounts.map(payer => payer.name);
-    selectAllPayers.value = true;
+watch(
+  () => props.show,
+  (newValue) => {
+    if (newValue) {
+      selectedPayers.value = props.payerAmounts.map((payer) => payer.name);
+      selectAllPayers.value = true;
+    }
   }
-});
+);
 
-watch(() => props.shareUrl, async (newValue) => {
-  if (newValue && props.show) {
-    await nextTick();
-    generateShareQRCode(newValue);
+watch(
+  () => props.shareUrl,
+  async (newValue) => {
+    if (newValue && props.show) {
+      await nextTick();
+      generateShareQRCode(newValue);
+    }
   }
-});
+);
 
 const toggleSelectAllPayers = () => {
   if (selectAllPayers.value) {
-    selectedPayers.value = props.payerAmounts.map(payer => payer.name);
+    selectedPayers.value = props.payerAmounts.map((payer) => payer.name);
   } else {
     selectedPayers.value = [];
   }
@@ -48,142 +61,277 @@ const toggleSelectAllPayers = () => {
 
 const togglePayerSelection = (payerName) => {
   const index = selectedPayers.value.indexOf(payerName);
-
   if (index === -1) {
     selectedPayers.value.push(payerName);
   } else {
     selectedPayers.value.splice(index, 1);
   }
-
-  selectAllPayers.value = selectedPayers.value.length === props.payerAmounts.length;
+  selectAllPayers.value =
+    selectedPayers.value.length === props.payerAmounts.length;
   selectedPayers.value = [...selectedPayers.value];
 };
 
 const generateShareQRCode = (url) => {
   const shareQrCodeContainer = document.getElementById("share-qrcode");
-  if (!shareQrCodeContainer) {
-    console.warn("share-qrcode container not found when trying to generate QR.");
-    return;
-  }
+  if (!shareQrCodeContainer) return;
 
   while (shareQrCodeContainer.firstChild) {
     shareQrCodeContainer.removeChild(shareQrCodeContainer.firstChild);
   }
 
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   shareQrCodeContainer.appendChild(canvas);
 
   const opts = {
-    errorCorrectionLevel: 'M',
-    type: 'image/png',
+    errorCorrectionLevel: "M",
+    type: "image/png",
     margin: 1,
-    width: 180,
+    width: 200,
     color: {
-      dark: '#000000',
-      light: '#ffffff'
-    }
+      dark: "#000000",
+      light: "#ffffff",
+    },
   };
 
   qrcode.toCanvas(canvas, url, opts, (err) => {
-    if (err) {
-      console.error("Error generating share QR Code:", err);
-      if (shareQrCodeContainer.contains(canvas)) {
-        shareQrCodeContainer.removeChild(shareQrCodeContainer.firstChild);
-      }
-    }
+    if (err) console.error("Error generating share QR Code:", err);
   });
 };
 
 const handleGenerateShareUrl = () => {
-  emit('generate-share-url', selectedPayers.value);
-};
-
-const handleReset = () => {
-  selectedPayers.value = props.payerAmounts.map(payer => payer.name);
-  selectAllPayers.value = true;
-  emit('reset-share');
+  emit("generate-share-url", selectedPayers.value);
 };
 </script>
 
 <template>
-  <div v-if="show" class="fixed inset-0 flex items-center justify-center z-50 transition-all">
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="$emit('close')"></div>
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-4 m-4 relative z-10 animate-modalIn">
-      <h2 class="text-xl font-medium text-neutral-700 mb-5">แชร์ข้อมูลการชำระเงิน</h2>
+  <Teleport to="body">
+    <div
+      v-if="show"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
+      <div
+        class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+        @click="emit('close')"
+      ></div>
 
-      <!-- Payer Selection -->
-      <div v-if="!shareUrl" class="mb-5">
-        <div class="flex items-center justify-between mb-3">
-          <label class="block text-sm font-medium text-neutral-500">เลือกผู้ที่ต้องการแชร์</label>
-          <div class="flex items-center">
-            <input type="checkbox" id="select-all" v-model="selectAllPayers" @change="toggleSelectAllPayers"
-              class="h-4 w-4 text-primary border-gray-300 rounded" />
-            <label for="select-all" class="ml-2 text-sm text-neutral-600">เลือกทั้งหมด</label>
-          </div>
+      <div
+        class="relative bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-md p-8 animate-modalIn border border-white/20"
+      >
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-black text-neutral-800 tracking-tight">
+            {{ $t("share.title") }}
+          </h2>
+          <button
+            @click="emit('close')"
+            class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 hover:bg-neutral-200 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2.5"
+              stroke="currentColor"
+              class="w-4 h-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 18 18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
-        <div class="max-h-60 overflow-y-auto border border-neutral-200 rounded-lg p-2">
-          <div v-for="payer in payerAmounts" :key="payer.name"
-            class="flex items-center p-2 hover:bg-neutral-100 rounded-md">
-            <input type="checkbox" :id="'payer-' + payer.name" :checked="selectedPayers.includes(payer.name)"
-              @click="togglePayerSelection(payer.name)" class="h-4 w-4 text-primary border-gray-300 rounded" />
-            <label :for="'payer-' + payer.name" class="ml-2 flex-1 flex justify-between cursor-pointer">
-              <span class="text-sm text-neutral-700">{{ payer.name }}</span>
-              <div class="flex flex-col items-end">
-                <span class="text-sm">
-                  {{ payer.unpaidAmountDue > 0 ? formatCurrency(payer.unpaidAmountDue) + ' บาท' : 'จ่ายครบแล้ว' }}
+
+        <!-- Payer Selection -->
+        <div v-if="!shareUrl" class="mb-8">
+          <div class="flex items-center justify-between mb-4">
+            <label
+              class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest"
+              >{{ $t("share.selectPeople") }}</label
+            >
+            <div
+              class="flex items-center cursor-pointer"
+              @click="
+                selectAllPayers = !selectAllPayers;
+                toggleSelectAllPayers();
+              "
+            >
+              <div
+                class="w-4 h-4 rounded border-2 mr-2 flex items-center justify-center transition-colors"
+                :class="
+                  selectAllPayers
+                    ? 'bg-primary border-primary'
+                    : 'border-neutral-300'
+                "
+              >
+                <svg
+                  v-if="selectAllPayers"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  class="w-3 h-3 text-white"
+                  stroke-width="3"
+                >
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m5 12 5 5L20 7"
+                  ></path>
+                </svg>
+              </div>
+              <span
+                class="text-[10px] font-bold text-neutral-500 uppercase tracking-widest"
+                >{{ $t("share.all") }}</span
+              >
+            </div>
+          </div>
+
+          <div class="max-h-60 overflow-y-auto space-y-2 pr-2 scrollbar-hide">
+            <div
+              v-for="payer in payerAmounts"
+              :key="payer.name"
+              class="flex items-center p-3 border-2 rounded-xl transition-all cursor-pointer"
+              :class="
+                selectedPayers.includes(payer.name)
+                  ? 'border-primary/30 bg-primary/5'
+                  : 'border-neutral-100 hover:border-neutral-200 bg-white'
+              "
+              @click="togglePayerSelection(payer.name)"
+            >
+              <div
+                class="w-5 h-5 rounded border-2 mr-3 flex items-center justify-center transition-colors"
+                :class="
+                  selectedPayers.includes(payer.name)
+                    ? 'bg-primary border-primary'
+                    : 'border-neutral-300'
+                "
+              >
+                <svg
+                  v-if="selectedPayers.includes(payer.name)"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  class="w-3.5 h-3.5 text-white"
+                  stroke-width="3"
+                >
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m5 12 5 5L20 7"
+                  ></path>
+                </svg>
+              </div>
+              <div class="flex-1 flex justify-between items-center">
+                <span class="text-sm font-black text-neutral-700">{{
+                  payer.name
+                }}</span>
+                <span
+                  class="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg"
+                  :class="
+                    payer.unpaidAmountDue > 0
+                      ? 'bg-orange-50 text-orange-500'
+                      : 'bg-green-50 text-green-500'
+                  "
+                >
+                  {{
+                    payer.unpaidAmountDue > 0
+                      ? `฿${formatCurrency(payer.unpaidAmountDue)}`
+                      : $t("summary.settled")
+                  }}
                 </span>
               </div>
-            </label>
+            </div>
           </div>
         </div>
 
-      </div>
+        <!-- Share URL -->
+        <div v-if="shareUrl" class="mb-8">
+          <label
+            class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3"
+          >
+            {{ $t("share.link", { count: selectedPayers.length }) }}
+          </label>
+          <div
+            class="bg-neutral-50 p-4 rounded-2xl border border-neutral-200 mb-6 flex items-center"
+          >
+            <input
+              type="text"
+              readonly
+              :value="shareUrl"
+              class="bg-transparent w-full outline-none text-xs font-mono text-neutral-600"
+            />
+            <button
+              class="ml-2 text-primary font-bold text-[10px] uppercase tracking-widest shrink-0"
+              @click="
+                () => {
+                  navigator.clipboard.writeText(shareUrl);
+                  alert($t('share.copied'));
+                }
+              "
+            >
+              {{ $t("share.copy") }}
+            </button>
+          </div>
 
-      <!-- Share URL -->
-      <div v-if="shareUrl" class="mb-5">
-        <label class="block text-sm font-medium text-neutral-500 mb-1">
-          ลิงก์สำหรับแชร์ข้อมูล ({{ selectedPayers.length }} คน)
-        </label>
-        <div class="flex">
-          <input type="text" readonly :value="shareUrl" class="a-input flex-grow mr-2" />
+          <!-- Share QR Code -->
+          <div
+            class="flex flex-col items-center justify-center bg-white border-2 border-neutral-100 rounded-3xl p-6 shadow-sm"
+          >
+            <h3
+              class="text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-4"
+            >
+              {{ $t("share.scanToOpen") }}
+            </h3>
+            <div id="share-qrcode" class="rounded-xl overflow-hidden"></div>
+          </div>
         </div>
-        <p class="text-yellow-600 text-sm mt-2">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-            stroke="currentColor" class="w-4 h-4 inline-block mr-1">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-          </svg>
-          <span>โปรดทราบ: ข้อมูลการชำระเงินที่แชร์ไปจะไม่อัพเดทอัตโนมัติ หากต้องการอัพเดทข้อมูลเพิ่มเติม
-            ต้องแชร์ลิงก์ใหม่อีกครั้ง</span>
-        </p>
 
-        <!-- Share QR Code -->
-        <div class="mt-5 flex flex-col items-center">
-          <h3 class="text-sm font-medium text-neutral-500 mb-3">สแกนเพื่อเปิด</h3>
-          <div id="share-qrcode" class="bg-white p-3 rounded-lg shadow-a"></div>
-        </div>
-      </div>
-
-      <div class="flex flex-col gap-3">
-        <div v-if="shareUrl" class="flex gap-3">
-          <!-- <button @click="handleReset" class="a-button-secondary flex-1 sm:text-sm">
-            ย้อนกลับ
+        <!-- Actions -->
+        <div class="flex gap-4">
+          <!-- <button v-if="shareUrl" @click="emit('close')"
+            class="flex-1 bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg">
+            {{ $t('actions.done') }}
           </button> -->
-          <button @click="$emit('close')" class="a-button-secondary flex-1 sm:text-sm">
-            ปิด
-          </button>
-        </div>
 
-        <div v-if="!shareUrl" class="flex gap-3">
-          <button @click="$emit('close')" class="a-button-secondary flex-1">
-            ปิด
-          </button>
-          <button @click="handleGenerateShareUrl" class="a-button-primary flex-1"
-            :disabled="selectedPayers.length === 0">
-            แชร์ข้อมูล
+          <button
+            v-if="!shareUrl"
+            @click="handleGenerateShareUrl"
+            :disabled="selectedPayers.length === 0"
+            class="flex-1 bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {{ $t("share.generate") }}
           </button>
         </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
+
+<style scoped>
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modalIn {
+  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+</style>

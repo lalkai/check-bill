@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 import LZString from "lz-string";
 import SharedPayerCard from "@/components/shared-view/SharedPayerCard.vue";
 import PaymentQRModal from "@/components/shared-view/PaymentQRModal.vue";
@@ -13,23 +14,26 @@ const loading = ref(true);
 const showQrCodeModalForPayer = ref(null);
 const overallPromptpayID = ref("");
 
+const { t: $t, locale } = useI18n();
+
 onMounted(() => {
   try {
     const urlParams = new URLSearchParams(window.location.search);
-    const sharedDataParam = urlParams.get('payer_info');
+    const sharedDataParam = urlParams.get("payer_info");
 
     if (!sharedDataParam) {
-      error.value = "ไม่พบข้อมูลที่แชร์";
+      error.value = $t("shared.notFound");
       loading.value = false;
       return;
     }
 
     try {
-      const decompressedData = LZString.decompressFromEncodedURIComponent(sharedDataParam);
+      const decompressedData =
+        LZString.decompressFromEncodedURIComponent(sharedDataParam);
       const parsedData = JSON.parse(decompressedData);
 
       if (!parsedData || !parsedData.payers) {
-        throw new Error("Invalid data format");
+        throw new Error($t("shared.invalidFormat"));
       }
 
       allSharedData.value = parsedData;
@@ -38,16 +42,23 @@ onMounted(() => {
         overallPromptpayID.value = parsedData.promptpayID;
       }
 
+      if (parsedData.locale) {
+        locale.value = parsedData.locale;
+      }
+
       loading.value = false;
     } catch (lzError) {
-      console.warn("Failed to decompress with LZString, trying legacy format:", lzError);
+      console.warn(
+        "Failed to decompress with LZString, trying legacy format:",
+        lzError
+      );
 
       try {
         const decodedInfo = decodeURIComponent(atob(sharedDataParam));
         const parsedData = JSON.parse(decodedInfo);
 
         if (!parsedData || !parsedData.payers) {
-          error.value = "ข้อมูลไม่ถูกต้อง หรือไม่มีข้อมูลผู้จ่าย";
+          error.value = "Invalid data or no payers found";
           loading.value = false;
           return;
         }
@@ -58,6 +69,10 @@ onMounted(() => {
           overallPromptpayID.value = parsedData.promptpayID;
         }
 
+        if (parsedData.locale) {
+          locale.value = parsedData.locale;
+        }
+
         loading.value = false;
       } catch (legacyError) {
         throw legacyError;
@@ -65,14 +80,14 @@ onMounted(() => {
     }
   } catch (e) {
     console.error("Error parsing shared data:", e);
-    error.value = "เกิดข้อผิดพลาดในการแสดงข้อมูล";
+    error.value = $t("shared.loadError");
     loading.value = false;
   }
 });
 
 const openPaymentModal = (payer) => {
   if (payer.paid) {
-    alert("ผู้จ่ายรายนี้ได้ชำระเงินครบถ้วนแล้ว");
+    alert($t("shared.alreadySettled"));
     return;
   }
   showQrCodeModalForPayer.value = payer;
@@ -81,21 +96,42 @@ const openPaymentModal = (payer) => {
 const closePaymentModal = () => {
   showQrCodeModalForPayer.value = null;
 };
-
 </script>
 
 <template>
-  <div>
-    <div class="a-card mb-6">
-      <h1 class="text-xl font-bold text-neutral-700">ข้อมูลการชำระเงิน</h1>
-      <p class="text-yellow-600 text-sm mt-2">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-          class="w-4 h-4 inline-block mr-1">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-        </svg>
-        <span>โปรดทราบ: ข้อมูลการชำระเงินที่แชร์ไปจะไม่อัพเดทอัตโนมัติ</span>
+  <div class="space-y-8 pb-12 max-w-lg mx-auto">
+    <div
+      class="bg-white rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50"
+    >
+      <h1 class="text-3xl font-black text-neutral-800 tracking-tight mb-2">
+        {{ $t("shared.title") }}
+      </h1>
+      <p
+        class="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-6"
+      >
+        {{ $t("shared.header") }}
       </p>
+      <div
+        class="bg-orange-50 border border-orange-100 p-4 rounded-2xl flex gap-3"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2.5"
+          stroke="currentColor"
+          class="w-5 h-5 text-orange-500 shrink-0"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+          />
+        </svg>
+        <span class="text-sm font-bold text-orange-700 leading-snug">{{
+          $t("shared.note")
+        }}</span>
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -105,9 +141,14 @@ const closePaymentModal = () => {
     <SharedErrorState v-else-if="error" :error="error" />
 
     <!-- All Payers Data Display -->
-    <div v-else-if="allSharedData && allSharedData.payers && allSharedData.payers.length > 0" class="space-y-6">
-      <SharedPayerCard 
-        v-for="payer in allSharedData.payers" 
+    <div
+      v-else-if="
+        allSharedData && allSharedData.payers && allSharedData.payers.length > 0
+      "
+      class="space-y-4"
+    >
+      <SharedPayerCard
+        v-for="payer in allSharedData.payers"
         :key="payer.name"
         :payer="payer"
         :overallPromptpayID="overallPromptpayID"

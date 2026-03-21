@@ -2,9 +2,11 @@
 import { ref, watch } from "vue";
 import { useBillStore } from "../../stores/Bills";
 import { usePeopleStore } from "../../stores/People";
+import { useI18n } from "vue-i18n";
 import { preventNonNumberInput } from "../../utils/common";
 import Calculator from "../common/Calculator.vue";
 
+const { t: $t } = useI18n();
 const billStore = useBillStore();
 const peopleStore = usePeopleStore();
 
@@ -42,7 +44,7 @@ watch(
 
 function saveEditedBill() {
   if (!editedBillDescription.value.trim()) {
-    alert("กรุณากรอกรายการบิล");
+    alert($t("messages.enterDescription"));
     return;
   }
 
@@ -56,8 +58,7 @@ function saveEditedBill() {
       (bill) => bill.id === props.bill.id
     );
     if (!originalBill) {
-      console.error("Original bill not found:", props.bill.id);
-      alert("ไม่พบบิลที่ต้องการแก้ไข");
+      alert($t("messages.billNotFound"));
       return;
     }
 
@@ -74,8 +75,7 @@ function saveEditedBill() {
     );
 
     if (!updateSuccess) {
-      console.error("Failed to update bill");
-      alert("ไม่สามารถอัปเดตข้อมูลบิลได้");
+      alert($t("messages.failedUpdateBill"));
       return;
     }
 
@@ -83,14 +83,8 @@ function saveEditedBill() {
     billStore.removeAllPayersFromBill(props.bill.id);
 
     // Add selected payers
-    let addedPayersCount = 0;
     selectedPeople.value.forEach((person) => {
-      const success = billStore.addPayerToBill(props.bill.id, person);
-      if (success) {
-        addedPayersCount++;
-      } else {
-        console.warn("Failed to add payer:", person);
-      }
+      billStore.addPayerToBill(props.bill.id, person);
     });
 
     const anyUnpaid = selectedPeople.value.some((personName) => {
@@ -129,7 +123,7 @@ function saveEditedBill() {
     closeModal();
   } catch (error) {
     console.error("Error saving edited bill:", error);
-    alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองอีกครั้ง");
+    alert($t("messages.errorSavingData"));
   }
 }
 
@@ -145,94 +139,202 @@ function menuPeoplePay(person) {
     selectedPeople.value.splice(index, 1);
   }
 }
-
 </script>
 
 <template>
-  <div v-if="bill" class="fixed inset-0 z-50 overflow-y-auto backdrop-blur-sm" aria-labelledby="modal-title"
-    role="dialog" aria-modal="true">
-    <div class="flex items-center justify-center min-h-screen sm:p-0 px-4 pt-4 pb-10">
-      <!-- Background overlay -->
-      <div class="fixed inset-0 bg-black/40 transition-opacity" aria-hidden="true" @click="closeModal"></div>
-
-      <!-- Modal panel -->
+  <Teleport to="body">
+    <div
+      v-if="bill"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
+      <!-- Backdrop -->
       <div
-        class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full sm:max-w-lg animate-modalIn">
-        <div class="bg-white p-4">
-          <div class="sm:flex sm:items-start">
-            <div class="mt-3 sm:mt-0 sm:text-left w-full">
-              <h3 class="text-lg leading-6 font-medium text-neutral-700" id="modal-title">
-                <div class="text-center">แก้ไขบิล</div>
-              </h3>
-              <div class="mt-4">
-                <div class="space-y-4">
-                  <div>
-                    <label for="edit-description" class="block text-sm font-medium text-neutral-500 mb-1">รายการ</label>
-                    <input id="edit-description" v-model="editedBillDescription" type="text" class="a-input" />
+        class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+        @click="closeModal"
+      ></div>
+
+      <!-- Modal -->
+      <div
+        class="relative bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-lg p-8 animate-modalIn border border-white/20 max-h-[90vh] overflow-y-auto"
+      >
+        <div class="flex justify-between items-center mb-8">
+          <h2 class="text-2xl font-black text-neutral-800 tracking-tight">
+            {{ $t("bills.editExpense") }}
+          </h2>
+          <button
+            @click="closeModal"
+            class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 hover:bg-neutral-200 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2.5"
+              stroke="currentColor"
+              class="w-4 h-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 18 18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div class="space-y-6 mb-8">
+          <div>
+            <label
+              for="edit-description"
+              class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3"
+              >{{ $t("bills.description") }}</label
+            >
+            <input
+              id="edit-description"
+              v-model="editedBillDescription"
+              type="text"
+              :placeholder="$t('bills.descriptionPlaceholder')"
+              class="w-full px-5 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-700 placeholder-neutral-300"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="relative">
+              <label
+                for="edit-amount"
+                class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3"
+                >{{ $t("bills.amount") }}</label
+              >
+              <input
+                id="edit-amount"
+                v-model="editedBillAmount"
+                type="number"
+                min="0"
+                :placeholder="$t('bills.amountPlaceholder')"
+                class="w-full pl-5 pr-10 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-black text-neutral-700 placeholder-neutral-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                @keypress="preventNonNumberInput"
+              />
+              <button
+                @click="showCalculator = true"
+                class="absolute right-3 top-10 p-1 text-neutral-400 hover:text-primary transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2.5"
+                  stroke="currentColor"
+                  class="w-5 h-5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm0 2.25h.008v.008H8.25v-.008ZM10.5 7.125h-3v1.5m3-1.5v1.5m-3-1.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H13.5m-3.75 0V7.125m0 0h-3"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div>
+              <label
+                for="edit-date"
+                class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3"
+                >{{ $t("bills.date") }}</label
+              >
+              <input
+                id="edit-date"
+                v-model="editedBillDate"
+                type="date"
+                class="w-full px-5 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-600 cursor-pointer"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3"
+              >{{ $t("bills.sharedWith") }}</label
+            >
+            <div
+              class="bg-neutral-50 border border-neutral-100 rounded-2xl p-4"
+            >
+              <div
+                v-if="peopleStore.list.length === 0"
+                class="text-[11px] font-bold uppercase tracking-widest text-neutral-400 text-center py-2"
+              >
+                {{ $t("messages.noPeopleYet") }}
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <div
+                  v-for="person in peopleStore.list"
+                  :key="person.name"
+                  @click="menuPeoplePay(person)"
+                  class="flex items-center px-4 py-2 rounded-xl cursor-pointer transition-all duration-200 border-2"
+                  :class="
+                    selectedPeople.includes(person.name)
+                      ? 'bg-primary/10 border-primary/20 shadow-sm'
+                      : 'bg-white border-transparent hover:border-neutral-200 shadow-sm'
+                  "
+                >
+                  <div
+                    class="w-5 h-5 rounded-md flex items-center justify-center border-2 mr-2 transition-colors"
+                    :class="
+                      selectedPeople.includes(person.name)
+                        ? 'bg-primary border-primary'
+                        : 'bg-white border-neutral-300'
+                    "
+                  >
+                    <svg
+                      v-if="selectedPeople.includes(person.name)"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      class="w-3.5 h-3.5 text-white"
+                      stroke-width="3"
+                    >
+                      <path
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m5 12 5 5L20 7"
+                      ></path>
+                    </svg>
                   </div>
-                  <div class="relative">
-                    <label for="edit-amount" class="block text-sm font-medium text-neutral-500 mb-1">จำนวนเงิน</label>
-                    <input id="edit-amount" v-model="editedBillAmount" type="number" min="0" placeholder="จำนวนเงิน"
-                      class="a-input pr-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      @keypress="preventNonNumberInput" />
-                    <button @click="showCalculator = true"
-                      class="absolute right-2 top-8 p-1 text-neutral-500 hover:text-neutral-700">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm0 2.25h.008v.008H8.25v-.008ZM10.5 7.125h-3v1.5m3-1.5v1.5m-3-1.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H13.5m-3.75 0V7.125m0 0h-3" />
-                      </svg>
-                    </button>
-                  </div>
-                  <div>
-                    <label for="edit-date" class="block text-sm font-medium text-neutral-500 mb-1">วันที่</label>
-                    <input id="edit-date" v-model="editedBillDate" type="date" class="a-input cursor-pointer" />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-neutral-500 mb-1">คนจ่าย</label>
-                    <div class="border border-neutral-300 rounded-lg p-3 bg-neutral-50">
-                      <div class="flex flex-wrap gap-2">
-                        <div v-for="person in peopleStore.list" :key="person.name" @click="menuPeoplePay(person)"
-                          class="flex items-center px-3 py-2 rounded-md cursor-pointer hover:bg-neutral-200/50 transition-colors"
-                          :class="{
-                            'bg-primary/10': selectedPeople.includes(
-                              person.name
-                            ),
-                          }">
-                          <div
-                            class="flex-shrink-0 w-5 h-5 border border-neutral-300 rounded flex items-center justify-center"
-                            :class="{
-                              'bg-primary border-primary':
-                                selectedPeople.includes(person.name),
-                            }">
-                            <svg v-if="selectedPeople.includes(person.name)" xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24" class="w-4 h-4 text-white">
-                              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                stroke-width="3" d="m5 12 5 5L20 7"></path>
-                            </svg>
-                          </div>
-                          <span class="ml-2 text-neutral-700">{{
-                            person.name
-                          }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <span class="text-sm font-black text-neutral-700">{{
+                    person.name
+                  }}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="bg-neutral-50 px-4 py-3 sm:px-6 flex gap-3">
-          <button type="button" class="a-button-secondary flex-1" @click="closeModal">
-            ยกเลิก
-          </button>
-          <button type="button" class="a-button-primary flex-1" @click="saveEditedBill">
-            บันทึก
+
+        <div class="flex gap-4">
+          <button
+            @click="saveEditedBill"
+            class="flex-1 bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg"
+          >
+            {{ $t("actions.saveChanges") }}
           </button>
         </div>
-        <Calculator v-model="showCalculator" @apply="applyResult" />
       </div>
+      <Calculator v-model="showCalculator" @apply="applyResult" />
     </div>
-  </div>
+  </Teleport>
 </template>
+
+<style scoped>
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modalIn {
+  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+</style>

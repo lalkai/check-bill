@@ -1,5 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from "vue";
+import { useI18n } from "vue-i18n";
+const { t: $t, locale } = useI18n();
 import { useBillStore } from "../stores/Bills";
 import { usePeopleStore } from "../stores/People";
 import generatePayload from "promptpay-qr";
@@ -66,7 +68,7 @@ const filteredPayerAmounts = computed(() => {
 
 const sharePayer = () => {
   if (filteredPayerAmounts.value.length === 0) {
-    alert("ไม่มีข้อมูลให้แชร์");
+    alert($t("messages.noDataShare"));
     return;
   }
   shareUrl.value = "";
@@ -123,7 +125,7 @@ const generateShareUrl = async (selectedPayers) => {
       });
 
     if (allPayersData.length === 0) {
-      alert("โปรดเลือกอย่างน้อยหนึ่งคนเพื่อแชร์");
+      alert($t("messages.selectOnePerson"));
       return;
     }
 
@@ -132,6 +134,7 @@ const generateShareUrl = async (selectedPayers) => {
     const sharedData = {
       payers: allPayersData,
       promptpayID: promptpayID || "",
+      locale: locale.value,
     };
 
     const jsonString = JSON.stringify(sharedData);
@@ -146,13 +149,13 @@ const generateShareUrl = async (selectedPayers) => {
     await nextTick();
   } catch (error) {
     console.error("Error generating share URL:", error);
-    alert("เกิดข้อผิดพลาดในการสร้าง URL สำหรับแชร์");
+    alert($t("messages.errorGenerateLink"));
   }
 };
 
 const generateQRCode = async (promptpayInput) => {
   if (!promptpayInput) {
-    alert("โปรดป้อนข้อมูลให้ครบ!");
+    alert($t("messages.enterPromptpay"));
     return;
   }
 
@@ -165,7 +168,11 @@ const generateQRCode = async (promptpayInput) => {
   const opts = {
     type: "image/png",
     margin: 1,
-    width: 180,
+    width: 200,
+    color: {
+      dark: "#000000",
+      light: "#ffffff",
+    },
   };
 
   await nextTick();
@@ -176,7 +183,7 @@ const generateQRCode = async (promptpayInput) => {
     const canvasContainer = document.getElementById("qrcode-img-container");
     if (canvasContainer) {
       canvas.id = "qrcode-img";
-      canvas.className = "rounded-2xl";
+      canvas.className = "rounded-xl";
       canvasContainer.innerHTML = "";
       canvasContainer.appendChild(canvas);
     } else {
@@ -206,7 +213,7 @@ const deleteQRCode = () => {
   const canvasContainer = document.getElementById("qrcode-img-container");
   if (canvasContainer) {
     canvasContainer.innerHTML =
-      '<canvas id="qrcode-img" class="rounded-2xl"></canvas>';
+      '<canvas id="qrcode-img" class="rounded-xl"></canvas>';
   }
 
   const promptpayIDElement = document.getElementById("PromptpayID");
@@ -221,11 +228,19 @@ const togglePaymentStatus = (payer, date) => {
   peopleStore.togglePaidStatus(payer.name, date);
 };
 
+const settleAllPaymentStatuses = (payer) => {
+  Object.keys(payer.dates).forEach((date) => {
+    if (!peopleStore.getPaidStatusByDate(payer.name, date)) {
+      peopleStore.togglePaidStatus(payer.name, date);
+    }
+  });
+};
+
 const openShareLink = () => {
   if (shareUrl.value) {
     window.open(shareUrl.value, "_blank");
   } else {
-    alert("ยังไม่ได้สร้างลิงก์สำหรับแชร์");
+    alert($t("messages.linkNotGenerated"));
   }
 };
 
@@ -242,7 +257,7 @@ const openPayerDetails = (payer) => {
       date: bill.date,
       paid: peopleStore.getPaidStatusByDate(payer.name, bill.date),
     }));
-  
+
   selectedPayer.value = { ...payer, billItems };
   showPayerDetails.value = true;
 };
@@ -276,30 +291,54 @@ watch(
 </script>
 
 <template>
-  <div>
+  <div class="pb-12">
     <!-- Tools Section -->
-    <ToolsSection @show-qr-popup="showAddQrCodePopup = true" @delete-qr="deleteQRCode" @share-payer="sharePayer" />
+    <ToolsSection
+      @show-qr-popup="showAddQrCodePopup = true"
+      @delete-qr="deleteQRCode"
+      @share-payer="sharePayer"
+    />
 
     <!-- QR Code Display -->
     <QRCodeDisplay :show-qr-code="showQrCode" :promptpay-id="inputPromptpay" />
 
     <!-- Payer Amounts List -->
     <div class="space-y-4">
-      <PayerCard v-for="(payer, index) in filteredPayerAmounts" :key="index" :payer="payer"
-        @toggle-payment-status="togglePaymentStatus" @open-details="() => openPayerDetails(payer)" />
+      <PayerCard
+        v-for="(payer, index) in filteredPayerAmounts"
+        :key="index"
+        :payer="payer"
+        @toggle-payment-status="togglePaymentStatus"
+        @settle-all="settleAllPaymentStatuses"
+        @open-details="() => openPayerDetails(payer)"
+      />
 
       <EmptyState v-if="filteredPayerAmounts.length === 0" />
     </div>
 
     <!-- Add QR Code Modal -->
-    <AddQRCodeModal :show="showAddQrCodePopup" @generate-qr="generateQRCode" @close="showAddQrCodePopup = false" />
+    <AddQRCodeModal
+      :show="showAddQrCodePopup"
+      @generate-qr="generateQRCode"
+      @close="showAddQrCodePopup = false"
+    />
 
     <!-- Share Modal -->
-    <ShareModal :show="showSharePopup" :payer-amounts="filteredPayerAmounts" :share-url="shareUrl"
-      @generate-share-url="generateShareUrl" @open-share-link="openShareLink" @reset-share="resetShare"
-      @close="showSharePopup = false" />
+    <ShareModal
+      :show="showSharePopup"
+      :payer-amounts="filteredPayerAmounts"
+      :share-url="shareUrl"
+      @generate-share-url="generateShareUrl"
+      @open-share-link="openShareLink"
+      @reset-share="resetShare"
+      @close="showSharePopup = false"
+    />
 
     <!-- Payer Details Modal -->
-    <PayerDetailsModal :show="showPayerDetails" :payer="selectedPayer" @close="closePayerDetails" />
+    <PayerDetailsModal
+      :show="showPayerDetails"
+      :payer="selectedPayer"
+      @close="closePayerDetails"
+    />
   </div>
 </template>

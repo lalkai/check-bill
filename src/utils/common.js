@@ -4,10 +4,10 @@
  * @returns {string} - The formatted string
  */
 export function formatCurrency(amount) {
-    if (amount === undefined || amount === null) {
-        return '0';
-    }
-    return amount.toLocaleString();
+  if (amount === undefined || amount === null) {
+    return "0";
+  }
+  return amount.toLocaleString();
 }
 
 /**
@@ -16,11 +16,18 @@ export function formatCurrency(amount) {
  * @param {Event} event - The keyboard event
  */
 export function preventNonNumberInput(event) {
-    const char = String.fromCharCode(event.keyCode || event.which);
-    if (
-        !/[\d.]/.test(char) &&
-        !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(event.key)
-    ) {
-        event.preventDefault();
-    }
+  const char = String.fromCharCode(event.keyCode || event.which);
+  if (
+    !/[\d.]/.test(char) &&
+    ![
+      "Backspace",
+      "Delete",
+      "Tab",
+      "ArrowLeft",
+      "ArrowRight",
+      "Enter",
+    ].includes(event.key)
+  ) {
+    event.preventDefault();
+  }
 }

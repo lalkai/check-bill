@@ -1,9 +1,8 @@
-import { computed } from 'vue';
-import { defineStore } from 'pinia';
-import { useBillGroupsStore } from './BillGroups';
+import { computed } from "vue";
+import { defineStore } from "pinia";
+import { useBillGroupsStore } from "./BillGroups";
 
-export const useBillStore = defineStore('bill', () => {
-
+export const useBillStore = defineStore("bill", () => {
   const groupsStore = useBillGroupsStore();
   const bills = computed(() => groupsStore.activeBills);
 
@@ -62,6 +61,6 @@ export const useBillStore = defineStore('bill', () => {
     removeAllPayersFromBill,
     clearAllBills,
     payerAmounts,
-    totalAmount
+    totalAmount,
   };
 });
