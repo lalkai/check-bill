@@ -116,7 +116,7 @@ function openOcrModal() {
             id="bill-date"
             v-model="newBillDate"
             type="date"
-            class="w-full px-4 py-3.5 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-600 cursor-pointer"
+            class="w-full px-4 h-[54px] py-0 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-600 cursor-pointer appearance-none"
           />
         </div>
         <div class="flex items-end">

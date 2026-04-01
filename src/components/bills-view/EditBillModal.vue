@@ -228,7 +228,7 @@ function menuPeoplePay(person) {
                 id="edit-date"
                 v-model="editedBillDate"
                 type="date"
-                class="w-full px-5 py-4 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-600 cursor-pointer"
+                class="w-full px-5 h-[58px] py-0 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-600 cursor-pointer appearance-none"
               />
             </div>
           </div>

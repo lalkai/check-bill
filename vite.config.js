@@ -9,7 +9,7 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico"],
+      includeAssets: ["favicon.ico", "favicon.png", "icon-192.png", "icon-512.png"],
       manifest: {
         name: "CheckBill",
         short_name: "CheckBill",
@@ -21,19 +21,35 @@ export default defineConfig({
         background_color: "#ffffff",
         icons: [
           {
-            src: "favicon.ico",
-            sizes: "64x64 32x32 24x24 16x16",
-            type: "image/x-icon",
-          },
-          {
-            src: "favicon.ico",
+            src: "icon-192.png",
             sizes: "192x192",
-            type: "image/x-icon",
+            type: "image/png",
           },
           {
-            src: "favicon.ico",
+            src: "icon-512.png",
             sizes: "512x512",
-            type: "image/x-icon",
+            type: "image/png",
+          },
+          {
+            src: "icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
+        screenshots: [
+          {
+            src: "screenshot-desktop.png",
+            sizes: "1280x720",
+            type: "image/png",
+            form_factor: "wide",
+            label: "CheckBill Desktop",
+          },
+          {
+            src: "screenshot-mobile.png",
+            sizes: "720x1280",
+            type: "image/png",
+            label: "CheckBill Mobile",
           },
         ],
       },
