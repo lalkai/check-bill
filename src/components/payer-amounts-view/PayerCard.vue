@@ -15,10 +15,7 @@ const props = defineProps({
 
 import { formatCurrency } from "../../utils/common";
 import { HugeiconsIcon } from "@hugeicons/vue";
-import {
-  Tick01Icon,
-  ArrowDown01Icon,
-} from "@hugeicons/core-free-icons";
+import { Tick01Icon, ArrowDown01Icon } from "@hugeicons/core-free-icons";
 
 const emit = defineEmits([
   "toggle-payment-status",
@@ -71,7 +68,9 @@ const openDetails = () => {
           {{ payer.name[0]?.toUpperCase() }}
         </div>
         <div class="flex-1 min-w-0">
-          <h2 class="text-xl font-black text-neutral-800 tracking-tight truncate w-full">
+          <h2
+            class="text-xl font-black text-neutral-800 tracking-tight truncate w-full"
+          >
             {{ payer.name }}
           </h2>
           <div
@@ -84,7 +83,9 @@ const openDetails = () => {
           </div>
         </div>
       </div>
-      <div class="flex items-center gap-2 self-start flex-wrap sm:flex-nowrap min-w-0 max-w-full">
+      <div
+        class="flex items-center gap-2 self-start flex-wrap sm:flex-nowrap min-w-0 max-w-full"
+      >
         <div
           class="px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 min-w-0 truncate"
           :class="
@@ -98,13 +99,13 @@ const openDetails = () => {
             :class="payer.paid ? 'bg-green-500' : 'bg-orange-500'"
           ></span>
           <span class="truncate">
-          {{
-            payer.paid
-              ? $t("summary.settled")
-              : $t("summary.owes", {
-                  amount: `฿${formatCurrency(payer.unpaidAmountDue)}`,
-                })
-          }}
+            {{
+              payer.paid
+                ? $t("summary.settled")
+                : $t("summary.owes", {
+                    amount: `฿${formatCurrency(payer.unpaidAmountDue)}`,
+                  })
+            }}
           </span>
         </div>
         <button

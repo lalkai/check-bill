@@ -79,7 +79,8 @@ function handleDeleteGroup(groupId) {
         <div
           class="flex items-baseline min-w-0 text-3xl sm:text-4xl relative z-10 overflow-hidden"
         >
-          <span class="text-xl sm:text-2xl opacity-80 mr-1 flex-shrink-0">฿</span
+          <span class="text-xl sm:text-2xl opacity-80 mr-1 flex-shrink-0"
+            >฿</span
           ><span class="font-black tracking-tight truncate">{{
             formatCurrency(groupsStore.totalAllGroupsAmount)
           }}</span>
@@ -127,7 +128,11 @@ function handleDeleteGroup(groupId) {
             @click="toggleLanguage"
             class="text-[10px] font-black text-neutral-400 hover:text-neutral-600 transition-colors uppercase tracking-[0.1em] bg-neutral-100 px-3 py-2 rounded-xl flex items-center gap-1.5 active:scale-95 border border-neutral-200"
           >
-            <HugeiconsIcon :icon="TranslationIcon" size="14" stroke-width="2.5" />
+            <HugeiconsIcon
+              :icon="TranslationIcon"
+              size="14"
+              stroke-width="2.5"
+            />
             {{ currentLocale }}
           </button>
         </div>

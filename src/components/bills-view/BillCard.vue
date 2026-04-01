@@ -67,7 +67,9 @@ function editBill() {
           </div>
         </div>
       </div>
-      <div class="flex flex-col items-end pt-0.5 flex-shrink-0 min-w-0 max-w-[40%]">
+      <div
+        class="flex flex-col items-end pt-0.5 flex-shrink-0 min-w-0 max-w-[40%]"
+      >
         <span
           class="text-2xl font-black text-neutral-800 flex-shrink-0 whitespace-nowrap tracking-tight truncate w-full text-right"
         >
@@ -104,7 +106,11 @@ function editBill() {
             class="p-2 rounded-xl bg-neutral-50 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors flex items-center justify-center"
             :title="$t('actions.edit')"
           >
-            <HugeiconsIcon :icon="PencilEdit01Icon" size="16" stroke-width="2.5" />
+            <HugeiconsIcon
+              :icon="PencilEdit01Icon"
+              size="16"
+              stroke-width="2.5"
+            />
           </button>
           <button
             @click="removeBill"

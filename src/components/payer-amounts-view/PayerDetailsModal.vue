@@ -40,7 +40,9 @@ import { formatCurrency } from "../../utils/common";
               {{ payer.name[0]?.toUpperCase() }}
             </div>
             <div class="flex-1 min-w-0">
-              <h2 class="text-xl font-black text-neutral-800 tracking-tight truncate w-full">
+              <h2
+                class="text-xl font-black text-neutral-800 tracking-tight truncate w-full"
+              >
                 {{ payer.name }}
               </h2>
               <div
@@ -79,7 +81,8 @@ import { formatCurrency } from "../../utils/common";
               class="text-[11px] font-black text-neutral-500 uppercase tracking-widest flex-shrink-0"
               >{{ $t("summary.total") }}</span
             >
-            <span class="text-2xl font-black text-primary truncate min-w-0 text-right"
+            <span
+              class="text-2xl font-black text-primary truncate min-w-0 text-right"
               ><span class="text-lg opacity-60 mr-0.5">฿</span
               >{{ formatCurrency(payer.totalAmountDue) }}</span
             >
@@ -96,7 +99,9 @@ import { formatCurrency } from "../../utils/common";
             >
               <div class="flex justify-between items-start gap-2">
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-black text-neutral-700 tracking-tight truncate w-full">
+                  <p
+                    class="text-sm font-black text-neutral-700 tracking-tight truncate w-full"
+                  >
                     {{ item.description }}
                   </p>
                   <div

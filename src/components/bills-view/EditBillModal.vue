@@ -211,7 +211,11 @@ function menuPeoplePay(person) {
                 @click="showCalculator = true"
                 class="absolute right-3 top-10 p-1 text-neutral-400 hover:text-primary transition-colors flex items-center justify-center"
               >
-                <HugeiconsIcon :icon="CalculatorIcon" size="20" stroke-width="2.5" />
+                <HugeiconsIcon
+                  :icon="CalculatorIcon"
+                  size="20"
+                  stroke-width="2.5"
+                />
               </button>
             </div>
             <div>

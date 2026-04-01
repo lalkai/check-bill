@@ -101,11 +101,7 @@ function switchView(view) {
             @click="goHome"
             class="p-2 -ml-2 rounded-2xl hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700 transition-all active:scale-90 flex items-center justify-center"
           >
-            <HugeiconsIcon
-              :icon="ArrowLeft01Icon"
-              size="20"
-              stroke-width="3"
-            />
+            <HugeiconsIcon :icon="ArrowLeft01Icon" size="20" stroke-width="3" />
           </button>
           <h1
             class="text-sm font-black text-neutral-700 uppercase tracking-widest truncate max-w-[200px]"

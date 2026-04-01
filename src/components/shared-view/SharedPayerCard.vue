@@ -76,7 +76,9 @@ const handlePaymentClick = () => {
           {{ payer.name[0]?.toUpperCase() }}
         </div>
         <div class="flex-1 min-w-0">
-          <h2 class="text-xl font-black text-neutral-800 tracking-tight truncate w-full">
+          <h2
+            class="text-xl font-black text-neutral-800 tracking-tight truncate w-full"
+          >
             {{ payer.name }}
           </h2>
           <div
@@ -102,13 +104,13 @@ const handlePaymentClick = () => {
           :class="payer.paid ? 'bg-green-500' : 'bg-orange-500'"
         ></span>
         <span class="truncate">
-        {{
-          payer.paid
-            ? $t("shared.settled")
-            : $t("shared.owesAmount", {
-                amount: formatCurrency(payer.unpaidAmountDue),
-              })
-        }}
+          {{
+            payer.paid
+              ? $t("shared.settled")
+              : $t("shared.owesAmount", {
+                  amount: formatCurrency(payer.unpaidAmountDue),
+                })
+          }}
         </span>
       </div>
     </div>
@@ -178,7 +180,9 @@ const handlePaymentClick = () => {
         >
           <div class="flex justify-between items-start gap-4">
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-black text-neutral-700 tracking-tight truncate w-full">
+              <p
+                class="text-sm font-black text-neutral-700 tracking-tight truncate w-full"
+              >
                 {{ item.description }}
               </p>
               <p

@@ -75,7 +75,8 @@ const settlements = computed(() => {
             {{ $t("dashboard.totalSpend") }}
           </p>
           <div class="flex items-baseline gap-1 min-w-0 overflow-hidden">
-            <span class="text-3xl sm:text-4xl font-black text-neutral-700 truncate"
+            <span
+              class="text-3xl sm:text-4xl font-black text-neutral-700 truncate"
               >฿{{ formatCurrency(totalSpend) }}</span
             >
           </div>
