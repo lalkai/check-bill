@@ -4,6 +4,15 @@ import { useI18n } from "vue-i18n";
 import { useBillStore } from "../../stores/Bills";
 import { recognizeReceipt, terminateWorker } from "../../utils/ocrEngine.js";
 import { preventNonNumberInput, formatCurrency } from "../../utils/common";
+import { HugeiconsIcon } from "@hugeicons/vue";
+import {
+  Cancel01Icon,
+  CloudUploadIcon,
+  Tick01Icon,
+  Delete02Icon,
+  RefreshIcon,
+  Add01Icon,
+} from "@hugeicons/core-free-icons";
 
 const billStore = useBillStore();
 const { t: $t } = useI18n();
@@ -248,22 +257,9 @@ function startOcrOver() {
           </h2>
           <button
             @click="closeOcrModal"
-            class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 hover:bg-neutral-200 transition-colors"
+            class="p-2 rounded-xl hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700 transition-colors flex items-center justify-center"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2.5"
-              stroke="currentColor"
-              class="w-4 h-4"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6 18 18 6M6 6l12 12"
-              />
-            </svg>
+            <HugeiconsIcon :icon="Cancel01Icon" size="20" stroke-width="2.5" />
           </button>
         </div>
 
@@ -358,20 +354,11 @@ function startOcrOver() {
               <div
                 class="mx-auto w-16 h-16 mb-6 flex items-center justify-center rounded-2xl bg-white shadow-sm border border-neutral-100 group-hover:scale-110 transition-transform"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="2"
-                  stroke="currentColor"
-                  class="w-8 h-8 text-neutral-400"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18.75 19.5H6.75Z"
-                  />
-                </svg>
+                <HugeiconsIcon
+                  :icon="CloudUploadIcon"
+                  size="32"
+                  class="text-neutral-300"
+                />
               </div>
               <h3
                 class="text-sm font-black text-neutral-700 tracking-tight mb-2"

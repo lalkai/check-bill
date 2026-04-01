@@ -5,6 +5,12 @@ import { usePeopleStore } from "../../stores/People";
 import { useI18n } from "vue-i18n";
 import { preventNonNumberInput } from "../../utils/common";
 import Calculator from "../common/Calculator.vue";
+import { HugeiconsIcon } from "@hugeicons/vue";
+import {
+  Cancel01Icon,
+  CalculatorIcon,
+  Tick01Icon,
+} from "@hugeicons/core-free-icons";
 
 const { t: $t } = useI18n();
 const billStore = useBillStore();
@@ -165,20 +171,7 @@ function menuPeoplePay(person) {
             @click="closeModal"
             class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 hover:bg-neutral-200 transition-colors"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2.5"
-              stroke="currentColor"
-              class="w-4 h-4"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6 18 18 6M6 6l12 12"
-              />
-            </svg>
+            <HugeiconsIcon :icon="Cancel01Icon" size="16" stroke-width="2.5" />
           </button>
         </div>
 
@@ -194,7 +187,7 @@ function menuPeoplePay(person) {
               v-model="editedBillDescription"
               type="text"
               :placeholder="$t('bills.descriptionPlaceholder')"
-              class="w-full px-5 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-700 placeholder-neutral-300"
+              class="w-full px-5 py-4 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-700 placeholder-neutral-300"
             />
           </div>
 
@@ -211,27 +204,14 @@ function menuPeoplePay(person) {
                 type="number"
                 min="0"
                 :placeholder="$t('bills.amountPlaceholder')"
-                class="w-full pl-5 pr-10 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-black text-neutral-700 placeholder-neutral-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                class="w-full pl-5 pr-10 py-4 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-black text-neutral-700 placeholder-neutral-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 @keypress="preventNonNumberInput"
               />
               <button
                 @click="showCalculator = true"
-                class="absolute right-3 top-10 p-1 text-neutral-400 hover:text-primary transition-colors"
+                class="absolute right-3 top-10 p-1 text-neutral-400 hover:text-primary transition-colors flex items-center justify-center"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="2.5"
-                  stroke="currentColor"
-                  class="w-5 h-5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm0 2.25h.008v.008H8.25v-.008ZM10.5 7.125h-3v1.5m3-1.5v1.5m-3-1.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H13.5m-3.75 0V7.125m0 0h-3"
-                  />
-                </svg>
+                <HugeiconsIcon :icon="CalculatorIcon" size="20" stroke-width="2.5" />
               </button>
             </div>
             <div>
@@ -244,7 +224,7 @@ function menuPeoplePay(person) {
                 id="edit-date"
                 v-model="editedBillDate"
                 type="date"
-                class="w-full px-5 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-600 cursor-pointer"
+                class="w-full px-5 py-4 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-600 cursor-pointer"
               />
             </div>
           </div>
@@ -272,7 +252,7 @@ function menuPeoplePay(person) {
                   :class="
                     selectedPeople.includes(person.name)
                       ? 'bg-primary/10 border-primary/20 shadow-sm'
-                      : 'bg-white border-transparent hover:border-neutral-200 shadow-sm'
+                      : 'bg-white border-neutral-200 hover:border-neutral-200 shadow-sm'
                   "
                 >
                   <div
@@ -283,21 +263,13 @@ function menuPeoplePay(person) {
                         : 'bg-white border-neutral-300'
                     "
                   >
-                    <svg
+                    <HugeiconsIcon
                       v-if="selectedPeople.includes(person.name)"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      class="w-3.5 h-3.5 text-white"
+                      :icon="Tick01Icon"
+                      size="14"
                       stroke-width="3"
-                    >
-                      <path
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="m5 12 5 5L20 7"
-                      ></path>
-                    </svg>
+                      class="text-white"
+                    />
                   </div>
                   <span class="text-sm font-black text-neutral-700">{{
                     person.name

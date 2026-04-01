@@ -2,6 +2,8 @@
 import { usePeopleStore } from "../../stores/People";
 import { useBillStore } from "../../stores/Bills";
 import { useI18n } from "vue-i18n";
+import { HugeiconsIcon } from "@hugeicons/vue";
+import { MinusSignIcon } from "@hugeicons/core-free-icons";
 
 const { t: $t } = useI18n();
 
@@ -50,14 +52,14 @@ function removePerson() {
   <li
     class="p-5 flex items-center justify-between hover:bg-neutral-50/50 transition-colors group"
   >
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-4 flex-1 min-w-0">
       <div
-        class="w-12 h-12 rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-500 font-black text-lg border border-neutral-200 group-hover:scale-110 transition-transform"
+        class="w-12 h-12 flex-shrink-0 rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-500 font-black text-lg border border-neutral-200 group-hover:scale-110 transition-transform"
       >
         {{ person.name[0]?.toUpperCase() }}
       </div>
       <span
-        class="text-base font-black text-neutral-800 tracking-tight break-words"
+        class="text-base font-black text-neutral-800 tracking-tight truncate block w-full"
         >{{ person.name }}</span
       >
     </div>
@@ -67,16 +69,7 @@ function removePerson() {
       :aria-label="$t('people.removeMember')"
       :title="$t('people.removeMember')"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="2.5"
-        stroke="currentColor"
-        class="w-5 h-5"
-      >
-        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" />
-      </svg>
+      <HugeiconsIcon :icon="MinusSignIcon" size="20" stroke-width="3" />
     </button>
   </li>
 </template>

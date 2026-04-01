@@ -5,6 +5,8 @@ import { usePeopleStore } from "../stores/People";
 import { useBillGroupsStore } from "../stores/BillGroups";
 import { useI18n } from "vue-i18n";
 import { formatCurrency } from "../utils/common";
+import { HugeiconsIcon } from "@hugeicons/vue";
+import { Invoice01Icon } from "@hugeicons/core-free-icons";
 
 const { t: $t } = useI18n();
 const billStore = useBillStore();
@@ -53,47 +55,47 @@ const settlements = computed(() => {
     <div
       class="bg-white rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50"
     >
-      <div class="flex flex-col gap-1.5">
+      <div class="flex flex-col gap-1.5 min-w-0">
         <span
-          class="text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-70"
+          class="text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-70 flex-shrink-0"
           >{{ $t("dashboard.currentGroup") }}</span
         >
         <h1
-          class="text-3xl font-black text-neutral-700 leading-tight tracking-tight"
+          class="text-3xl font-black text-neutral-700 leading-tight tracking-tight truncate w-full"
         >
           {{ activeGroup?.name || $t("dashboard.myTrip") }}
         </h1>
       </div>
 
-      <div class="mt-8 flex items-end justify-between">
-        <div>
+      <div class="mt-8 flex items-end justify-between gap-4">
+        <div class="min-w-0 flex-1">
           <p
             class="text-xs text-neutral-400 font-bold uppercase tracking-wider mb-1"
           >
             {{ $t("dashboard.totalSpend") }}
           </p>
-          <div class="flex items-baseline gap-1">
-            <span class="text-4xl font-black text-neutral-700"
+          <div class="flex items-baseline gap-1 min-w-0 overflow-hidden">
+            <span class="text-3xl sm:text-4xl font-black text-neutral-700 truncate"
               >฿{{ formatCurrency(totalSpend) }}</span
             >
           </div>
         </div>
         <div
-          class="bg-neutral-50 px-4 py-2 rounded-2xl flex items-center gap-2 border border-neutral-100"
+          class="bg-neutral-50 px-4 py-2 rounded-2xl flex items-center gap-2 border border-neutral-100 flex-shrink-0"
         >
           <div class="flex -space-x-2">
             <div
-              v-for="(person, i) in peopleStore.list.slice(0, 3)"
+              v-for="(person, i) in peopleStore.list.slice(0, 1)"
               :key="i"
               class="w-7 h-7 rounded-full bg-white border-2 border-neutral-100 flex items-center justify-center text-[10px] font-bold text-neutral-400 shadow-sm"
             >
               {{ person.name[0]?.toUpperCase() }}
             </div>
             <div
-              v-if="groupSize > 3"
+              v-if="groupSize > 1"
               class="w-7 h-7 rounded-full bg-primary/10 border-2 border-white flex items-center justify-center text-[10px] font-bold text-primary shadow-sm"
             >
-              +{{ groupSize - 3 }}
+              +{{ groupSize - 1 }}
             </div>
             <div
               v-if="groupSize === 0"
@@ -140,13 +142,13 @@ const settlements = computed(() => {
           </div>
 
           <!-- Bottom Summary -->
-          <div class="flex items-center justify-between mt-auto">
+          <div class="flex items-center justify-between mt-auto gap-2">
             <span
-              class="text-[9px] font-black text-neutral-400 uppercase tracking-[0.15em]"
+              class="text-[9px] font-black text-neutral-400 uppercase tracking-[0.15em] flex-shrink-0"
               >{{ $t("dashboard.owes") }}</span
             >
             <div
-              class="bg-orange-50 px-4 py-2 rounded-xl text-orange-600 font-black text-sm border border-orange-100/50"
+              class="bg-orange-50 px-4 py-2 rounded-xl text-orange-600 font-black text-sm border border-orange-100/50 truncate min-w-0 flex-1 text-right"
             >
               ฿{{ formatCurrency(settlement.amount) }}
             </div>
@@ -180,28 +182,15 @@ const settlements = computed(() => {
             :key="bill.id"
             class="p-5 flex items-center justify-between hover:bg-neutral-50/50 transition-colors group"
           >
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 flex-1 min-w-0 pr-4">
               <div
-                class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500 border border-blue-100/50 group-hover:scale-110 transition-transform"
+                class="w-12 h-12 flex-shrink-0 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500 border border-blue-100/50 group-hover:scale-110 transition-transform"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="2.5"
-                  stroke="currentColor"
-                  class="w-5 h-5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-                  />
-                </svg>
+                <HugeiconsIcon :icon="Invoice01Icon" size="20" />
               </div>
-              <div class="flex flex-col">
+              <div class="flex flex-col flex-1 min-w-0">
                 <span
-                  class="text-sm font-black text-neutral-700 tracking-tight"
+                  class="text-sm font-black text-neutral-700 tracking-tight truncate w-full"
                   >{{ bill.description }}</span
                 >
                 <span
@@ -213,8 +202,8 @@ const settlements = computed(() => {
                 >
               </div>
             </div>
-            <div class="text-right">
-              <span class="text-sm font-black text-neutral-700"
+            <div class="text-right flex-shrink-0 min-w-0 max-w-[35%]">
+              <span class="text-sm font-black text-neutral-700 truncate block"
                 >฿{{ formatCurrency(bill.amount) }}</span
               >
             </div>

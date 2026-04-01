@@ -2,6 +2,8 @@
 import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { COLOR_PALETTE } from "../../stores/BillGroups";
+import { HugeiconsIcon } from "@hugeicons/vue";
+import { Cancel01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 
 const { t: $t } = useI18n();
 const props = defineProps({
@@ -59,20 +61,7 @@ function handleClose() {
             @click="handleClose"
             class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 hover:bg-neutral-200 transition-colors"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2.5"
-              stroke="currentColor"
-              class="w-4 h-4"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6 18 18 6M6 6l12 12"
-              />
-            </svg>
+            <HugeiconsIcon :icon="Cancel01Icon" size="16" stroke-width="2.5" />
           </button>
         </div>
 
@@ -86,7 +75,7 @@ function handleClose() {
             v-model="name"
             type="text"
             :placeholder="$t('group.groupPlaceholder')"
-            class="w-full px-5 py-4 rounded-2xl bg-neutral-50 border-2 border-transparent focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-700 placeholder-neutral-300"
+            class="w-full px-5 py-4 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-700 placeholder-neutral-300"
             @keyup.enter="handleSave"
           />
         </div>
@@ -112,21 +101,13 @@ function handleClose() {
                 selectedColor === color ? 'ring-4 ring-offset-2 scale-110' : ''
               "
             >
-              <svg
+              <HugeiconsIcon
                 v-if="selectedColor === color"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
+                :icon="Tick01Icon"
+                size="20"
                 stroke-width="3"
-                stroke="white"
-                class="w-5 h-5 drop-shadow-sm"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="m4.5 12.75 6 6 9-13.5"
-                />
-              </svg>
+                class="text-white drop-shadow-sm"
+              />
             </button>
           </div>
         </div>

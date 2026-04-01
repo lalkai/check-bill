@@ -14,6 +14,11 @@ const props = defineProps({
 });
 
 import { formatCurrency } from "../../utils/common";
+import { HugeiconsIcon } from "@hugeicons/vue";
+import {
+  Tick01Icon,
+  ArrowDown01Icon,
+} from "@hugeicons/core-free-icons";
 
 const emit = defineEmits([
   "toggle-payment-status",
@@ -58,30 +63,30 @@ const openDetails = () => {
     <div
       class="flex flex-col sm:flex-row justify-between sm:items-start gap-4 sm:gap-0"
     >
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-4 flex-1 min-w-0">
         <div
-          class="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-sm font-black text-xl transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
+          class="w-14 h-14 flex-shrink-0 rounded-2xl flex items-center justify-center text-white shadow-sm font-black text-xl transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
           :class="payer.paid ? 'bg-green-500' : 'bg-orange-500'"
         >
           {{ payer.name[0]?.toUpperCase() }}
         </div>
-        <div>
-          <h2 class="text-xl font-black text-neutral-800 tracking-tight">
+        <div class="flex-1 min-w-0">
+          <h2 class="text-xl font-black text-neutral-800 tracking-tight truncate w-full">
             {{ payer.name }}
           </h2>
           <div
-            class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-0.5"
+            class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-0.5 truncate flex items-center gap-1"
           >
-            {{ $t("summary.total") }}
-            <span class="font-black text-neutral-700"
+            <span class="flex-shrink-0">{{ $t("summary.total") }}</span>
+            <span class="font-black text-neutral-700 truncate"
               >฿{{ formatCurrency(payer.totalAmountDue) }}</span
             >
           </div>
         </div>
       </div>
-      <div class="flex items-center gap-2 self-start flex-wrap sm:flex-nowrap">
+      <div class="flex items-center gap-2 self-start flex-wrap sm:flex-nowrap min-w-0 max-w-full">
         <div
-          class="px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5"
+          class="px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 min-w-0 truncate"
           :class="
             payer.paid
               ? 'bg-green-50 text-green-600 border border-green-200/50'
@@ -89,9 +94,10 @@ const openDetails = () => {
           "
         >
           <span
-            class="w-1.5 h-1.5 rounded-full"
+            class="w-1.5 h-1.5 rounded-full flex-shrink-0"
             :class="payer.paid ? 'bg-green-500' : 'bg-orange-500'"
           ></span>
+          <span class="truncate">
           {{
             payer.paid
               ? $t("summary.settled")
@@ -99,26 +105,14 @@ const openDetails = () => {
                   amount: `฿${formatCurrency(payer.unpaidAmountDue)}`,
                 })
           }}
+          </span>
         </div>
         <button
           v-if="!payer.paid"
           @click.stop="settleAll"
           class="bg-neutral-800 text-white font-black text-[10px] uppercase tracking-widest py-2 px-4 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-sm flex items-center gap-1.5"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="2.5"
-            stroke="currentColor"
-            class="w-3 h-3"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="m4.5 12.75 6 6 9-13.5"
-            />
-          </svg>
+          <HugeiconsIcon :icon="Tick01Icon" size="12" stroke-width="3" />
           {{ $t("summary.settleAllComplete") }}
         </button>
       </div>
@@ -150,21 +144,12 @@ const openDetails = () => {
                   : 'bg-white border-2 border-neutral-200 text-neutral-400 hover:border-neutral-300 hover:text-neutral-600'
               "
             >
-              <svg
+              <HugeiconsIcon
                 v-if="peopleStore.getPaidStatusByDate(payer.name, item.date)"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
+                :icon="Tick01Icon"
+                size="14"
                 stroke-width="3"
-                stroke="currentColor"
-                class="w-3.5 h-3.5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="m4.5 12.75 6 6 9-13.5"
-                />
-              </svg>
+              />
               {{
                 peopleStore.getPaidStatusByDate(payer.name, item.date)
                   ? $t("summary.paid")
@@ -186,21 +171,13 @@ const openDetails = () => {
             ? $t("summary.hide")
             : $t("summary.showMore", { count: allDatesArray.length - 2 })
         }}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
+        <HugeiconsIcon
+          :icon="ArrowDown01Icon"
+          size="12"
           stroke-width="3"
-          stroke="currentColor"
-          class="w-3 h-3 transition-transform duration-300"
+          class="transition-transform duration-300"
           :class="showAllDates ? 'rotate-180' : ''"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="m19.5 8.25-7.5 7.5-7.5-7.5"
-          />
-        </svg>
+        />
       </button>
     </div>
   </div>

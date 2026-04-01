@@ -26,7 +26,7 @@ export default {
     dashboard: "Dashboard",
     activity: "Activity",
     settle: "Settle",
-    settings: "Settings",
+    people: "Members",
   },
   actions: {
     confirmDelete: "Delete this group? All data will be lost.",

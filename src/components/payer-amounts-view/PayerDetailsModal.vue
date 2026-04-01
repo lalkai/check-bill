@@ -33,14 +33,14 @@ import { formatCurrency } from "../../utils/common";
         class="relative bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-md p-8 animate-modalIn border border-white/20 max-h-[90vh] flex flex-col"
       >
         <div class="flex justify-between items-start mb-6">
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-4 flex-1 min-w-0 pr-4">
             <div
-              class="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-sm font-black text-xl bg-primary"
+              class="w-14 h-14 flex-shrink-0 rounded-2xl flex items-center justify-center text-white shadow-sm font-black text-xl bg-primary"
             >
               {{ payer.name[0]?.toUpperCase() }}
             </div>
-            <div>
-              <h2 class="text-xl font-black text-neutral-800 tracking-tight">
+            <div class="flex-1 min-w-0">
+              <h2 class="text-xl font-black text-neutral-800 tracking-tight truncate w-full">
                 {{ payer.name }}
               </h2>
               <div
@@ -73,13 +73,13 @@ import { formatCurrency } from "../../utils/common";
 
         <div class="flex-1 overflow-hidden flex flex-col">
           <div
-            class="flex justify-between items-center mb-6 bg-primary/5 px-5 py-4 rounded-2xl border border-primary/10"
+            class="flex justify-between items-center mb-6 bg-primary/5 px-5 py-4 rounded-2xl border border-primary/10 gap-4"
           >
             <span
-              class="text-[11px] font-black text-neutral-500 uppercase tracking-widest"
+              class="text-[11px] font-black text-neutral-500 uppercase tracking-widest flex-shrink-0"
               >{{ $t("summary.total") }}</span
             >
-            <span class="text-2xl font-black text-primary"
+            <span class="text-2xl font-black text-primary truncate min-w-0 text-right"
               ><span class="text-lg opacity-60 mr-0.5">฿</span
               >{{ formatCurrency(payer.totalAmountDue) }}</span
             >
@@ -95,8 +95,8 @@ import { formatCurrency } from "../../utils/common";
               class="p-4 border-2 border-neutral-100 rounded-2xl bg-neutral-50/50"
             >
               <div class="flex justify-between items-start gap-2">
-                <div class="flex-1">
-                  <p class="text-sm font-black text-neutral-700 tracking-tight">
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-black text-neutral-700 tracking-tight truncate w-full">
                     {{ item.description }}
                   </p>
                   <div
@@ -105,7 +105,7 @@ import { formatCurrency } from "../../utils/common";
                     {{ item.date }}
                   </div>
                 </div>
-                <span class="text-sm font-black text-neutral-800"
+                <span class="text-sm font-black text-neutral-800 flex-shrink-0"
                   >฿{{ formatCurrency(item.amount) }}</span
                 >
               </div>

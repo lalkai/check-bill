@@ -11,6 +11,8 @@ const props = defineProps({
 const emit = defineEmits(["click", "edit", "delete"]);
 
 import { formatCurrency } from "../../utils/common";
+import { HugeiconsIcon } from "@hugeicons/vue";
+import { Invoice01Icon, PencilEdit01Icon, Delete02Icon } from "@hugeicons/core-free-icons";
 
 function onEdit(e) {
   e.stopPropagation();
@@ -28,32 +30,19 @@ function onDelete(e) {
     class="bg-white rounded-[2.5rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50 cursor-pointer group relative transition-all hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
     @click="emit('click')"
   >
-    <div class="flex justify-between items-start mb-6">
-      <div class="flex items-center gap-4">
+    <div class="flex justify-between items-start mb-6 gap-4">
+      <div class="flex items-center gap-4 flex-1 min-w-0">
         <!-- Colored Icon Box -->
         <div
-          class="w-14 h-14 rounded-[1.25rem] flex items-center justify-center text-white shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
+          class="w-14 h-14 flex-shrink-0 rounded-[1.25rem] flex items-center justify-center text-white shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
           :style="{ backgroundColor: group.color }"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="2.5"
-            stroke="currentColor"
-            class="w-7 h-7"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"
-            />
-          </svg>
+          <HugeiconsIcon :icon="Invoice01Icon" size="28" stroke-width="2.5" />
         </div>
 
         <!-- Title & Subtitle -->
-        <div class="flex flex-col">
-          <h3 class="font-black text-neutral-800 text-xl tracking-tight mb-0.5">
+        <div class="flex flex-col min-w-0">
+          <h3 class="font-black text-neutral-800 text-xl tracking-tight mb-0.5 truncate w-full">
             {{ group.name }}
           </h3>
           <div
@@ -70,61 +59,35 @@ function onDelete(e) {
 
       <!-- Actions -->
       <div
-        class="flex items-center gap-2 transition-opacity duration-200 opacity-100 ml-4"
+        class="flex items-center gap-2 transition-opacity duration-200 opacity-100 flex-shrink-0"
       >
         <button
           @click="onEdit"
-          class="p-2 rounded-xl bg-neutral-50 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
+          class="p-2 rounded-xl bg-neutral-50 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors flex items-center justify-center"
           :title="$t('actions.edit')"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="2.5"
-            stroke="currentColor"
-            class="w-4 h-4"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-            />
-          </svg>
+          <HugeiconsIcon :icon="PencilEdit01Icon" size="16" stroke-width="2.5" />
         </button>
         <button
           @click="onDelete"
-          class="p-2 rounded-xl bg-red-50 text-red-400 hover:text-red-600 hover:bg-red-100 transition-colors"
+          class="p-2 rounded-xl bg-red-50 text-red-400 hover:text-red-600 hover:bg-red-100 transition-colors flex items-center justify-center"
           :title="$t('actions.delete')"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="2.5"
-            stroke="currentColor"
-            class="w-4 h-4"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-            />
-          </svg>
+          <HugeiconsIcon :icon="Delete02Icon" size="16" stroke-width="2.5" />
         </button>
       </div>
     </div>
 
     <div
-      class="flex items-end justify-between border-t border-dashed border-neutral-100/80 pt-4 mt-2"
+      class="flex items-end justify-between border-t border-dashed border-neutral-100/80 pt-4 mt-2 gap-4"
     >
       <div
-        class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest pb-1"
+        class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest pb-1 flex-shrink-0"
       >
         {{ $t("group.totalSpend") }}
       </div>
       <div
-        class="text-2xl font-black transition-colors duration-200"
+        class="text-2xl font-black transition-colors duration-200 truncate min-w-0"
         :style="{ color: group.color }"
       >
         <span class="text-lg opacity-80 mr-0.5">฿</span

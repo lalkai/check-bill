@@ -26,7 +26,7 @@ export default {
     dashboard: "หน้าแรก",
     activity: "รายการบิล",
     settle: "สรุปยอด",
-    settings: "สมาชิก",
+    people: "สมาชิก",
   },
   actions: {
     confirmDelete: "ลบกลุ่มนี้ใช่หรือไม่? ข้อมูลทั้งหมดจะหายไป",

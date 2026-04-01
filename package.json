@@ -1,6 +1,6 @@
 {
   "name": "checkbill",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@hugeicons/core-free-icons": "^4.1.1",
+    "@hugeicons/vue": "^1.0.5",
     "checkbill": "file:",
     "dom-to-image-more": "^3.3.0",
     "html2canvas-pro": "^1.5.1",
