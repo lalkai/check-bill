@@ -82,11 +82,13 @@ function editBill() {
     <!-- Payers List -->
     <div class="mt-2 pt-4 border-t border-dashed border-neutral-100">
       <div class="flex items-center justify-between">
-        <div class="flex flex-wrap gap-2">
+        <div
+          class="flex flex-nowrap gap-2 overflow-x-auto scrollbar-hide flex-1 min-w-0"
+        >
           <div
             v-for="payer in bill.payers"
             :key="payer.name"
-            class="inline-block bg-neutral-100 text-neutral-600 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wide border border-neutral-200 truncate max-w-[120px] align-middle"
+            class="flex-shrink-0 inline-block bg-neutral-100 text-neutral-600 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wide border border-neutral-200 truncate max-w-[120px] align-middle"
           >
             {{ payer.name }}
           </div>

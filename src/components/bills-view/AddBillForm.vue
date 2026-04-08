@@ -6,7 +6,7 @@ import Calculator from "../common/Calculator.vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import {
   Camera01Icon,
-  CalculatorIcon,
+  Calculator01Icon,
   Add01Icon,
 } from "@hugeicons/core-free-icons";
 
@@ -97,7 +97,7 @@ function openOcrModal() {
             class="absolute right-3 top-9 p-1 text-neutral-400 hover:text-primary transition-colors flex items-center justify-center"
           >
             <HugeiconsIcon
-              :icon="CalculatorIcon"
+              :icon="Calculator01Icon"
               size="20"
               stroke-width="2.5"
             />
@@ -123,7 +123,7 @@ function openOcrModal() {
           <button
             @click="addBill"
             :disabled="!newBillDescription.trim() || !newBillAmount"
-            class="w-full bg-neutral-800 text-white font-black text-[11px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            class="w-full bg-neutral-800 text-white font-black text-[11px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2"
           >
             <HugeiconsIcon :icon="Add01Icon" size="16" stroke-width="3" />
             {{ $t("bills.addExpense") }}

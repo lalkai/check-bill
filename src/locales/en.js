@@ -1,4 +1,11 @@
 export default {
+  meta: {
+    title: "CheckBill - Easy Bill Splitting",
+    description:
+      "Easily split bills, calculate shares, and manage group expenses.",
+    keywords:
+      "bill splitter, checkbill, share expenses, receipt scanner, group tab",
+  },
   dashboard: {
     totalAllGroups: "Total All Groups",
     totalGroups: "Total Groups",

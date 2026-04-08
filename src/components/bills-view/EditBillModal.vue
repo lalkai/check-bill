@@ -8,7 +8,7 @@ import Calculator from "../common/Calculator.vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import {
   Cancel01Icon,
-  CalculatorIcon,
+  Calculator01Icon,
   Tick01Icon,
 } from "@hugeicons/core-free-icons";
 
@@ -212,7 +212,7 @@ function menuPeoplePay(person) {
                 class="absolute right-3 top-10 p-1 text-neutral-400 hover:text-primary transition-colors flex items-center justify-center"
               >
                 <HugeiconsIcon
-                  :icon="CalculatorIcon"
+                  :icon="Calculator01Icon"
                   size="20"
                   stroke-width="2.5"
                 />
@@ -304,6 +304,7 @@ function menuPeoplePay(person) {
     opacity: 0;
     transform: scale(0.95) translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);

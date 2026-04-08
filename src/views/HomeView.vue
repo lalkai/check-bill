@@ -126,7 +126,7 @@ function handleDeleteGroup(groupId) {
           <!-- Language Toggle -->
           <button
             @click="toggleLanguage"
-            class="text-[10px] font-black text-neutral-400 hover:text-neutral-600 transition-colors uppercase tracking-[0.1em] bg-neutral-100 px-3 py-2 rounded-xl flex items-center gap-1.5 active:scale-95 border border-neutral-200"
+            class="text-[10px] font-black text-neutral-600 transition-colors uppercase tracking-[0.1em] bg-neutral-100 px-3 py-2 rounded-xl flex items-center gap-1.5 active:scale-95 border border-neutral-200"
           >
             <HugeiconsIcon
               :icon="TranslationIcon"

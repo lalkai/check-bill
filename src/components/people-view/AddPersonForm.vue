@@ -39,7 +39,7 @@ function addPerson() {
       <button
         @click="addPerson"
         :disabled="!newPersonName.trim()"
-        class="bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-8 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto w-full gap-2"
+        class="bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-8 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg flex items-center justify-center sm:w-auto w-full gap-2"
       >
         <HugeiconsIcon :icon="Add01Icon" size="20" stroke-width="3" />
         {{ $t("actions.add") }}

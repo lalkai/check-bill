@@ -9,7 +9,12 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "favicon.png", "icon-192.png", "icon-512.png"],
+      includeAssets: [
+        "favicon.ico",
+        "favicon.png",
+        "icon-192.png",
+        "icon-512.png",
+      ],
       manifest: {
         name: "CheckBill",
         short_name: "CheckBill",

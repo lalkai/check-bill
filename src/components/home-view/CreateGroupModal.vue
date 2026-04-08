@@ -44,7 +44,7 @@ function handleClose() {
 
       <!-- Modal -->
       <div
-        class="relative bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-md p-8 animate-modalIn border border-white/20"
+        class="relative bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-md p-8 animate-modalIn border border-white/20 max-h-[90vh] flex flex-col"
       >
         <div class="flex justify-between items-center mb-8">
           <h2 class="text-2xl font-black text-neutral-800 tracking-tight">
@@ -52,9 +52,9 @@ function handleClose() {
           </h2>
           <button
             @click="handleClose"
-            class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 hover:bg-neutral-200 transition-colors"
+            class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-all active:scale-90"
           >
-            <HugeiconsIcon :icon="Cancel01Icon" size="16" stroke-width="2.5" />
+            <HugeiconsIcon :icon="Cancel01Icon" size="20" stroke-width="2.5" />
           </button>
         </div>
 
@@ -127,6 +127,7 @@ function handleClose() {
     opacity: 0;
     transform: scale(0.95) translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
