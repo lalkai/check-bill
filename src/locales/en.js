@@ -157,7 +157,7 @@ export default {
   },
   tools: {
     title: "Tools",
-    pay: "PAY",
+    pay: "PromptPay",
     delQr: "DEL QR",
     shareBill: "SHARE BILL",
     calculator: "Calculator",
