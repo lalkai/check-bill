@@ -4,25 +4,20 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: [
-          "-a-system",
-          "BlinkMacSystemFont",
-          "San Francisco",
-          "Helvetica Neue",
-          "Helvetica",
-          "Ubuntu",
-          "Roboto",
-          "Noto",
-          "Arial",
-          "sans-serif",
-        ],
+        sans: ["Inter", "sans-serif"],
+        heading: ["Outfit", "sans-serif"],
       },
       colors: {
         primary: {
-          DEFAULT: "#0066cc",
-          light: "#147ce5",
-          dark: "#004b96",
+          DEFAULT: "rgb(var(--color-primary-rgb) / <alpha-value>)",
+          light: "rgb(var(--color-primary-light-rgb) / <alpha-value>)",
+          dark: "rgb(var(--color-primary-dark-rgb) / <alpha-value>)",
         },
+        "primary-container": "var(--md-sys-color-primary-container)",
+        surface: "var(--md-sys-color-surface)",
+        "surface-container": "var(--md-sys-color-surface-container)",
+        "on-surface": "var(--md-sys-color-on-surface)",
+        outline: "var(--md-sys-color-outline)",
         secondary: {
           DEFAULT: "#86868b",
         },

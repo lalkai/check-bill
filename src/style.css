@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-primary-rgb: 0 102 204;
+  --color-primary-light-rgb: 20 124 229;
+  --color-primary-dark-rgb: 0 75 150;
+  --md-sys-color-primary: #0066cc;
+  --md-sys-color-primary-container: #e0f2fe;
+  --md-sys-color-surface: #f8f9fa;
+  --md-sys-color-surface-container: #ffffff;
+  --md-sys-color-on-surface: #1f2937;
+  --md-sys-color-outline: #e5e7eb;
+}
+
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
@@ -9,7 +21,7 @@
   }
 
   body {
-    @apply font-sans text-neutral-600 leading-relaxed;
+    @apply font-sans bg-surface text-on-surface;
     scroll-behavior: smooth;
     max-width: 100vw;
     overflow-x: hidden;
@@ -21,7 +33,7 @@
   h4,
   h5,
   h6 {
-    @apply font-sans font-semibold text-neutral-700;
+    @apply font-heading font-black text-on-surface;
   }
 }
 
