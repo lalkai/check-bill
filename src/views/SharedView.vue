@@ -50,7 +50,7 @@ onMounted(() => {
     } catch (lzError) {
       console.warn(
         "Failed to decompress with LZString, trying legacy format:",
-        lzError
+        lzError,
       );
 
       try {
@@ -85,16 +85,31 @@ onMounted(() => {
   }
 });
 
-const openPaymentModal = (payer) => {
-  if (payer.paid) {
+const specificAmount = ref(null);
+const specificTitle = ref("");
+const specificPromptpayID = ref("");
+
+const openPaymentModal = (
+  payer,
+  amount = null,
+  title = "",
+  promptpayID = "",
+) => {
+  if (payer.paid && amount === null) {
     alert($t("shared.alreadySettled"));
     return;
   }
   showQrCodeModalForPayer.value = payer;
+  specificAmount.value = amount;
+  specificTitle.value = title;
+  specificPromptpayID.value = promptpayID || "";
 };
 
 const closePaymentModal = () => {
   showQrCodeModalForPayer.value = null;
+  specificAmount.value = null;
+  specificTitle.value = "";
+  specificPromptpayID.value = "";
 };
 </script>
 
@@ -118,7 +133,7 @@ const closePaymentModal = () => {
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
-          stroke-width="2.5"
+          :stroke-width="2.5"
           stroke="currentColor"
           class="w-5 h-5 text-orange-500 shrink-0"
         >
@@ -162,8 +177,10 @@ const closePaymentModal = () => {
     <!-- Payment QR Code Modal -->
     <PaymentQRModal
       :payer="showQrCodeModalForPayer"
-      :promptpayID="overallPromptpayID"
+      :promptpayID="specificPromptpayID || overallPromptpayID"
       :is-visible="!!showQrCodeModalForPayer"
+      :amount="specificAmount"
+      :title="specificTitle"
       @close="closePaymentModal"
     />
   </div>

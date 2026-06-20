@@ -1,18 +1,23 @@
 <script setup>
 import { ref } from "vue";
-import { useBillStore } from "../stores/Bills";
+import { useBillGroupsStore } from "../stores/BillGroups";
 import AddBillForm from "../components/bills-view/AddBillForm.vue";
 import BillsList from "../components/bills-view/BillsList.vue";
 import EditBillModal from "../components/bills-view/EditBillModal.vue";
 import OCRModal from "../components/bills-view/OCRModal.vue";
 
-const billStore = useBillStore();
+const groupsStore = useBillGroupsStore();
 
 const editingBill = ref(null);
 const showOcrModal = ref(false);
 
 function handleAddBill(billData) {
-  billStore.addBill(billData.description, billData.amount, billData.date);
+  groupsStore.addBill(
+    billData.description,
+    billData.amount,
+    billData.date,
+    billData.icon,
+  );
 }
 
 function handleOpenOcr() {
@@ -33,7 +38,7 @@ function handleCloseOcrModal() {
 </script>
 
 <template>
-  <div>
+  <div class="animate-slide-up">
     <!-- Add Bill Form -->
     <AddBillForm @add-bill="handleAddBill" @open-ocr="handleOpenOcr" />
 

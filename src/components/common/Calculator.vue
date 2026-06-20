@@ -1,6 +1,8 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import { useScrollLock } from "../../composables/useScrollLock";
 import { useI18n } from "vue-i18n";
+import CloseButton from "./CloseButton.vue";
 
 const { t: $t } = useI18n();
 
@@ -10,6 +12,7 @@ const props = defineProps({
     required: true,
   },
 });
+useScrollLock(computed(() => props.modelValue));
 
 const emit = defineEmits(["update:modelValue", "apply"]);
 
@@ -120,29 +123,11 @@ function closeCalculator() {
           <!-- Header/Title -->
           <div class="px-8 pt-8 flex justify-between items-center">
             <h3
-              class="text-[11px] font-black text-neutral-400 uppercase tracking-[0.2em]"
+              class="text-[11px] font-black text-neutral-400 uppercase tracking-[0.15em]"
             >
               {{ $t("tools.calculator") || "Calculator" }}
             </h3>
-            <button
-              @click="closeCalculator"
-              class="w-8 h-8 rounded-full bg-neutral-50 flex items-center justify-center text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="2.5"
-                stroke="currentColor"
-                class="w-4 h-4"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+            <CloseButton @click="closeCalculator" />
           </div>
 
           <!-- Display Section -->
@@ -182,7 +167,7 @@ function closeCalculator() {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="2.2"
+                  :stroke-width="2.2"
                   stroke="currentColor"
                   class="w-5 h-5"
                 >
@@ -288,7 +273,7 @@ function closeCalculator() {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="3"
+                  :stroke-width="3"
                   stroke="currentColor"
                   class="w-4 h-4"
                 >
@@ -307,31 +292,3 @@ function closeCalculator() {
     </Transition>
   </Teleport>
 </template>
-
-<style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
-@keyframes modalIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.animate-modalIn {
-  animation: modalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-</style>

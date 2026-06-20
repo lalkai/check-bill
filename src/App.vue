@@ -1,6 +1,7 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { applyGroupTheme } from "./utils/theme";
 
 const { t: $t } = useI18n();
 import PeopleView from "./views/PeopleView.vue";
@@ -10,15 +11,11 @@ import DashboardView from "./views/DashboardView.vue";
 import SharedView from "./views/SharedView.vue";
 import HomeView from "./views/HomeView.vue";
 import { useBillGroupsStore } from "./stores/BillGroups";
-import { useBillStore } from "./stores/Bills";
 
 const currentPage = ref("home"); // 'home' | 'group-detail' | 'shared'
 const currentView = ref("dashboard");
 const groupsStore = useBillGroupsStore();
-const billStore = useBillStore();
 const isSharedView = ref(false);
-
-import { formatCurrency } from "./utils/common";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import {
   ArrowLeft01Icon,
@@ -35,6 +32,14 @@ const activeGroupColor = computed(() => {
 const activeGroupName = computed(() => {
   return groupsStore.activeGroup ? groupsStore.activeGroup.name : "";
 });
+
+watch(
+  activeGroupColor,
+  (newColor) => {
+    applyGroupTheme(newColor);
+  },
+  { immediate: true },
+);
 
 onMounted(() => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -64,7 +69,7 @@ function switchView(view) {
   <!-- Shared View (standalone) -->
   <div
     v-if="currentPage === 'shared'"
-    class="min-h-screen bg-[#f8f9fb] flex flex-col animate-fadeIn"
+    class="min-h-screen bg-surface flex flex-col animate-slide-up"
   >
     <main class="flex-grow py-6 pb-24 sm:pb-6">
       <div class="max-w-screen-md mx-auto py-6 px-6">
@@ -76,7 +81,7 @@ function switchView(view) {
   <!-- Home Page -->
   <div
     v-else-if="currentPage === 'home'"
-    class="min-h-screen bg-[#f8f9fb] flex flex-col"
+    class="min-h-screen bg-surface flex flex-col"
   >
     <main class="flex-grow py-6 pb-24 sm:pb-6">
       <div class="max-w-screen-md mx-auto px-4">
@@ -88,10 +93,8 @@ function switchView(view) {
   <!-- Group Detail Page -->
   <div
     v-else-if="currentPage === 'group-detail'"
-    class="min-h-screen bg-[#f8f9fb] flex flex-col"
+    class="min-h-screen bg-surface flex flex-col"
   >
-    <!-- Redesigned Header for Mobile is now inside DashboardView, 
-         but we keep a minimal sticky top bar for back navigation -->
     <header class="bg-white border-b border-neutral-100 sticky top-0 z-20">
       <div
         class="max-w-screen-md mx-auto px-6 py-4 flex items-center justify-between"
@@ -101,7 +104,7 @@ function switchView(view) {
             @click="goHome"
             class="p-2 -ml-2 rounded-2xl hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700 transition-all active:scale-90 flex items-center justify-center"
           >
-            <HugeiconsIcon :icon="ArrowLeft01Icon" size="20" stroke-width="3" />
+            <HugeiconsIcon :icon="ArrowLeft01Icon" size="20" :stroke-width="3" />
           </button>
           <h1
             class="text-sm font-black text-neutral-700 uppercase tracking-widest truncate max-w-[200px]"
@@ -140,23 +143,14 @@ function switchView(view) {
     <!-- Content -->
     <main class="flex-grow py-8 pb-32">
       <div class="max-w-screen-md mx-auto px-6">
-        <div class="transition-all duration-300">
-          <div v-if="currentView === 'dashboard'" class="animate-fadeIn">
-            <DashboardView />
+        <Transition name="fade" mode="out-in">
+          <div :key="currentView">
+            <DashboardView v-if="currentView === 'dashboard'" />
+            <BillsView v-else-if="currentView === 'bills'" />
+            <PeopleView v-else-if="currentView === 'people'" />
+            <PayerAmountsView v-else-if="currentView === 'payerAmounts'" />
           </div>
-          <div v-else-if="currentView === 'bills'" class="animate-fadeIn">
-            <BillsView />
-          </div>
-          <div v-else-if="currentView === 'people'" class="animate-fadeIn">
-            <PeopleView />
-          </div>
-          <div
-            v-else-if="currentView === 'payerAmounts'"
-            class="animate-fadeIn"
-          >
-            <PayerAmountsView />
-          </div>
-        </div>
+        </Transition>
       </div>
     </main>
 
@@ -237,21 +231,3 @@ function switchView(view) {
     </div>
   </div>
 </template>
-
-<style scoped>
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
-}
-</style>

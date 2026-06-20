@@ -1,43 +1,43 @@
 <script setup>
 import { computed } from "vue";
-import { useBillStore } from "../stores/Bills";
-import { usePeopleStore } from "../stores/People";
 import { useBillGroupsStore } from "../stores/BillGroups";
 import { useI18n } from "vue-i18n";
 import { formatCurrency } from "../utils/common";
+import SectionLabel from "../components/common/SectionLabel.vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
-import { Invoice01Icon } from "@hugeicons/core-free-icons";
+import { getIcon } from "../utils/icons";
 
 const { t: $t } = useI18n();
-const billStore = useBillStore();
-const peopleStore = usePeopleStore();
 const groupsStore = useBillGroupsStore();
 
 const activeGroup = computed(() => groupsStore.activeGroup);
-const totalSpend = computed(() => billStore.totalAmount);
-const groupSize = computed(() => peopleStore.list.length);
+const totalSpend = computed(() => groupsStore.totalAmount);
+const groupSize = computed(() => groupsStore.activePeople.length);
 
-// Recent expenses (limited to 5 for dashboard)
 const recentExpenses = computed(() => {
-  return [...billStore.bills].reverse().slice(0, 5);
+  return [...groupsStore.activeBills].reverse().slice(0, 5);
 });
 
-// Settlement logic based on unpaid amounts
 const settlements = computed(() => {
-  const amounts = billStore.payerAmounts;
   const pendingSettlements = [];
+  const ownerName = groupsStore.activeGroup?.ownerName || "";
+  const peopleList = groupsStore.activePeople;
 
-  Object.entries(amounts).forEach(([name, dates]) => {
+  peopleList.forEach((person) => {
+    if (person.name === ownerName) return;
+
     let unpaid = 0;
-    Object.entries(dates).forEach(([date, amount]) => {
-      if (!peopleStore.getPaidStatusByDate(name, date)) {
-        unpaid += amount;
+    groupsStore.activeBills.forEach((bill) => {
+      const payerInfo = bill.payers.find((p) => p.name === person.name);
+      if (payerInfo && !payerInfo.paid) {
+        const split = bill.payers.length ? bill.amount / bill.payers.length : 0;
+        unpaid += split;
       }
     });
 
     if (unpaid > 0) {
       pendingSettlements.push({
-        from: name,
+        from: person.name,
         to: $t("dashboard.groupsLabel"),
         amount: unpaid,
         reason: $t("dashboard.pendingBalance"),
@@ -50,62 +50,68 @@ const settlements = computed(() => {
 </script>
 
 <template>
-  <div class="space-y-8 pb-12">
+  <div class="space-y-8 pb-12 animate-slide-up">
     <!-- Header Section -->
     <div
-      class="bg-white rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50"
+      class="bg-gradient-to-br from-primary to-primary-light text-white rounded-[2.5rem] p-8 shadow-lg border border-white/10 relative overflow-hidden"
     >
-      <div class="flex flex-col gap-1.5 min-w-0">
+      <div
+        class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white/10 blur-2xl"
+      ></div>
+      <div
+        class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-black/10 blur-xl"
+      ></div>
+
+      <div class="flex flex-col gap-1.5 min-w-0 relative z-10">
         <span
-          class="text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-70 flex-shrink-0"
+          class="text-[10px] font-black text-white/70 uppercase tracking-[0.15em] flex-shrink-0"
           >{{ $t("dashboard.currentGroup") }}</span
         >
         <h1
-          class="text-3xl font-black text-neutral-700 leading-tight tracking-tight truncate w-full"
+          class="text-3xl font-black text-white leading-tight tracking-tight truncate w-full"
         >
           {{ activeGroup?.name || $t("dashboard.myTrip") }}
         </h1>
       </div>
 
-      <div class="mt-8 flex items-end justify-between gap-4">
+      <div class="mt-8 flex items-end justify-between gap-4 relative z-10">
         <div class="min-w-0 flex-1">
           <p
-            class="text-xs text-neutral-400 font-bold uppercase tracking-wider mb-1"
+            class="text-xs text-white/75 font-bold uppercase tracking-wider mb-1"
           >
             {{ $t("dashboard.totalSpend") }}
           </p>
           <div class="flex items-baseline gap-1 min-w-0 overflow-hidden">
-            <span
-              class="text-3xl sm:text-4xl font-black text-neutral-700 truncate"
+            <span class="text-3xl sm:text-4xl font-black text-white truncate"
               >฿{{ formatCurrency(totalSpend) }}</span
             >
           </div>
         </div>
         <div
-          class="bg-neutral-50 px-4 py-2 rounded-2xl flex items-center gap-2 border border-neutral-100 flex-shrink-0"
+          class="bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 border border-white/10 flex-shrink-0"
         >
           <div class="flex -space-x-2">
             <div
-              v-for="(person, i) in peopleStore.list.slice(0, 1)"
+              v-for="(person, i) in groupsStore.activePeople.slice(0, 1)"
               :key="i"
-              class="w-7 h-7 rounded-full bg-white border-2 border-neutral-100 flex items-center justify-center text-[10px] font-bold text-neutral-400 shadow-sm"
+              class="w-7 h-7 rounded-full bg-white/20 border-2 border-white/15 flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
             >
               {{ person.name[0]?.toUpperCase() }}
             </div>
             <div
               v-if="groupSize > 1"
-              class="w-7 h-7 rounded-full bg-primary/10 border-2 border-white flex items-center justify-center text-[10px] font-bold text-primary shadow-sm"
+              class="w-7 h-7 rounded-full bg-white border-2 border-white flex items-center justify-center text-[10px] font-bold text-primary shadow-sm"
             >
               +{{ groupSize - 1 }}
             </div>
             <div
               v-if="groupSize === 0"
-              class="w-7 h-7 rounded-full bg-white border-2 border-neutral-100 flex items-center justify-center text-[10px] font-bold text-neutral-400 shadow-sm"
+              class="w-7 h-7 rounded-full bg-white/20 border-2 border-white/15 flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
             >
               -
             </div>
           </div>
-          <span class="text-xs font-black text-neutral-500">{{
+          <span class="text-xs font-black text-white/90">{{
             $t("dashboard.peopleCount", { count: groupSize })
           }}</span>
         </div>
@@ -115,11 +121,7 @@ const settlements = computed(() => {
     <!-- Settlement Status Section -->
     <section v-if="settlements.length > 0">
       <div class="flex items-center justify-between mb-4 px-2">
-        <h2
-          class="text-[11px] font-black text-neutral-400 uppercase tracking-[0.15em]"
-        >
-          {{ $t("dashboard.settlementStatus") }}
-        </h2>
+        <SectionLabel>{{ $t("dashboard.settlementStatus") }}</SectionLabel>
       </div>
 
       <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
@@ -161,11 +163,7 @@ const settlements = computed(() => {
     <!-- Recent Expenses List -->
     <section>
       <div class="flex items-center justify-between mb-4 px-2">
-        <h2
-          class="text-[11px] font-black text-neutral-400 uppercase tracking-[0.15em]"
-        >
-          {{ $t("dashboard.recentExpenses") }}
-        </h2>
+        <SectionLabel>{{ $t("dashboard.recentExpenses") }}</SectionLabel>
       </div>
 
       <div
@@ -185,9 +183,9 @@ const settlements = computed(() => {
           >
             <div class="flex items-center gap-4 flex-1 min-w-0 pr-4">
               <div
-                class="w-12 h-12 flex-shrink-0 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500 border border-blue-100/50 group-hover:scale-110 transition-transform"
+                class="w-12 h-12 flex-shrink-0 rounded-2xl bg-primary/10 flex-shrink-0 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-110 transition-transform"
               >
-                <HugeiconsIcon :icon="Invoice01Icon" size="20" />
+                <HugeiconsIcon :icon="getIcon(bill.icon)" size="20" />
               </div>
               <div class="flex flex-col flex-1 min-w-0">
                 <span
@@ -214,14 +212,3 @@ const settlements = computed(() => {
     </section>
   </div>
 </template>
-
-<style scoped>
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-</style>

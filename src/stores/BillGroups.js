@@ -23,13 +23,16 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
   }
 
-  function createEmptyGroup(name, color) {
+  function createEmptyGroup(name, color, icon) {
     return {
       id: generateId(),
       name: name || "บิลใหม่",
       color: color || COLOR_PALETTE[0],
+      icon: icon || "general",
       bills: [],
       people: [],
+      ownerName: "",
+      promptpayID: "",
       createdAt: new Date().toISOString(),
     };
   }
@@ -59,6 +62,7 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
           description: String(bill.description || "").trim(),
           amount: Number(bill.amount) || 0,
           date: bill.date || new Date().toISOString().split("T")[0],
+          icon: bill.icon || "general",
           payers: Array.isArray(bill.payers)
             ? bill.payers.map((p) => ({
                 name: String(p.name || "").trim(),
@@ -96,6 +100,21 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
+          // Ensure icons exist for existing loaded groups/bills
+          // Migrate per-bill promptpayID to group level
+          parsed.forEach(group => {
+            if (!group.promptpayID) group.promptpayID = "";
+            if (group.bills) {
+              group.bills.forEach(bill => {
+                if (!bill.icon) bill.icon = "general";
+                // Migrate per-bill promptpayID to group level
+                if (bill.promptpayID && !group.promptpayID) {
+                  group.promptpayID = bill.promptpayID;
+                }
+                delete bill.promptpayID;
+              });
+            }
+          });
           return parsed;
         }
       }
@@ -130,8 +149,8 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     return groups.value.find((g) => g.id === activeGroupId.value) || null;
   });
 
-  function addGroup(name, color) {
-    const group = createEmptyGroup(name, color);
+  function addGroup(name, color, icon) {
+    const group = createEmptyGroup(name, color, icon);
     groups.value.push(group);
     saveToLocalStorage();
     return group;
@@ -156,6 +175,7 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     if (updates.name !== undefined)
       group.name = String(updates.name).trim() || group.name;
     if (updates.color !== undefined) group.color = updates.color;
+    if (updates.icon !== undefined) group.icon = updates.icon;
     saveToLocalStorage();
     return true;
   }
@@ -164,7 +184,23 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     activeGroupId.value = groupId;
   }
 
-  function addBill(description, amount, date) {
+  function setGroupOwner(ownerName) {
+    const group = activeGroup.value;
+    if (group) {
+      group.ownerName = group.ownerName === ownerName ? "" : ownerName;
+      saveToLocalStorage();
+    }
+  }
+
+  function setGroupPromptpayID(promptpayID) {
+    const group = activeGroup.value;
+    if (group) {
+      group.promptpayID = promptpayID || "";
+      saveToLocalStorage();
+    }
+  }
+
+  function addBill(description, amount, date, icon = "general") {
     const group = activeGroup.value;
     if (!group) return false;
 
@@ -176,6 +212,7 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
       description: clean,
       amount: Number(amount) || 0,
       date: date || new Date().toISOString().split("T")[0],
+      icon: icon || "general",
       payers: [],
     });
     saveToLocalStorage();
@@ -195,7 +232,7 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     return false;
   }
 
-  function updateBill(billId, description, amount, date) {
+  function updateBill(billId, description, amount, date, icon) {
     const group = activeGroup.value;
     if (!group) return false;
     const bill = group.bills.find((b) => b.id === billId);
@@ -207,6 +244,9 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     bill.description = clean;
     bill.amount = Number(amount) || 0;
     bill.date = date || bill.date;
+    if (icon !== undefined) {
+      bill.icon = icon || "general";
+    }
     saveToLocalStorage();
     return true;
   }
@@ -251,6 +291,13 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
       const payer = bill.payers.find((p) => p.name === payerName);
       if (payer) {
         payer.paid = !payer.paid;
+
+        // Derive person.dates[date] from bills (single source of truth)
+        const person = group.people.find((p) => p.name === payerName);
+        if (person) {
+          recalcPersonDateStatus(person, payerName, bill.date);
+          updateOverallPaidStatus(person);
+        }
         saveToLocalStorage();
       }
     }
@@ -282,12 +329,13 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     }
   }
 
-  function removePerson(index) {
+  function removePerson(name) {
     const group = activeGroup.value;
     if (!group) return null;
-    const removed = group.people[index];
-    if (removed) {
-      group.people.splice(index, 1);
+    const idx = group.people.findIndex((p) => p.name === name);
+    if (idx !== -1) {
+      const removed = group.people[idx];
+      group.people.splice(idx, 1);
       saveToLocalStorage();
       return removed;
     }
@@ -300,7 +348,23 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     const person = group.people.find((p) => p.name === name);
     if (person) {
       if (!person.dates) person.dates = {};
-      person.dates[date] = !person.dates[date];
+
+      // Determine the new status by checking current state
+      const currentStatus = getPaidStatusByDate(name, date);
+      const newStatus = !currentStatus;
+
+      // First: toggle ALL bills for this person on this date
+      group.bills.forEach((bill) => {
+        if (bill.date === date) {
+          const payer = bill.payers.find((p) => p.name === name);
+          if (payer) {
+            payer.paid = newStatus;
+          }
+        }
+      });
+
+      // Then: derive person.dates[date] from bills (single source of truth)
+      recalcPersonDateStatus(person, name, date);
       updateOverallPaidStatus(person);
       saveToLocalStorage();
     }
@@ -311,9 +375,18 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     if (!group) return;
     payers.forEach((payerName) => {
       const person = group.people.find((p) => p.name === payerName);
+      // First: update all bills for this date
+      group.bills.forEach((bill) => {
+        if (bill.date === date) {
+          const payer = bill.payers.find((p) => p.name === payerName);
+          if (payer) {
+            payer.paid = boolean;
+          }
+        }
+      });
+      // Then: derive person.dates[date] from bills
       if (person) {
-        if (!person.dates) person.dates = {};
-        person.dates[date] = boolean;
+        recalcPersonDateStatus(person, payerName, date);
         updateOverallPaidStatus(person);
       }
     });
@@ -323,6 +396,21 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
   function updateOverallPaidStatus(person) {
     const datesArray = Object.values(person.dates || {});
     person.paid = datesArray.length > 0 && datesArray.every((paid) => paid);
+  }
+
+  function recalcPersonDateStatus(person, personName, date) {
+    const group = activeGroup.value;
+    if (!group) return;
+    const dateBills = group.bills.filter(
+      (b) =>
+        b.date === date && b.payers.some((p) => p.name === personName)
+    );
+    const allPaid = dateBills.every((b) => {
+      const pi = b.payers.find((p) => p.name === personName);
+      return pi ? pi.paid : true;
+    });
+    if (!person.dates) person.dates = {};
+    person.dates[date] = allPaid;
   }
 
   function getPaidStatusByDate(personName, date) {
@@ -421,6 +509,8 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     removeGroup,
     updateGroup,
     setActiveGroup,
+    setGroupOwner,
+    setGroupPromptpayID,
     getGroupTotalAmount,
     getGroupBillCount,
     getGroupPeopleCount,

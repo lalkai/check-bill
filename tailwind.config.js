@@ -7,6 +7,10 @@ export default {
         sans: ["Inter", "sans-serif"],
         heading: ["Outfit", "sans-serif"],
       },
+      letterSpacing: {
+        widest: "0.05em",
+        "widest+": "0.08em",
+      },
       colors: {
         primary: {
           DEFAULT: "rgb(var(--color-primary-rgb) / <alpha-value>)",

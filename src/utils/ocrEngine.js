@@ -27,7 +27,6 @@ async function getWorker() {
       logger: (m) => {
         if (currentOnProgress) {
           let p = 0;
-          // แสดง progress เฉพาะตอน recognize (ตอนโหลดโมเดลให้เป็น 0%)
           if (m.status === "recognizing text") {
             p = Math.round(m.progress * 100);
           }
@@ -71,7 +70,6 @@ export async function recognizeReceipt(imageFile, onProgress) {
 
   const ocrWorker = await getWorker();
 
-  // Reset progress หลังจากโหลด worker เสร็จ
   lastProgress = 0;
   if (onProgress) onProgress({ status: "กำลังประมวลผล...", progress: 0 });
 

@@ -3,6 +3,8 @@ import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { preventNonNumberInput } from "../../utils/common";
 import Calculator from "../common/Calculator.vue";
+import IconPicker from "../common/IconPicker.vue";
+import SectionLabel from "../common/SectionLabel.vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import {
   Camera01Icon,
@@ -16,6 +18,7 @@ const emit = defineEmits(["addBill", "openOcr"]);
 const newBillDescription = ref("");
 const newBillAmount = ref("");
 const newBillDate = ref(new Date().toISOString().split("T")[0]);
+const selectedIcon = ref("general");
 
 const showCalculator = ref(false);
 
@@ -27,12 +30,14 @@ function addBill() {
   if (newBillDescription.value.trim()) {
     emit("addBill", {
       description: newBillDescription.value.trim(),
-      amount: Number(newBillAmount.value),
+      amount: Number(newBillAmount.value) || 0,
       date: newBillDate.value,
+      icon: selectedIcon.value,
     });
     newBillDescription.value = "";
     newBillAmount.value = "";
     newBillDate.value = new Date().toISOString().split("T")[0];
+    selectedIcon.value = "general";
   }
 }
 
@@ -46,17 +51,13 @@ function openOcrModal() {
     class="bg-white rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50 mb-8"
   >
     <div class="flex items-center justify-between mb-6">
-      <h2
-        class="text-[11px] font-black text-neutral-400 uppercase tracking-[0.15em]"
-      >
-        {{ $t("bills.addNewExpense") }}
-      </h2>
+      <SectionLabel>{{ $t("bills.addNewExpense") }}</SectionLabel>
       <button
         @click="openOcrModal"
         class="text-[10px] font-black text-primary hover:text-primary-dark transition-colors uppercase tracking-widest bg-primary/10 px-3 py-1.5 rounded-xl flex items-center gap-1.5 active:scale-95"
         :title="$t('ocr.scanReceipt')"
       >
-        <HugeiconsIcon :icon="Camera01Icon" size="14" stroke-width="2.5" />
+        <HugeiconsIcon :icon="Camera01Icon" size="14" :stroke-width="2.5" />
         {{ $t("bills.scan") }}
       </button>
     </div>
@@ -66,7 +67,7 @@ function openOcrModal() {
         <div>
           <label
             for="bill-description"
-            class="block text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2"
+            class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-2"
             >{{ $t("bills.description") }}</label
           >
           <input
@@ -80,7 +81,7 @@ function openOcrModal() {
         <div class="relative">
           <label
             for="bill-amount"
-            class="block text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2"
+            class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-2"
             >{{ $t("bills.amount") }}</label
           >
           <input
@@ -99,17 +100,26 @@ function openOcrModal() {
             <HugeiconsIcon
               :icon="Calculator01Icon"
               size="20"
-              stroke-width="2.5"
+              :stroke-width="2.5"
             />
           </button>
         </div>
+      </div>
+
+      <!-- Icon Selector -->
+      <div>
+        <label
+          class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-2.5"
+          >{{ $t("bills.icon") }}</label
+        >
+        <IconPicker v-model="selectedIcon" layout="chips" />
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label
             for="bill-date"
-            class="block text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2"
+            class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-2"
             >{{ $t("bills.date") }}</label
           >
           <input
@@ -122,10 +132,10 @@ function openOcrModal() {
         <div class="flex items-end">
           <button
             @click="addBill"
-            :disabled="!newBillDescription.trim() || !newBillAmount"
+            :disabled="!newBillDescription.trim()"
             class="w-full bg-neutral-800 text-white font-black text-[11px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2"
           >
-            <HugeiconsIcon :icon="Add01Icon" size="16" stroke-width="3" />
+            <HugeiconsIcon :icon="Add01Icon" size="16" :stroke-width="3" />
             {{ $t("bills.addExpense") }}
           </button>
         </div>

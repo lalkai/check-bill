@@ -4,6 +4,8 @@ import { useI18n } from "vue-i18n";
 import BillGroupCard from "../components/home-view/BillGroupCard.vue";
 import CreateGroupModal from "../components/home-view/CreateGroupModal.vue";
 import EditGroupModal from "../components/home-view/EditGroupModal.vue";
+import EmptyState from "../components/common/EmptyState.vue";
+import SectionLabel from "../components/common/SectionLabel.vue";
 import { useBillGroupsStore } from "../stores/BillGroups";
 
 const { locale, t: $t } = useI18n();
@@ -23,7 +25,6 @@ import {
   Wallet01Icon,
   Add01Icon,
   TranslationIcon,
-  FolderFavouriteIcon,
 } from "@hugeicons/core-free-icons";
 
 const showCreateModal = ref(false);
@@ -55,13 +56,13 @@ function handleDeleteGroup(groupId) {
 </script>
 
 <template>
-  <div class="space-y-8 pb-8">
+  <div class="space-y-8 pb-8 animate-slide-up">
     <!-- Dashboard Summary -->
     <div
       class="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-4 px-4 sm:grid sm:grid-cols-2 sm:mx-0 sm:px-0 sm:overflow-visible"
     >
       <div
-        class="min-w-[85%] sm:min-w-0 snap-center bg-gradient-to-br from-primary to-primary-light text-white rounded-[2.5rem] p-8 shadow-[0_12px_40px_rgba(0,102,204,0.3)] flex flex-col justify-center border border-white/10 relative overflow-hidden"
+        class="min-w-[85%] sm:min-w-0 snap-center bg-gradient-to-br from-primary to-primary-light text-white rounded-[2.5rem] p-8 shadow-primary/30 flex flex-col justify-center border border-white/10 relative overflow-hidden"
       >
         <div
           class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white/10 blur-2xl"
@@ -71,7 +72,7 @@ function handleDeleteGroup(groupId) {
         ></div>
 
         <div
-          class="flex items-center gap-2 text-white/80 text-[10px] font-black uppercase tracking-[0.2em] mb-2 relative z-10"
+          class="flex items-center gap-2 text-white/80 text-[10px] font-black uppercase tracking-[0.15em] mb-2 relative z-10"
         >
           <HugeiconsIcon :icon="Wallet01Icon" size="16" />
           {{ $t("dashboard.totalAllGroups") }}
@@ -91,7 +92,7 @@ function handleDeleteGroup(groupId) {
         class="min-w-[85%] sm:min-w-0 snap-center bg-white rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50 flex flex-col justify-center min-w-0"
       >
         <div
-          class="text-neutral-400 text-[10px] font-black uppercase tracking-[0.2em] mb-2"
+          class="text-neutral-400 text-[10px] font-black uppercase tracking-[0.15em] mb-2"
         >
           {{ $t("dashboard.totalGroups") }}
         </div>
@@ -110,28 +111,24 @@ function handleDeleteGroup(groupId) {
     <!-- Groups Section -->
     <section>
       <div class="flex items-center justify-between mb-6">
-        <h2
-          class="text-[11px] font-black text-neutral-400 uppercase tracking-[0.15em] ml-2"
-        >
-          {{ $t("home.billGroups") }}
-        </h2>
+        <SectionLabel class="ml-2">{{ $t("home.billGroups") }}</SectionLabel>
         <div class="flex items-center gap-2">
           <button
             @click="showCreateModal = true"
             class="text-[11px] font-black text-primary hover:text-primary-dark transition-colors uppercase tracking-wider bg-primary/10 px-4 py-2 rounded-xl flex items-center gap-1.5 active:scale-95"
           >
-            <HugeiconsIcon :icon="Add01Icon" size="14" stroke-width="3" />
+            <HugeiconsIcon :icon="Add01Icon" size="14" :stroke-width="3" />
             {{ $t("home.newGroup") }}
           </button>
           <!-- Language Toggle -->
           <button
             @click="toggleLanguage"
-            class="text-[10px] font-black text-neutral-600 transition-colors uppercase tracking-[0.1em] bg-neutral-100 px-3 py-2 rounded-xl flex items-center gap-1.5 active:scale-95 border border-neutral-200"
+            class="text-[10px] font-black text-neutral-600 transition-colors uppercase tracking-[0.15em] bg-neutral-100 px-3 py-2 rounded-xl flex items-center gap-1.5 active:scale-95 border border-neutral-200"
           >
             <HugeiconsIcon
               :icon="TranslationIcon"
               size="14"
-              stroke-width="2.5"
+              :stroke-width="2.5"
             />
             {{ currentLocale }}
           </button>
@@ -139,33 +136,14 @@ function handleDeleteGroup(groupId) {
       </div>
 
       <!-- Empty State -->
-      <div
+      <EmptyState
         v-if="groupsStore.groups.length === 0"
-        class="bg-white rounded-[2.5rem] p-12 text-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50 flex flex-col items-center"
-      >
-        <div
-          class="w-20 h-20 mx-auto rounded-[1.5rem] bg-neutral-50 flex items-center justify-center border border-neutral-100 mb-6"
-        >
-          <HugeiconsIcon
-            :icon="FolderFavouriteIcon"
-            size="40"
-            class="text-neutral-300"
-          />
-        </div>
-        <h3 class="text-neutral-700 font-black text-lg mb-2">
-          {{ $t("home.noGroups") }}
-        </h3>
-        <p class="text-neutral-400 text-sm font-medium mb-8 max-w-xs">
-          {{ $t("home.startTracking") }}
-        </p>
-        <button
-          @click="showCreateModal = true"
-          class="bg-neutral-800 text-white font-black text-[11px] uppercase tracking-widest py-4 px-8 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg inline-flex items-center gap-2"
-        >
-          <HugeiconsIcon :icon="Add01Icon" size="16" stroke-width="3" />
-          {{ $t("home.createGroup") }}
-        </button>
-      </div>
+        icon="general"
+        :title="$t('home.noGroups')"
+        :description="$t('home.startTracking')"
+        :action-label="$t('home.createGroup')"
+        @action="showCreateModal = true"
+      />
 
       <!-- Groups List -->
       <div v-else class="space-y-4">

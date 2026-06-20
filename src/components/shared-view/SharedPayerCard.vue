@@ -205,7 +205,7 @@ const handlePaymentClick = () => {
           <HugeiconsIcon
             :icon="shouldShowAllItems ? ArrowUp01Icon : ArrowDown01Icon"
             size="14"
-            stroke-width="3"
+            :stroke-width="3"
           />
           {{
             shouldShowAllItems
@@ -228,11 +228,11 @@ const handlePaymentClick = () => {
         "
       >
         <template v-if="payer.paid">
-          <HugeiconsIcon :icon="Tick01Icon" size="20" stroke-width="2.5" />
+          <HugeiconsIcon :icon="Tick01Icon" size="20" :stroke-width="2.5" />
           {{ $t("shared.fullySettled") }}
         </template>
         <template v-else>
-          <HugeiconsIcon :icon="QrCode01Icon" size="20" stroke-width="2.5" />
+          <HugeiconsIcon :icon="QrCode01Icon" size="20" :stroke-width="2.5" />
           {{ $t("shared.payNow") }}
         </template>
       </button>

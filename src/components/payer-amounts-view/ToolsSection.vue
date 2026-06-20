@@ -2,45 +2,37 @@
 import { HugeiconsIcon } from "@hugeicons/vue";
 import {
   QrCode01Icon,
-  Delete02Icon,
   Share01Icon,
 } from "@hugeicons/core-free-icons";
+import SectionLabel from "../common/SectionLabel.vue";
 
-defineEmits(["show-qr-popup", "delete-qr", "share-payer"]);
+defineEmits(["show-qr-popup", "share-payer"]);
 </script>
 
 <template>
-  <div
-    class="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50 mb-8"
-  >
-    <h2
-      class="text-[10px] sm:text-[11px] font-black text-neutral-400 uppercase tracking-[0.15em] mb-4"
-    >
-      {{ $t("tools.title") }}
-    </h2>
-    <div class="grid grid-cols-2 sm:flex sm:flex-row gap-3 sm:gap-4">
+  <div class="bg-white rounded-[2rem] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50 mb-8">
+    <SectionLabel class="mb-4">{{ $t("tools.title") }}</SectionLabel>
+    <div class="grid grid-cols-2 gap-3">
+      <!-- PromptPay QR -->
       <button
         @click="$emit('show-qr-popup')"
-        class="flex sm:flex-1 bg-neutral-50 text-neutral-600 font-black text-[10px] sm:text-[11px] uppercase tracking-widest py-3.5 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl hover:bg-neutral-100 border border-neutral-200 transition-all active:scale-95 items-center justify-center gap-2 min-w-0"
+        class="flex flex-col items-center justify-center gap-2.5 py-5 px-3 rounded-2xl bg-neutral-50 border border-neutral-200 text-neutral-600 hover:bg-neutral-100 transition-all active:scale-95"
       >
-        <HugeiconsIcon :icon="QrCode01Icon" size="16" stroke-width="2.5" />
-        <span class="truncate">{{ $t("tools.pay") }}</span>
+        <div class="w-11 h-11 rounded-xl bg-neutral-100 flex items-center justify-center">
+          <HugeiconsIcon :icon="QrCode01Icon" size="20" :stroke-width="2.5" />
+        </div>
+        <p class="text-[10px] font-black uppercase tracking-widest leading-tight">{{ $t("tools.pay") }}</p>
       </button>
 
-      <button
-        @click="$emit('delete-qr')"
-        class="flex sm:flex-1 bg-red-50 text-red-500 font-black text-[10px] sm:text-[11px] uppercase tracking-widest py-3.5 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl hover:bg-red-100 border border-red-200 transition-all active:scale-95 items-center justify-center gap-2 min-w-0"
-      >
-        <HugeiconsIcon :icon="Delete02Icon" size="16" stroke-width="2.5" />
-        <span class="truncate">{{ $t("tools.delQr") }}</span>
-      </button>
-
+      <!-- Share -->
       <button
         @click="$emit('share-payer')"
-        class="col-span-2 sm:flex-1 bg-neutral-900 text-white font-black text-[10px] sm:text-[11px] uppercase tracking-widest py-4 px-6 rounded-xl sm:rounded-2xl hover:bg-black transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 min-w-0"
+        class="flex flex-col items-center justify-center gap-2.5 py-5 px-3 rounded-2xl bg-neutral-900 border border-neutral-800 text-white transition-all active:scale-95 shadow-lg hover:bg-black"
       >
-        <HugeiconsIcon :icon="Share01Icon" size="16" stroke-width="2.5" />
-        <span class="truncate">{{ $t("tools.shareBill") }}</span>
+        <div class="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center">
+          <HugeiconsIcon :icon="Share01Icon" size="20" :stroke-width="2.5" />
+        </div>
+        <p class="text-[10px] font-black uppercase tracking-widest leading-tight">{{ $t("tools.shareBill") }}</p>
       </button>
     </div>
   </div>

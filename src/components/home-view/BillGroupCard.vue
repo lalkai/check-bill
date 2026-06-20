@@ -13,10 +13,10 @@ const emit = defineEmits(["click", "edit", "delete"]);
 import { formatCurrency } from "../../utils/common";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import {
-  Invoice01Icon,
   PencilEdit01Icon,
   Delete02Icon,
 } from "@hugeicons/core-free-icons";
+import { getIcon } from "../../utils/icons";
 
 function onEdit(e) {
   e.stopPropagation();
@@ -41,7 +41,7 @@ function onDelete(e) {
           class="w-14 h-14 flex-shrink-0 rounded-[1.25rem] flex items-center justify-center text-white shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
           :style="{ backgroundColor: group.color }"
         >
-          <HugeiconsIcon :icon="Invoice01Icon" size="28" stroke-width="2.5" />
+          <HugeiconsIcon :icon="getIcon(group.icon)" size="28" :stroke-width="2.5" />
         </div>
 
         <!-- Title & Subtitle -->
@@ -75,7 +75,7 @@ function onDelete(e) {
           <HugeiconsIcon
             :icon="PencilEdit01Icon"
             size="16"
-            stroke-width="2.5"
+            :stroke-width="2.5"
           />
         </button>
         <button
@@ -83,7 +83,7 @@ function onDelete(e) {
           class="p-2 rounded-xl bg-red-50 text-red-400 hover:text-red-600 hover:bg-red-100 transition-colors flex items-center justify-center"
           :title="$t('actions.delete')"
         >
-          <HugeiconsIcon :icon="Delete02Icon" size="16" stroke-width="2.5" />
+          <HugeiconsIcon :icon="Delete02Icon" size="16" :stroke-width="2.5" />
         </button>
       </div>
     </div>

@@ -2,8 +2,7 @@
 import { ref, computed, onMounted, nextTick, watch } from "vue";
 import { useI18n } from "vue-i18n";
 const { t: $t, locale } = useI18n();
-import { useBillStore } from "../stores/Bills";
-import { usePeopleStore } from "../stores/People";
+import { useBillGroupsStore } from "../stores/BillGroups";
 import generatePayload from "promptpay-qr";
 import qrcode from "qrcode";
 import LZString from "lz-string";
@@ -14,56 +13,174 @@ import AddQRCodeModal from "../components/payer-amounts-view/AddQRCodeModal.vue"
 import ShareModal from "../components/payer-amounts-view/ShareModal.vue";
 import EmptyState from "../components/payer-amounts-view/EmptyState.vue";
 import PayerDetailsModal from "../components/payer-amounts-view/PayerDetailsModal.vue";
+import PaymentQRModal from "../components/shared-view/PaymentQRModal.vue";
 
-const billStore = useBillStore();
-const peopleStore = usePeopleStore();
+const groupsStore = useBillGroupsStore();
 const selectedDate = ref(null);
 
 const inputPromptpay = ref("");
 const showQrCode = ref(false);
 
+const showQrCodeModalForPayer = ref(null);
+const specificAmount = ref(null);
+const specificTitle = ref("");
+const specificPromptpayID = ref("");
+
+const openPaymentModal = (
+  payer,
+  amount = null,
+  title = "",
+  promptpayID = "",
+) => {
+  showQrCodeModalForPayer.value = payer;
+  specificAmount.value = amount;
+  specificTitle.value = title;
+  specificPromptpayID.value = promptpayID || "";
+};
+
+const closePaymentModal = () => {
+  showQrCodeModalForPayer.value = null;
+  specificAmount.value = null;
+  specificTitle.value = "";
+  specificPromptpayID.value = "";
+};
+
 const showAddQrCodePopup = ref(false);
 const showSharePopup = ref(false);
 const showPayerDetails = ref(false);
-const selectedPayer = ref(null);
+const selectedPayerName = ref(null);
 
 const shareUrl = ref("");
 
 const filteredPayerAmounts = computed(() => {
-  const amounts = billStore.payerAmounts;
-  const peopleList = peopleStore.list;
+  const amounts = groupsStore.payerAmounts;
+  const peopleList = groupsStore.activePeople;
+  const ownerName = groupsStore.activeGroup?.ownerName || "";
 
-  return Object.entries(amounts).map(([name, dates]) => {
-    const person = peopleList.find((person) => person.name === name);
-    const filteredDates = selectedDate.value
-      ? { [selectedDate.value]: dates[selectedDate.value] || 0 }
-      : dates;
+  const allNames = new Set([
+    ...peopleList.map((p) => p.name),
+    ...Object.keys(amounts),
+  ]);
 
-    const totalAmountDue = Object.values(filteredDates).reduce(
-      (acc, amount) => acc + amount,
-      0
-    );
+  if (ownerName) {
+    allNames.add(ownerName);
+  }
 
-    const unpaidAmountDue = Object.entries(filteredDates).reduce(
-      (total, [date, amount]) => {
-        if (!peopleStore.getPaidStatusByDate(name, date)) {
-          return total + amount;
+  const result = Array.from(allNames).map((name) => {
+    const isOwner = name === ownerName;
+
+    if (isOwner) {
+      const groupBills = groupsStore.activeBills || [];
+      const totalAmountDue = groupBills.reduce(
+        (acc, b) => acc + (b.amount || 0),
+        0,
+      );
+
+      const dates = {};
+      groupBills.forEach((b) => {
+        if (!dates[b.date]) dates[b.date] = 0;
+        dates[b.date] += b.amount || 0;
+      });
+
+      return {
+        name,
+        isOwner: true,
+        dates,
+        paid: true,
+        totalAmountDue,
+        unpaidAmountDue: 0,
+      };
+    } else {
+      const payerBills = (groupsStore.activeBills || []).filter((bill) =>
+        bill.payers.some((p) => p.name === name),
+      );
+
+      const filteredBills = selectedDate.value
+        ? payerBills.filter((b) => b.date === selectedDate.value)
+        : payerBills;
+
+      const totalAmountDue = filteredBills.reduce((acc, bill) => {
+        const split = bill.payers.length ? bill.amount / bill.payers.length : 0;
+        return acc + split;
+      }, 0);
+
+      const unpaidAmountDue = filteredBills.reduce((acc, bill) => {
+        const payerInfo = bill.payers.find((p) => p.name === name);
+        if (payerInfo && !payerInfo.paid) {
+          const split = bill.payers.length
+            ? bill.amount / bill.payers.length
+            : 0;
+          return acc + split;
         }
-        return total;
-      },
-      0
-    );
+        return acc;
+      }, 0);
 
-    const isPaid = totalAmountDue > 0 ? unpaidAmountDue === 0 : false;
+      const isPaid = totalAmountDue > 0 ? unpaidAmountDue === 0 : false;
 
-    return {
-      name,
-      dates: filteredDates || {},
-      paid: isPaid,
-      totalAmountDue,
-      unpaidAmountDue,
-    };
+      const dates = {};
+      filteredBills.forEach((bill) => {
+        const split = bill.payers.length ? bill.amount / bill.payers.length : 0;
+        if (!dates[bill.date]) dates[bill.date] = 0;
+        dates[bill.date] += split;
+      });
+
+      return {
+        name,
+        isOwner: false,
+        dates,
+        paid: isPaid,
+        totalAmountDue,
+        unpaidAmountDue,
+      };
+    }
   });
+
+  return result.sort((a, b) => {
+    if (a.isOwner) return -1;
+    if (b.isOwner) return 1;
+    if (!a.paid && b.paid) return -1;
+    if (a.paid && !b.paid) return 1;
+    return a.name.localeCompare(b.name, "th");
+  });
+});
+
+const selectedPayerData = computed(() => {
+  if (!selectedPayerName.value) return null;
+  const name = selectedPayerName.value;
+  const payer = filteredPayerAmounts.value.find((p) => p.name === name);
+  if (!payer) return null;
+
+  if (payer.isOwner) {
+    const billItems = groupsStore.activeBills.map((bill) => ({
+      id: bill.id,
+      description: bill.description,
+      amount: bill.amount,
+      date: bill.date,
+      icon: bill.icon || "general",
+      paid: true,
+      isOwnerBill: true,
+      payers: bill.payers.map((p) => ({
+        name: p.name,
+        paid: p.paid,
+      })),
+    }));
+    return { ...payer, billItems };
+  } else {
+    const billItems = groupsStore.activeBills
+      .filter((bill) => bill.payers.some((p) => p.name === name))
+      .map((bill) => {
+        const billPayer = bill.payers.find((p) => p.name === name);
+        return {
+          id: bill.id,
+          description: bill.description,
+          amount: bill.amount / bill.payers.length,
+          date: bill.date,
+          icon: bill.icon || "general",
+          paid: billPayer ? billPayer.paid : false,
+        };
+      });
+    return { ...payer, billItems };
+  }
 });
 
 const sharePayer = () => {
@@ -85,34 +202,27 @@ const generateShareUrl = async (selectedPayers) => {
 
         Object.keys(payer.dates || {}).forEach((date) => {
           const amount = payer.dates[date];
-          const isPaid = peopleStore.getPaidStatusByDate(payer.name, date);
+          const isPaid = groupsStore.getPaidStatusByDate(payer.name, date);
           datesWithStatus[date] = {
             amount,
             paid: isPaid,
           };
         });
 
-        billStore.bills.forEach((bill) => {
+        groupsStore.activeBills.forEach((bill) => {
           const isPayerInBill = bill.payers.some((p) => p.name === payer.name);
           if (isPayerInBill) {
+            const payerInfo = bill.payers.find((p) => p.name === payer.name);
             billItems.push({
               description: bill.description,
               amount: bill.amount / bill.payers.length,
               date: bill.date,
-              paid: peopleStore.getPaidStatusByDate(payer.name, bill.date),
+              paid: payerInfo ? payerInfo.paid : false,
             });
           }
         });
 
-        const unpaidAmount = Object.keys(payer.dates || {}).reduce(
-          (total, date) => {
-            if (!peopleStore.getPaidStatusByDate(payer.name, date)) {
-              return total + payer.dates[date];
-            }
-            return total;
-          },
-          0
-        );
+        const unpaidAmount = payer.unpaidAmountDue;
 
         return {
           name: payer.name,
@@ -129,11 +239,11 @@ const generateShareUrl = async (selectedPayers) => {
       return;
     }
 
-    const promptpayID = localStorage.getItem("promptpayID");
+    const promptpayID = groupsStore.activeGroup?.promptpayID || "";
 
     const sharedData = {
       payers: allPayersData,
-      promptpayID: promptpayID || "",
+      promptpayID: promptpayID,
       locale: locale.value,
     };
 
@@ -153,6 +263,8 @@ const generateShareUrl = async (selectedPayers) => {
   }
 };
 
+const qrCodeUrl = ref("");
+
 const generateQRCode = async (promptpayInput) => {
   if (!promptpayInput) {
     alert($t("messages.enterPromptpay"));
@@ -161,12 +273,11 @@ const generateQRCode = async (promptpayInput) => {
 
   inputPromptpay.value = promptpayInput;
   showQrCode.value = true;
-  localStorage.setItem("promptpayID", promptpayInput);
+  groupsStore.setGroupPromptpayID(promptpayInput);
 
   const amount = 0;
   const payload = generatePayload(promptpayInput, { amount });
   const opts = {
-    type: "image/png",
     margin: 1,
     width: 200,
     color: {
@@ -175,63 +286,38 @@ const generateQRCode = async (promptpayInput) => {
     },
   };
 
-  await nextTick();
-
-  const canvas = document.createElement("canvas");
-  qrcode.toCanvas(canvas, payload, opts, (err) => {
-    if (err) console.log("Error generating QR Code: ", err);
-    const canvasContainer = document.getElementById("qrcode-img-container");
-    if (canvasContainer) {
-      canvas.id = "qrcode-img";
-      canvas.className = "rounded-xl";
-      canvasContainer.innerHTML = "";
-      canvasContainer.appendChild(canvas);
-    } else {
-      console.error("Canvas container element not found!");
-    }
-  });
-
-  const promptpayIDElement = document.getElementById("PromptpayID");
-  if (promptpayIDElement) {
-    promptpayIDElement.textContent = promptpayInput;
-  } else {
-    console.error("PromptpayID element not found!");
+  try {
+    qrCodeUrl.value = await qrcode.toDataURL(payload, opts);
+  } catch (err) {
+    console.error("Error generating QR Code: ", err);
   }
 
   showAddQrCodePopup.value = false;
 };
 
 const deleteQRCode = () => {
-  localStorage.removeItem("promptpayID");
+  groupsStore.setGroupPromptpayID("");
   inputPromptpay.value = "";
-
-  const img = document.getElementById("qrcode-img-img");
-  if (img) {
-    img.remove();
-  }
-
-  const canvasContainer = document.getElementById("qrcode-img-container");
-  if (canvasContainer) {
-    canvasContainer.innerHTML =
-      '<canvas id="qrcode-img" class="rounded-xl"></canvas>';
-  }
-
-  const promptpayIDElement = document.getElementById("PromptpayID");
-  if (promptpayIDElement) {
-    promptpayIDElement.textContent = "";
-  }
-
+  qrCodeUrl.value = "";
   showQrCode.value = false;
 };
 
 const togglePaymentStatus = (payer, date) => {
-  peopleStore.togglePaidStatus(payer.name, date);
+  groupsStore.togglePaidStatus(payer.name, date);
 };
 
 const settleAllPaymentStatuses = (payer) => {
   Object.keys(payer.dates).forEach((date) => {
-    if (!peopleStore.getPaidStatusByDate(payer.name, date)) {
-      peopleStore.togglePaidStatus(payer.name, date);
+    if (!groupsStore.getPaidStatusByDate(payer.name, date)) {
+      groupsStore.togglePaidStatus(payer.name, date);
+    }
+  });
+};
+
+const cancelAllPayments = (payer) => {
+  Object.keys(payer.dates).forEach((date) => {
+    if (groupsStore.getPaidStatusByDate(payer.name, date)) {
+      groupsStore.togglePaidStatus(payer.name, date);
     }
   });
 };
@@ -249,67 +335,63 @@ const resetShare = () => {
 };
 
 const openPayerDetails = (payer) => {
-  const billItems = billStore.bills
-    .filter((bill) => bill.payers.some((p) => p.name === payer.name))
-    .map((bill) => ({
-      description: bill.description,
-      amount: bill.amount / bill.payers.length,
-      date: bill.date,
-      paid: peopleStore.getPaidStatusByDate(payer.name, bill.date),
-    }));
-
-  selectedPayer.value = { ...payer, billItems };
+  selectedPayerName.value = payer.name;
   showPayerDetails.value = true;
 };
 
 const closePayerDetails = () => {
   showPayerDetails.value = false;
-  selectedPayer.value = null;
+  selectedPayerName.value = null;
+};
+
+const toggleItemStatus = (payerName, itemId) => {
+  groupsStore.togglePayerStatus(itemId, payerName);
 };
 
 onMounted(() => {
-  const storedPromptpayID = localStorage.getItem("promptpayID");
-  if (storedPromptpayID) {
-    inputPromptpay.value = storedPromptpayID;
-    generateQRCode(storedPromptpayID);
+  const groupPromptpayID = groupsStore.activeGroup?.promptpayID || "";
+  if (groupPromptpayID) {
+    inputPromptpay.value = groupPromptpayID;
+    generateQRCode(groupPromptpayID);
   }
 
-  if (typeof peopleStore.cleanUpDatesWithoutBills === "function") {
-    peopleStore.cleanUpDatesWithoutBills({ bills: billStore.bills });
+  if (typeof groupsStore.cleanUpDatesWithoutBills === "function") {
+    groupsStore.cleanUpDatesWithoutBills({ bills: groupsStore.activeBills });
   }
 });
 
 watch(
-  () => billStore.bills,
+  () => groupsStore.activeBills,
   () => {
-    if (typeof peopleStore.cleanUpDatesWithoutBills === "function") {
-      peopleStore.cleanUpDatesWithoutBills({ bills: billStore.bills });
+    if (typeof groupsStore.cleanUpDatesWithoutBills === "function") {
+      groupsStore.cleanUpDatesWithoutBills({ bills: groupsStore.activeBills });
     }
   },
-  { deep: true }
+  { deep: true },
 );
 </script>
 
 <template>
-  <div class="pb-12">
+  <div class="pb-12 animate-slide-up">
     <!-- Tools Section -->
     <ToolsSection
       @show-qr-popup="showAddQrCodePopup = true"
-      @delete-qr="deleteQRCode"
       @share-payer="sharePayer"
     />
 
     <!-- QR Code Display -->
-    <QRCodeDisplay :show-qr-code="showQrCode" :promptpay-id="inputPromptpay" />
+    <QRCodeDisplay
+      :show-qr-code="showQrCode"
+      :promptpay-id="inputPromptpay"
+      :qr-code-url="qrCodeUrl"
+    />
 
     <!-- Payer Amounts List -->
     <div class="space-y-4">
       <PayerCard
-        v-for="(payer, index) in filteredPayerAmounts"
-        :key="index"
+        v-for="payer in filteredPayerAmounts"
+        :key="payer.name"
         :payer="payer"
-        @toggle-payment-status="togglePaymentStatus"
-        @settle-all="settleAllPaymentStatuses"
         @open-details="() => openPayerDetails(payer)"
       />
 
@@ -319,7 +401,9 @@ watch(
     <!-- Add QR Code Modal -->
     <AddQRCodeModal
       :show="showAddQrCodePopup"
+      :promptpayID="inputPromptpay"
       @generate-qr="generateQRCode"
+      @delete-qr="deleteQRCode"
       @close="showAddQrCodePopup = false"
     />
 
@@ -337,8 +421,26 @@ watch(
     <!-- Payer Details Modal -->
     <PayerDetailsModal
       :show="showPayerDetails"
-      :payer="selectedPayer"
+      :payer="selectedPayerData"
+      @toggle-item="toggleItemStatus"
+      @toggle-payment-status="togglePaymentStatus"
+      @settle-all="settleAllPaymentStatuses"
+      @cancel-all="cancelAllPayments"
       @close="closePayerDetails"
+    />
+
+    <!-- Payment QR Code Modal -->
+    <PaymentQRModal
+      :payer="showQrCodeModalForPayer"
+      :promptpayID="
+        specificPromptpayID ||
+        inputPromptpay ||
+        groupsStore.activeGroup?.promptpayID
+      "
+      :is-visible="!!showQrCodeModalForPayer"
+      :amount="specificAmount"
+      :title="specificTitle"
+      @close="closePaymentModal"
     />
   </div>
 </template>

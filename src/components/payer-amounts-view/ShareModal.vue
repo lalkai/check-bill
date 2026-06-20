@@ -1,7 +1,9 @@
 <script setup>
-import { ref, watch, nextTick } from "vue";
+import { ref, watch, computed, nextTick } from "vue";
+import { useScrollLock } from "../../composables/useScrollLock";
 import { useI18n } from "vue-i18n";
 import qrcode from "qrcode";
+import CloseButton from "../common/CloseButton.vue";
 
 const { t: $t } = useI18n();
 import { formatCurrency } from "../../utils/common";
@@ -20,6 +22,7 @@ const props = defineProps({
     default: "",
   },
 });
+useScrollLock(computed(() => props.show));
 
 const emit = defineEmits([
   "close",
@@ -35,7 +38,7 @@ watch(
   () => props.show,
   (newValue) => {
     if (newValue) {
-      selectedPayers.value = props.payerAmounts.map((payer) => payer.name);
+      selectedPayers.value = props.payerAmounts.filter(p => !p.isOwner).map((payer) => payer.name);
       selectAllPayers.value = true;
     }
   }
@@ -53,7 +56,7 @@ watch(
 
 const toggleSelectAllPayers = () => {
   if (selectAllPayers.value) {
-    selectedPayers.value = props.payerAmounts.map((payer) => payer.name);
+    selectedPayers.value = props.payerAmounts.filter(p => !p.isOwner).map((payer) => payer.name);
   } else {
     selectedPayers.value = [];
   }
@@ -66,8 +69,9 @@ const togglePayerSelection = (payerName) => {
   } else {
     selectedPayers.value.splice(index, 1);
   }
+  const nonOwnersCount = props.payerAmounts.filter(p => !p.isOwner).length;
   selectAllPayers.value =
-    selectedPayers.value.length === props.payerAmounts.length;
+    selectedPayers.value.length === nonOwnersCount;
   selectedPayers.value = [...selectedPayers.value];
 };
 
@@ -105,233 +109,185 @@ const handleGenerateShareUrl = () => {
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="show"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
-    >
+    <Transition name="modal">
       <div
-        class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
-        @click="emit('close')"
-      ></div>
-
-      <div
-        class="relative bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-md p-8 animate-modalIn border border-white/20"
+        v-if="show"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-black text-neutral-800 tracking-tight">
-            {{ $t("share.title") }}
-          </h2>
-          <button
-            @click="emit('close')"
-            class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 hover:bg-neutral-200 transition-colors"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2.5"
-              stroke="currentColor"
-              class="w-4 h-4"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6 18 18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+        <div
+          class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+          @click="emit('close')"
+        ></div>
 
-        <!-- Payer Selection -->
-        <div v-if="!shareUrl" class="mb-8">
-          <div class="flex items-center justify-between mb-4">
-            <label
-              class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest"
-              >{{ $t("share.selectPeople") }}</label
-            >
-            <div
-              class="flex items-center cursor-pointer"
-              @click="
-                selectAllPayers = !selectAllPayers;
-                toggleSelectAllPayers();
-              "
-            >
-              <div
-                class="w-4 h-4 rounded border-2 mr-2 flex items-center justify-center transition-colors"
-                :class="
-                  selectAllPayers
-                    ? 'bg-primary border-primary'
-                    : 'border-neutral-300'
-                "
-              >
-                <svg
-                  v-if="selectAllPayers"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  class="w-3 h-3 text-white"
-                  stroke-width="3"
-                >
-                  <path
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m5 12 5 5L20 7"
-                  ></path>
-                </svg>
-              </div>
-              <span
-                class="text-[10px] font-bold text-neutral-500 uppercase tracking-widest"
-                >{{ $t("share.all") }}</span
-              >
-            </div>
+        <div
+          class="relative bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-md p-8 border border-white/20"
+        >
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black text-neutral-800 tracking-tight">
+              {{ $t("share.title") }}
+            </h2>
+            <CloseButton @click="emit('close')" />
           </div>
 
-          <div class="max-h-60 overflow-y-auto space-y-2 pr-2 scrollbar-hide">
-            <div
-              v-for="payer in payerAmounts"
-              :key="payer.name"
-              class="flex items-center p-3 border-2 rounded-xl transition-all cursor-pointer"
-              :class="
-                selectedPayers.includes(payer.name)
-                  ? 'border-primary/30 bg-primary/5'
-                  : 'border-neutral-100 hover:border-neutral-200 bg-white'
-              "
-              @click="togglePayerSelection(payer.name)"
-            >
+          <!-- Payer Selection -->
+          <div v-if="!shareUrl" class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+              <label
+                class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest"
+                >{{ $t("share.selectPeople") }}</label
+              >
               <div
-                class="w-5 h-5 rounded border-2 mr-3 flex items-center justify-center transition-colors"
-                :class="
-                  selectedPayers.includes(payer.name)
-                    ? 'bg-primary border-primary'
-                    : 'border-neutral-300'
+                class="flex items-center cursor-pointer"
+                @click="
+                  selectAllPayers = !selectAllPayers;
+                  toggleSelectAllPayers();
                 "
               >
-                <svg
-                  v-if="selectedPayers.includes(payer.name)"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  class="w-3.5 h-3.5 text-white"
-                  stroke-width="3"
-                >
-                  <path
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m5 12 5 5L20 7"
-                  ></path>
-                </svg>
-              </div>
-              <div class="flex-1 flex justify-between items-center">
-                <span class="text-sm font-black text-neutral-700">{{
-                  payer.name
-                }}</span>
-                <span
-                  class="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg"
+                <div
+                  class="w-4 h-4 rounded border-2 mr-2 flex items-center justify-center transition-colors"
                   :class="
-                    payer.unpaidAmountDue > 0
-                      ? 'bg-orange-50 text-orange-500'
-                      : 'bg-green-50 text-green-500'
+                    selectAllPayers
+                      ? 'bg-primary border-primary'
+                      : 'border-neutral-300'
                   "
                 >
-                  {{
-                    payer.unpaidAmountDue > 0
-                      ? `฿${formatCurrency(payer.unpaidAmountDue)}`
-                      : $t("summary.settled")
-                  }}
-                </span>
+                  <svg
+                    v-if="selectAllPayers"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    class="w-3 h-3 text-white"
+                    :stroke-width="3"
+                  >
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m5 12 5 5L20 7"
+                    ></path>
+                  </svg>
+                </div>
+                <span
+                  class="text-[10px] font-bold text-neutral-500 uppercase tracking-widest"
+                  >{{ $t("share.all") }}</span
+                >
+              </div>
+            </div>
+
+            <div data-scroll-inner class="max-h-60 overflow-y-auto space-y-2 pr-2 scrollbar-hide">
+              <div
+                v-for="payer in payerAmounts.filter(p => !p.isOwner)"
+                :key="payer.name"
+                class="flex items-center p-3 border-2 rounded-xl transition-all cursor-pointer"
+                :class="
+                  selectedPayers.includes(payer.name)
+                    ? 'border-primary/30 bg-primary/5'
+                    : 'border-neutral-100 hover:border-neutral-200 bg-white'
+                "
+                @click="togglePayerSelection(payer.name)"
+              >
+                <div
+                  class="w-5 h-5 rounded border-2 mr-3 flex items-center justify-center transition-colors"
+                  :class="
+                    selectedPayers.includes(payer.name)
+                      ? 'bg-primary border-primary'
+                      : 'border-neutral-300'
+                  "
+                >
+                  <svg
+                    v-if="selectedPayers.includes(payer.name)"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    class="w-3.5 h-3.5 text-white"
+                    :stroke-width="3"
+                  >
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m5 12 5 5L20 7"
+                    ></path>
+                  </svg>
+                </div>
+                <div class="flex-1 flex justify-between items-center">
+                  <span class="text-sm font-black text-neutral-700">{{
+                    payer.name
+                  }}</span>
+                  <span
+                    class="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg"
+                    :class="
+                      payer.unpaidAmountDue > 0
+                        ? 'bg-orange-50 text-orange-500'
+                        : 'bg-green-50 text-green-500'
+                    "
+                  >
+                    {{
+                      payer.unpaidAmountDue > 0
+                        ? `฿${formatCurrency(payer.unpaidAmountDue)}`
+                        : $t("summary.settled")
+                    }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Share URL -->
-        <div v-if="shareUrl" class="mb-8">
-          <label
-            class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3"
-          >
-            {{ $t("share.link", { count: selectedPayers.length }) }}
-          </label>
-          <div
-            class="bg-neutral-50 p-4 rounded-2xl border border-neutral-200 mb-6 flex items-center"
-          >
-            <input
-              type="text"
-              readonly
-              :value="shareUrl"
-              class="bg-transparent w-full outline-none text-xs font-mono text-neutral-600"
-            />
-            <button
-              class="ml-2 text-primary font-bold text-[10px] uppercase tracking-widest shrink-0"
-              @click="
-                () => {
-                  navigator.clipboard.writeText(shareUrl);
-                  alert($t('share.copied'));
-                }
-              "
+          <!-- Share URL -->
+          <div v-if="shareUrl" class="mb-8">
+            <label
+              class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3"
             >
-              {{ $t("share.copy") }}
+              {{ $t("share.link", { count: selectedPayers.length }) }}
+            </label>
+            <div
+              class="bg-neutral-50 p-4 rounded-2xl border border-neutral-200 mb-6 flex items-center"
+            >
+              <input
+                type="text"
+                readonly
+                :value="shareUrl"
+                class="bg-transparent w-full outline-none text-xs font-mono text-neutral-600"
+              />
+              <button
+                class="ml-2 text-primary font-bold text-[10px] uppercase tracking-widest shrink-0"
+                @click="
+                  () => {
+                    navigator.clipboard.writeText(shareUrl);
+                    alert($t('share.copied'));
+                  }
+                "
+              >
+                {{ $t("share.copy") }}
+              </button>
+            </div>
+
+            <!-- Share QR Code -->
+            <div
+              class="flex flex-col items-center justify-center bg-white border-2 border-neutral-100 rounded-3xl p-6 shadow-sm"
+            >
+              <h3
+                class="text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-4"
+              >
+                {{ $t("share.scanToOpen") }}
+              </h3>
+              <div id="share-qrcode" class="rounded-xl overflow-hidden"></div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-4">
+            <button
+              v-if="!shareUrl"
+              @click="handleGenerateShareUrl"
+              :disabled="selectedPayers.length === 0"
+              class="flex-1 bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {{ $t("share.generate") }}
             </button>
           </div>
-
-          <!-- Share QR Code -->
-          <div
-            class="flex flex-col items-center justify-center bg-white border-2 border-neutral-100 rounded-3xl p-6 shadow-sm"
-          >
-            <h3
-              class="text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-4"
-            >
-              {{ $t("share.scanToOpen") }}
-            </h3>
-            <div id="share-qrcode" class="rounded-xl overflow-hidden"></div>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex gap-4">
-          <!-- <button v-if="shareUrl" @click="emit('close')"
-            class="flex-1 bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg">
-            {{ $t('actions.done') }}
-          </button> -->
-
-          <button
-            v-if="!shareUrl"
-            @click="handleGenerateShareUrl"
-            :disabled="selectedPayers.length === 0"
-            class="flex-1 bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {{ $t("share.generate") }}
-          </button>
         </div>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>
-
-<style scoped>
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-@keyframes modalIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.animate-modalIn {
-  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-</style>

@@ -1,17 +1,18 @@
 <script setup>
 import { ref } from "vue";
-import { usePeopleStore } from "../../stores/People";
+import { useBillGroupsStore } from "../../stores/BillGroups";
 import { useI18n } from "vue-i18n";
+import SectionLabel from "../common/SectionLabel.vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import { Add01Icon } from "@hugeicons/core-free-icons";
 
-const peopleStore = usePeopleStore();
+const groupsStore = useBillGroupsStore();
 const { t: $t } = useI18n();
 const newPersonName = ref("");
 
 function addPerson() {
   if (newPersonName.value.trim()) {
-    peopleStore.add(newPersonName.value.trim());
+    groupsStore.addPerson(newPersonName.value.trim());
     newPersonName.value = "";
   }
 }
@@ -21,11 +22,7 @@ function addPerson() {
   <div
     class="bg-white rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50 mb-8"
   >
-    <h2
-      class="text-[11px] font-black text-neutral-400 uppercase tracking-[0.15em] mb-4"
-    >
-      {{ $t("people.addMember") }}
-    </h2>
+    <SectionLabel class="mb-4">{{ $t("people.addMember") }}</SectionLabel>
     <div class="flex flex-col sm:flex-row gap-4">
       <div class="flex-grow">
         <input
@@ -41,7 +38,7 @@ function addPerson() {
         :disabled="!newPersonName.trim()"
         class="bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-8 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg flex items-center justify-center sm:w-auto w-full gap-2"
       >
-        <HugeiconsIcon :icon="Add01Icon" size="20" stroke-width="3" />
+        <HugeiconsIcon :icon="Add01Icon" size="20" :stroke-width="3" />
         {{ $t("actions.add") }}
       </button>
     </div>

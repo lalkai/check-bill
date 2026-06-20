@@ -1,10 +1,11 @@
 <script setup>
-import { ref, computed } from "vue";
-import { usePeopleStore } from "../../stores/People";
+import { computed } from "vue";
+import { useBillGroupsStore } from "../../stores/BillGroups";
 import { useI18n } from "vue-i18n";
+import { hexToRgb } from "../../utils/theme";
 
 const { t: $t } = useI18n();
-const peopleStore = usePeopleStore();
+const groupsStore = useBillGroupsStore();
 
 const props = defineProps({
   payer: {
@@ -15,37 +16,29 @@ const props = defineProps({
 
 import { formatCurrency } from "../../utils/common";
 import { HugeiconsIcon } from "@hugeicons/vue";
-import { Tick01Icon, ArrowDown01Icon } from "@hugeicons/core-free-icons";
+import {
+  CrownIcon,
+  ArrowRight01Icon,
+} from "@hugeicons/core-free-icons";
 
 const emit = defineEmits([
-  "toggle-payment-status",
   "open-details",
-  "settle-all",
 ]);
 
-const showAllDates = ref(false);
+const groupColor = computed(() => groupsStore.activeGroup?.color || "#0066cc");
+const groupColorRgb = computed(() => hexToRgb(groupColor.value));
 
-const allDatesArray = computed(() => {
-  if (!props.payer || !props.payer.dates) return [];
-  return Object.entries(props.payer.dates)
-    .sort((a, b) => new Date(b[0]) - new Date(a[0]))
-    .map(([date, amount]) => ({ date, amount }));
-});
-
-const visibleDates = computed(() => {
-  if (showAllDates.value || allDatesArray.value.length <= 2) {
-    return allDatesArray.value;
+const avatarStyle = computed(() => {
+  if (props.payer.isOwner) {
+    return { backgroundColor: '#f59e0b' };
   }
-  return allDatesArray.value.slice(0, 2);
+  return { backgroundColor: groupColor.value };
 });
 
-const togglePaymentStatus = (payer, date) => {
-  emit("toggle-payment-status", payer, date);
-};
-
-const settleAll = () => {
-  emit("settle-all", props.payer);
-};
+const viewDetailsBtnStyle = computed(() => ({
+  backgroundColor: groupColor.value,
+  boxShadow: `0 2px 8px rgba(${groupColorRgb.value.r}, ${groupColorRgb.value.g}, ${groupColorRgb.value.b}, 0.2)`,
+}));
 
 const openDetails = () => {
   emit("open-details");
@@ -54,132 +47,71 @@ const openDetails = () => {
 
 <template>
   <div
-    class="bg-white rounded-[2.5rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50 cursor-pointer group transition-all hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1"
+    class="bg-white rounded-[2rem] p-5 shadow-[0_4px_20px_rgb(0,0,0,0.04)] border border-neutral-100/50 cursor-pointer group transition-all hover:shadow-[0_12px_32px_rgb(0,0,0,0.08)] hover:-translate-y-0.5"
     @click="openDetails"
   >
-    <div
-      class="flex flex-col sm:flex-row justify-between sm:items-start gap-4 sm:gap-0"
-    >
-      <div class="flex items-center gap-4 flex-1 min-w-0">
-        <div
-          class="w-14 h-14 flex-shrink-0 rounded-2xl flex items-center justify-center text-white shadow-sm font-black text-xl transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
-          :class="payer.paid ? 'bg-green-500' : 'bg-orange-500'"
-        >
-          {{ payer.name[0]?.toUpperCase() }}
-        </div>
-        <div class="flex-1 min-w-0">
-          <h2
-            class="text-xl font-black text-neutral-800 tracking-tight truncate w-full"
-          >
+    <div class="flex items-center gap-4">
+      <!-- Avatar -->
+      <div
+        class="w-12 h-12 flex-shrink-0 rounded-xl flex items-center justify-center text-white shadow-sm font-black text-lg transition-transform duration-300 group-hover:scale-110"
+        :style="avatarStyle"
+      >
+        <HugeiconsIcon
+          v-if="payer.isOwner"
+          :icon="CrownIcon"
+          size="20"
+          :stroke-width="2.5"
+        />
+        <span v-else>{{ payer.name[0]?.toUpperCase() }}</span>
+      </div>
+
+      <!-- Info -->
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2">
+          <h2 class="text-base font-black text-neutral-800 tracking-tight truncate">
             {{ payer.name }}
           </h2>
-          <div
-            class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-0.5 truncate flex items-center gap-1"
-          >
-            <span class="flex-shrink-0">{{ $t("summary.total") }}</span>
-            <span class="font-black text-neutral-700 truncate"
-              >฿{{ formatCurrency(payer.totalAmountDue) }}</span
-            >
-          </div>
-        </div>
-      </div>
-      <div
-        class="flex items-center gap-2 self-start flex-wrap sm:flex-nowrap min-w-0 max-w-full"
-      >
-        <div
-          class="px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 min-w-0 truncate"
-          :class="
-            payer.paid
-              ? 'bg-green-50 text-green-600 border border-green-200/50'
-              : 'bg-orange-50 text-orange-600 border border-orange-200/50'
-          "
-        >
           <span
-            class="w-1.5 h-1.5 rounded-full flex-shrink-0"
-            :class="payer.paid ? 'bg-green-500' : 'bg-orange-500'"
-          ></span>
-          <span class="truncate">
-            {{
-              payer.paid
-                ? $t("summary.settled")
-                : $t("summary.owes", {
-                    amount: `฿${formatCurrency(payer.unpaidAmountDue)}`,
-                  })
-            }}
+            v-if="payer.isOwner"
+            class="text-[8px] font-black text-amber-600 uppercase tracking-widest bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200 flex-shrink-0"
+          >
+            {{ $t("summary.billOwner") }}
+          </span>
+          <span
+            v-else-if="payer.paid"
+            class="text-[8px] font-black text-green-600 uppercase tracking-widest bg-green-50 px-1.5 py-0.5 rounded-md border border-green-200 flex-shrink-0"
+          >
+            {{ $t("summary.settled") }}
+          </span>
+          <span
+            v-else
+            class="text-[8px] font-black text-orange-500 uppercase tracking-widest bg-orange-50 px-1.5 py-0.5 rounded-md border border-orange-200 flex-shrink-0"
+          >
+            ค้างจ่าย
           </span>
         </div>
-        <button
-          v-if="!payer.paid"
-          @click.stop="settleAll"
-          class="bg-neutral-800 text-white font-black text-[10px] uppercase tracking-widest py-2 px-4 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-sm flex items-center gap-1.5"
-        >
-          <HugeiconsIcon :icon="Tick01Icon" size="12" stroke-width="3" />
-          {{ $t("summary.settleAllComplete") }}
-        </button>
+        <p class="text-[11px] text-neutral-400 font-bold mt-0.5">
+          {{ payer.isOwner ? $t("summary.totalSponsored") : $t("summary.total") }}
+          <span class="text-neutral-700 font-black">฿{{ formatCurrency(payer.totalAmountDue) }}</span>
+        </p>
       </div>
-    </div>
 
-    <div class="mt-6 pt-6 border-t border-dashed border-neutral-100/80">
-      <ul class="divide-y divide-neutral-50/50">
-        <li
-          v-for="item in visibleDates"
-          :key="item.date"
-          class="py-3 first:pt-0 last:pb-0"
+      <!-- Arrow button -->
+      <div class="flex-shrink-0">
+        <div
+          v-if="!payer.isOwner"
+          class="w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-95"
+          :style="viewDetailsBtnStyle"
         >
-          <div class="flex items-center justify-between">
-            <div class="flex flex-col">
-              <span
-                class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest"
-                >{{ item.date }}</span
-              >
-              <span class="text-sm font-black text-neutral-700"
-                >฿{{ item.amount ? formatCurrency(item.amount) : "0.00" }}</span
-              >
-            </div>
-            <button
-              @click.stop="togglePaymentStatus(payer, item.date)"
-              class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-1"
-              :class="
-                peopleStore.getPaidStatusByDate(payer.name, item.date)
-                  ? 'bg-green-500 text-white shadow-sm'
-                  : 'bg-white border-2 border-neutral-200 text-neutral-400 hover:border-neutral-300 hover:text-neutral-600'
-              "
-            >
-              <HugeiconsIcon
-                v-if="peopleStore.getPaidStatusByDate(payer.name, item.date)"
-                :icon="Tick01Icon"
-                size="14"
-                stroke-width="3"
-              />
-              {{
-                peopleStore.getPaidStatusByDate(payer.name, item.date)
-                  ? $t("summary.paid")
-                  : $t("summary.markPaid")
-              }}
-            </button>
-          </div>
-        </li>
-      </ul>
-
-      <!-- Toggle Button -->
-      <button
-        v-if="allDatesArray.length > 2"
-        @click.stop="showAllDates = !showAllDates"
-        class="w-full mt-4 py-2 rounded-xl bg-neutral-50 text-[10px] font-black text-neutral-400 uppercase tracking-widest hover:bg-neutral-100 transition-colors flex items-center justify-center gap-2 border border-neutral-100/50"
-      >
-        {{
-          showAllDates
-            ? $t("summary.hide")
-            : $t("summary.showMore", { count: allDatesArray.length - 2 })
-        }}
-        <HugeiconsIcon
-          :icon="ArrowDown01Icon"
-          size="12"
-          stroke-width="3"
-          class="transition-transform duration-300"
-          :class="showAllDates ? 'rotate-180' : ''"
-        />
-      </button>
+          <HugeiconsIcon :icon="ArrowRight01Icon" size="16" :stroke-width="2.5" class="text-white" />
+        </div>
+        <div
+          v-else
+          class="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-50 border border-amber-200"
+        >
+          <HugeiconsIcon :icon="ArrowRight01Icon" size="16" :stroke-width="2.5" class="text-amber-500" />
+        </div>
+      </div>
     </div>
   </div>
 </template>

@@ -1,8 +1,11 @@
 <script setup>
-import { nextTick, watch } from "vue";
+import { nextTick, watch, computed } from "vue";
+import { useScrollLock } from "../../composables/useScrollLock";
 import { useI18n } from "vue-i18n";
 import generatePayload from "promptpay-qr";
 import qrcode from "qrcode";
+import { useBillGroupsStore } from "../../stores/BillGroups";
+import { hexToRgb } from "../../utils/theme";
 
 const props = defineProps({
   payer: {
@@ -17,27 +20,46 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  amount: {
+    type: Number,
+    default: null,
+  },
+  title: {
+    type: String,
+    default: "",
+  },
 });
+useScrollLock(computed(() => props.isVisible));
 
 const emit = defineEmits(["close"]);
 const { t: $t } = useI18n();
+const groupsStore = useBillGroupsStore();
+
+const groupColor = computed(() => groupsStore.activeGroup?.color || "#0066cc");
+const groupColorRgb = computed(() => hexToRgb(groupColor.value));
 
 const generatePaymentQRCode = async () => {
-  if (!props.promptpayID || !props.payer) {
+  if (!props.promptpayID) {
     alert($t("shared.errorGenerateQR"));
     return;
   }
 
-  if (props.payer.paid) {
-    alert($t("shared.alreadySettled"));
-    emit("close");
-    return;
+  let unpaidAmount = props.amount;
+  if (unpaidAmount === null || unpaidAmount === undefined) {
+    if (!props.payer) {
+      alert($t("shared.errorGenerateQR"));
+      return;
+    }
+    if (props.payer.paid) {
+      alert($t("shared.alreadySettled"));
+      emit("close");
+      return;
+    }
+    unpaidAmount =
+      typeof props.payer.unpaidAmountDue === "number"
+        ? props.payer.unpaidAmountDue
+        : props.payer.totalAmountDue;
   }
-
-  const unpaidAmount =
-    typeof props.payer.unpaidAmountDue === "number"
-      ? props.payer.unpaidAmountDue
-      : props.payer.totalAmountDue;
 
   if (unpaidAmount <= 0) {
     alert($t("shared.noBalance"));
@@ -117,64 +139,52 @@ const closeModal = () => {
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="isVisible && payer"
-      class="fixed inset-0 flex items-center justify-center z-50 transition-all p-4"
-    >
+    <Transition name="modal">
       <div
-        class="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        @click="closeModal"
-      ></div>
-      <div
-        class="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-sm p-8 m-4 relative z-10 animate-modalIn border border-white/20"
+        v-if="isVisible && payer"
+        class="fixed inset-0 flex items-center justify-center z-50 transition-all p-4"
       >
-        <div class="flex justify-between items-start mb-6">
-          <div>
-            <h2 class="text-2xl font-black text-neutral-800 tracking-tight">
-              {{ $t("shared.scanToPay") }}
-            </h2>
-            <p
-              class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-1"
-            >
-              {{
-                $t("shared.forUser", {
-                  name: payer.name,
-                })
-              }}
-            </p>
-          </div>
-        </div>
-
         <div
-          :id="`payment-qrcode-container-${payer.name.replace(/\s+/g, '-')}`"
-          class="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm min-h-[300px] flex flex-col justify-center text-center"
-        ></div>
-
-        <button
+          class="absolute inset-0 bg-black/40 backdrop-blur-sm"
           @click="closeModal"
-          class="w-full mt-6 bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg"
+        ></div>
+        <div
+          class="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-sm p-8 m-4 relative z-10 border border-white/20"
         >
-          {{ $t("actions.done") }}
-        </button>
+          <div class="flex justify-between items-start mb-6">
+            <div>
+              <h2 class="text-2xl font-black text-neutral-800 tracking-tight">
+                {{ title || $t("shared.scanToPay") }}
+              </h2>
+              <p
+                class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-1"
+              >
+                {{
+                  $t("shared.forUser", {
+                    name: payer.name,
+                  })
+                }}
+              </p>
+            </div>
+          </div>
+
+          <div
+            :id="`payment-qrcode-container-${payer.name.replace(/\s+/g, '-')}`"
+            class="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm min-h-[300px] flex flex-col justify-center text-center"
+          ></div>
+
+          <button
+            @click="closeModal"
+            class="w-full mt-6 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl transition-all active:scale-95 shadow-lg"
+            :style="{
+              backgroundColor: groupColor,
+              boxShadow: `0 4px 14px rgba(${groupColorRgb.r}, ${groupColorRgb.g}, ${groupColorRgb.b}, 0.3)`
+            }"
+          >
+            {{ $t("actions.done") }}
+          </button>
+        </div>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>
-
-<style scoped>
-@keyframes modalIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.animate-modalIn {
-  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-</style>
