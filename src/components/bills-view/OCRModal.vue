@@ -4,7 +4,7 @@ import { useScrollLock } from "../../composables/useScrollLock";
 import { useI18n } from "vue-i18n";
 import { useBillGroupsStore } from "../../stores/BillGroups";
 import { recognizeReceipt, terminateWorker } from "../../utils/ocrEngine.js";
-import { preventNonNumberInput, formatCurrency } from "../../utils/common";
+import { preventNonNumberInput, formatCurrency, handleFocusIn, getTodayDate } from "../../utils/common";
 import CloseButton from "../common/CloseButton.vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import {
@@ -192,7 +192,7 @@ function addSelectedItemsToBills() {
         throw new Error(`Invalid amount: ${cleanAmount}`);
       }
 
-      const cleanDate = new Date().toISOString().split("T")[0];
+      const cleanDate = getTodayDate();
 
       if (!cleanDescription || cleanDescription.length < 1) {
         throw new Error($t("ocr.itemNoDescription"));
@@ -244,7 +244,7 @@ function startOcrOver() {
     <Transition name="modal">
       <div
         v-if="show"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        class="fixed inset-0 z-50 flex items-end justify-center p-3 sm:p-4 sm:items-center"
       >
         <!-- Backdrop -->
         <div
@@ -254,8 +254,9 @@ function startOcrOver() {
 
         <!-- Modal panel -->
         <div
-          class="relative bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full border border-white/20 max-h-[90vh] flex flex-col overflow-hidden"
+          class="relative bg-white rounded-[2.2rem] sm:rounded-[2.5rem] shadow-[0_24px_60px_rgba(0,0,0,0.18)] w-full border border-white/20 max-h-[85vh] sm:max-h-[90vh] flex flex-col overflow-hidden"
           :class="ocrStep === 3 ? 'max-w-2xl' : 'max-w-md'"
+          @focusin="handleFocusIn"
         >
           <!-- Modal Header -->
           <div class="px-8 pt-8 pb-5 flex items-center justify-between border-b border-neutral-100 flex-shrink-0">

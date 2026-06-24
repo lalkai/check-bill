@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { useScrollLock } from "../../composables/useScrollLock";
+import { handleFocusIn } from "../../utils/common";
 import CloseButton from "./CloseButton.vue";
 
 const props = defineProps({
@@ -19,7 +20,7 @@ useScrollLock(computed(() => props.show));
     <Transition name="modal">
       <div
         v-if="show"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        class="fixed inset-0 z-50 flex items-end justify-center p-3 sm:p-4 sm:items-center"
       >
         <!-- Backdrop -->
         <div
@@ -29,8 +30,9 @@ useScrollLock(computed(() => props.show));
 
         <!-- Modal -->
         <div
-          class="relative bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full border border-white/20 max-h-[90vh] flex flex-col overflow-hidden"
+          class="relative bg-white rounded-[2.2rem] sm:rounded-[2.5rem] shadow-[0_24px_60px_rgba(0,0,0,0.18)] w-full border border-white/20 max-h-[85vh] sm:max-h-[90vh] flex flex-col overflow-hidden"
           :class="maxWidth"
+          @focusin="handleFocusIn"
         >
           <!-- Header -->
           <div v-if="title || $slots.header" class="px-8 pt-8 pb-5 flex justify-between items-center border-b border-neutral-100 flex-shrink-0">

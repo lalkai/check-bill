@@ -63,7 +63,7 @@ const handlePaymentClick = () => {
 
 <template>
   <div
-    class="bg-white rounded-[2.5rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50"
+    class="bg-white dark:bg-neutral-800 rounded-[2.5rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50 dark:border-neutral-700/50"
   >
     <div
       class="flex flex-col sm:flex-row justify-between sm:items-start gap-4 sm:gap-0"
@@ -77,7 +77,7 @@ const handlePaymentClick = () => {
         </div>
         <div class="flex-1 min-w-0">
           <h2
-            class="text-xl font-black text-neutral-800 tracking-tight truncate w-full"
+            class="text-xl font-black text-neutral-800 dark:text-white tracking-tight truncate w-full"
           >
             {{ payer.name }}
           </h2>
@@ -85,7 +85,7 @@ const handlePaymentClick = () => {
             class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-0.5 truncate flex items-center gap-1"
           >
             <span class="flex-shrink-0">{{ $t("shared.total") }}</span>
-            <span class="font-black text-neutral-700 truncate"
+            <span class="font-black text-neutral-700 dark:text-neutral-200 truncate"
               >฿{{ formatCurrency(payer.totalAmountDue) }}</span
             >
           </div>
@@ -95,8 +95,8 @@ const handlePaymentClick = () => {
         class="px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest self-start flex items-center gap-1.5 min-w-0 truncate max-w-full"
         :class="
           payer.paid
-            ? 'bg-green-50 text-green-600 border border-green-200/50'
-            : 'bg-orange-50 text-orange-600 border border-orange-200/50'
+            ? 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 border border-green-200/50 dark:border-green-700/50'
+            : 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-200/50 dark:border-orange-700/50'
         "
       >
         <span
@@ -118,7 +118,7 @@ const handlePaymentClick = () => {
     <!-- Date amounts section -->
     <div
       v-if="payer.dates && Object.keys(payer.dates).length > 0"
-      class="mt-6 pt-6 border-t border-dashed border-neutral-100/80"
+      class="mt-6 pt-6 border-t border-dashed border-neutral-100/80 dark:border-neutral-700/50"
     >
       <h3
         class="text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-4"
@@ -129,17 +129,17 @@ const handlePaymentClick = () => {
         <li
           v-for="(amount, date) in payer.dates"
           :key="date"
-          class="bg-neutral-50/50 rounded-xl p-3 border border-neutral-100"
+          class="bg-neutral-50/50 dark:bg-neutral-700/30 rounded-xl p-3 border border-neutral-100 dark:border-neutral-700/50"
         >
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2">
               <span
-                class="text-[10px] font-bold text-neutral-500 uppercase tracking-widest"
+                class="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-widest"
                 >{{ date }}</span
               >
             </div>
             <div class="flex items-center gap-3">
-              <p class="text-sm text-neutral-700 font-black">
+              <p class="text-sm text-neutral-700 dark:text-neutral-200 font-black">
                 ฿{{
                   typeof amount.amount === "number"
                     ? formatCurrency(amount.amount)
@@ -150,8 +150,8 @@ const handlePaymentClick = () => {
                 class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest"
                 :class="
                   amount.paid
-                    ? 'bg-green-100 text-green-600'
-                    : 'bg-neutral-200 text-neutral-500'
+                    ? 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400'
+                    : 'bg-neutral-200 dark:bg-neutral-600 text-neutral-500 dark:text-neutral-300'
                 "
               >
                 {{ amount.paid ? $t("shared.paid") : $t("shared.unpaid") }}
@@ -165,7 +165,7 @@ const handlePaymentClick = () => {
     <!-- Bill items section -->
     <div
       v-if="payer.billItems && payer.billItems.length > 0"
-      class="mt-6 pt-6 border-t border-dashed border-neutral-100/80"
+      class="mt-6 pt-6 border-t border-dashed border-neutral-100/80 dark:border-neutral-700/50"
     >
       <h3
         class="text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-4"
@@ -176,12 +176,12 @@ const handlePaymentClick = () => {
         <li
           v-for="(item, index) in getVisibleBillItems"
           :key="index"
-          class="p-4 bg-neutral-50/70 rounded-2xl border border-neutral-200/80"
+          class="p-4 bg-neutral-50/70 dark:bg-neutral-700/30 rounded-2xl border border-neutral-200/80 dark:border-neutral-700/50"
         >
           <div class="flex justify-between items-start gap-4">
             <div class="flex-1 min-w-0">
               <p
-                class="text-sm font-black text-neutral-700 tracking-tight truncate w-full"
+                class="text-sm font-black text-neutral-700 dark:text-neutral-200 tracking-tight truncate w-full"
               >
                 {{ item.description }}
               </p>
@@ -191,7 +191,7 @@ const handlePaymentClick = () => {
                 {{ item.date }}
               </p>
             </div>
-            <p class="text-sm font-black text-neutral-800 flex-shrink-0">
+            <p class="text-sm font-black text-neutral-800 dark:text-white flex-shrink-0">
               ฿{{ formatCurrency(item.amount) }}
             </p>
           </div>

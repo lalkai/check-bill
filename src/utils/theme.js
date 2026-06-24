@@ -119,8 +119,16 @@ export function getThemeColors(primaryHex) {
  * then updates the document root with space-separated RGB values for Tailwind compatibility.
  * @param {string} hexColor - The main accent color chosen for the group.
  */
+let lastAppliedColor = "#0066cc";
+
 export function applyGroupTheme(hexColor) {
   if (typeof window === "undefined" || !document || !document.documentElement) return;
+
+  if (hexColor) {
+    lastAppliedColor = hexColor;
+  } else {
+    hexColor = lastAppliedColor;
+  }
 
   const { r, g, b } = hexToRgb(hexColor || "#0066cc");
 
@@ -153,12 +161,26 @@ export function applyGroupTheme(hexColor) {
   const containerG = Math.round(g + (255 - g) * 0.88);
   const containerB = Math.round(b + (255 - b) * 0.88);
 
+  const isDark = document.documentElement.classList.contains("dark");
+
   // Material Design 3 dynamic color tokens
   document.documentElement.style.setProperty("--md-sys-color-primary", `rgb(${r}, ${g}, ${b})`);
-  document.documentElement.style.setProperty("--md-sys-color-primary-container", `rgb(${containerR}, ${containerG}, ${containerB})`);
-  document.documentElement.style.setProperty("--md-sys-color-surface", "#f8f9fb");
-  document.documentElement.style.setProperty("--md-sys-color-surface-container", "#ffffff");
-  document.documentElement.style.setProperty("--md-sys-color-on-surface", "#1d1d1f");
-  document.documentElement.style.setProperty("--md-sys-color-outline", "#f1f1f4");
+  
+  if (isDark) {
+    const darkContainerR = Math.round(r * 0.15);
+    const darkContainerG = Math.round(g * 0.15);
+    const darkContainerB = Math.round(b * 0.15);
+    document.documentElement.style.setProperty("--md-sys-color-primary-container", `rgb(${darkContainerR}, ${darkContainerG}, ${darkContainerB})`);
+    document.documentElement.style.setProperty("--md-sys-color-surface", "#0c0c0e");
+    document.documentElement.style.setProperty("--md-sys-color-surface-container", "#17171c");
+    document.documentElement.style.setProperty("--md-sys-color-on-surface", "#f3f4f6");
+    document.documentElement.style.setProperty("--md-sys-color-outline", "#25252c");
+  } else {
+    document.documentElement.style.setProperty("--md-sys-color-primary-container", `rgb(${containerR}, ${containerG}, ${containerB})`);
+    document.documentElement.style.setProperty("--md-sys-color-surface", "#f8f9fb");
+    document.documentElement.style.setProperty("--md-sys-color-surface-container", "#ffffff");
+    document.documentElement.style.setProperty("--md-sys-color-on-surface", "#1d1d1f");
+    document.documentElement.style.setProperty("--md-sys-color-outline", "#f1f1f4");
+  }
 }
 

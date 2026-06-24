@@ -31,3 +31,43 @@ export function preventNonNumberInput(event) {
     event.preventDefault();
   }
 }
+
+/**
+ * Auto-scroll to focused input/textarea inside a modal
+ * @param {Event} event - The focusin event
+ */
+export function handleFocusIn(event) {
+  const target = event.target;
+  if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) {
+    setTimeout(() => {
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 250);
+  }
+}
+
+/**
+ * Get today's date in YYYY-MM-DD format
+ * @returns {string} - Today's date string
+ */
+export function getTodayDate() {
+  return new Date().toISOString().split("T")[0];
+}
+
+/**
+ * Force light mode by removing dark class from html
+ * Useful for shared views that should always be light
+ */
+export function forceLightMode() {
+  document.documentElement.classList.remove("dark");
+}
+
+/**
+ * Restore theme based on localStorage
+ */
+export function restoreTheme() {
+  if (localStorage.getItem("theme") === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+}

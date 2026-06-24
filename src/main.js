@@ -1,4 +1,7 @@
 import "./style.css";
+import { restoreTheme } from "./utils/common";
+
+restoreTheme();
 
 import { createApp } from "vue";
 import { createPinia } from "pinia";

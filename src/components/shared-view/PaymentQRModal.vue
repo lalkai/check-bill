@@ -6,6 +6,7 @@ import generatePayload from "promptpay-qr";
 import qrcode from "qrcode";
 import { useBillGroupsStore } from "../../stores/BillGroups";
 import { hexToRgb } from "../../utils/theme";
+import CloseButton from "../common/CloseButton.vue";
 
 const props = defineProps({
   payer: {
@@ -105,14 +106,14 @@ const generatePaymentQRCode = async () => {
 
       const amountText = document.createElement("div");
       amountText.className =
-        "text-center mt-6 text-3xl font-black text-neutral-800 tracking-tight";
+        "text-center mt-6 text-3xl font-black text-neutral-800 dark:text-white tracking-tight";
       amountText.innerHTML = `<span class="text-xl opacity-60 mr-1">฿</span>${amount.toLocaleString()}`;
       qrContainer.appendChild(amountText);
 
       const promptpayInfoText = document.createElement("div");
       promptpayInfoText.className =
-        "mt-4 inline-flex items-center justify-center bg-neutral-100 px-4 py-2 rounded-xl border border-neutral-200 mx-auto text-[10px] font-black uppercase tracking-widest text-neutral-500 gap-2";
-      promptpayInfoText.innerHTML = `<span>ID</span><span class="text-neutral-700">${props.promptpayID}</span>`;
+        "mt-4 inline-flex items-center justify-center bg-neutral-100 dark:bg-neutral-600 px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-500 mx-auto text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-300 gap-2";
+      promptpayInfoText.innerHTML = `<span>ID</span><span class="text-neutral-700 dark:text-white">${props.promptpayID}</span>`;
       qrContainer.appendChild(promptpayInfoText);
     });
   } catch (error) {
@@ -142,18 +143,19 @@ const closeModal = () => {
     <Transition name="modal">
       <div
         v-if="isVisible && payer"
-        class="fixed inset-0 flex items-center justify-center z-50 transition-all p-4"
+        class="fixed inset-0 flex items-end justify-center z-50 transition-all p-3 sm:p-4 sm:items-center"
       >
         <div
           class="absolute inset-0 bg-black/40 backdrop-blur-sm"
           @click="closeModal"
         ></div>
         <div
-          class="bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-sm p-8 m-4 relative z-10 border border-white/20"
+          class="relative bg-white dark:bg-neutral-800 rounded-[2.2rem] sm:rounded-[2.5rem] shadow-[0_24px_60px_rgba(0,0,0,0.18)] w-full max-w-sm border border-white/20 dark:border-neutral-700/50 max-h-[85vh] sm:max-h-[90vh] flex flex-col overflow-hidden"
         >
-          <div class="flex justify-between items-start mb-6">
+          <!-- Header -->
+          <div class="px-8 pt-8 pb-5 flex justify-between items-start border-b border-neutral-100 dark:border-neutral-700/50 flex-shrink-0">
             <div>
-              <h2 class="text-2xl font-black text-neutral-800 tracking-tight">
+              <h2 class="text-2xl font-black text-neutral-800 dark:text-white tracking-tight">
                 {{ title || $t("shared.scanToPay") }}
               </h2>
               <p
@@ -166,23 +168,30 @@ const closeModal = () => {
                 }}
               </p>
             </div>
+            <CloseButton @click="closeModal" />
           </div>
 
-          <div
-            :id="`payment-qrcode-container-${payer.name.replace(/\s+/g, '-')}`"
-            class="bg-white p-6 rounded-3xl border border-neutral-100 shadow-sm min-h-[300px] flex flex-col justify-center text-center"
-          ></div>
+          <!-- Scrollable Body -->
+          <div data-scroll-inner class="flex-1 overflow-y-auto scrollbar-hide px-8 py-6 flex flex-col justify-center items-center">
+            <div
+              :id="`payment-qrcode-container-${payer.name.replace(/\s+/g, '-')}`"
+              class="bg-white dark:bg-neutral-700 p-6 rounded-3xl border border-neutral-100 dark:border-neutral-600 shadow-sm w-full min-h-[300px] flex flex-col justify-center text-center items-center"
+            ></div>
+          </div>
 
-          <button
-            @click="closeModal"
-            class="w-full mt-6 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl transition-all active:scale-95 shadow-lg"
-            :style="{
-              backgroundColor: groupColor,
-              boxShadow: `0 4px 14px rgba(${groupColorRgb.r}, ${groupColorRgb.g}, ${groupColorRgb.b}, 0.3)`
-            }"
-          >
-            {{ $t("actions.done") }}
-          </button>
+          <!-- Sticky Footer -->
+          <div class="px-8 py-5 border-t border-neutral-100 dark:border-neutral-700/50 bg-white dark:bg-neutral-800 flex-shrink-0">
+            <button
+              @click="closeModal"
+              class="w-full text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl transition-all active:scale-95 shadow-lg"
+              :style="{
+                backgroundColor: groupColor,
+                boxShadow: `0 4px 14px rgba(${groupColorRgb.r}, ${groupColorRgb.g}, ${groupColorRgb.b}, 0.3)`
+              }"
+            >
+              {{ $t("actions.done") }}
+            </button>
+          </div>
         </div>
       </div>
     </Transition>

@@ -2,7 +2,7 @@
 import { ref, computed, watch } from "vue";
 import { useBillGroupsStore } from "../../stores/BillGroups";
 import { useI18n } from "vue-i18n";
-import { preventNonNumberInput } from "../../utils/common";
+import { preventNonNumberInput, handleFocusIn } from "../../utils/common";
 import Calculator from "../common/Calculator.vue";
 import CloseButton from "../common/CloseButton.vue";
 import IconPicker from "../common/IconPicker.vue";
@@ -152,7 +152,7 @@ function menuPeoplePay(person) {
     <Transition name="modal">
       <div
         v-if="bill"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        class="fixed inset-0 z-50 flex items-end justify-center p-3 sm:p-4 sm:items-center"
       >
         <!-- Backdrop -->
         <div
@@ -162,7 +162,8 @@ function menuPeoplePay(person) {
 
         <!-- Modal -->
         <div
-          class="relative bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-lg border border-white/20 max-h-[90vh] flex flex-col overflow-hidden"
+          class="relative bg-white rounded-[2.2rem] sm:rounded-[2.5rem] shadow-[0_24px_60px_rgba(0,0,0,0.18)] w-full max-w-lg border border-white/20 max-h-[85vh] sm:max-h-[90vh] flex flex-col overflow-hidden"
+          @focusin="handleFocusIn"
         >
           <!-- Header -->
           <div class="px-8 pt-8 pb-5 flex justify-between items-center border-b border-neutral-100 flex-shrink-0">

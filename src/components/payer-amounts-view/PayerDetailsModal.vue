@@ -72,13 +72,12 @@ const allDatesArray = computed(() => {
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="show && payer" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div v-if="show && payer" class="fixed inset-0 z-50 flex items-end justify-center p-3 sm:p-4 sm:items-center">
         <!-- Backdrop -->
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="emit('close')"></div>
 
         <!-- Modal card (same frame as original) -->
-        <div class="relative bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] w-full max-w-md border border-white/20 max-h-[90vh] flex flex-col overflow-hidden">
-
+        <div class="relative bg-white rounded-[2.2rem] sm:rounded-[2.5rem] shadow-[0_24px_60px_rgba(0,0,0,0.18)] w-full max-w-md border border-white/20 max-h-[85vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
           <!-- ── HEADER ── -->
           <div class="px-6 pt-6 pb-5 flex items-center gap-4 border-b border-neutral-100">
             <!-- Avatar -->
@@ -101,6 +100,9 @@ const allDatesArray = computed(() => {
               </div>
               <p class="text-[10px] text-neutral-400 font-semibold uppercase tracking-widest mt-0.5">
                 {{ payer.isOwner ? $t("summary.sponsoredDetails") : $t("summary.expenseBreakdown") }}
+                <span v-if="!payer.isOwner && !payer.paid && payer.unpaidAmountDue > 0" class="text-orange-500">
+                  · {{ $t("summary.remaining") }} ฿{{ formatCurrency(payer.unpaidAmountDue) }}
+                </span>
               </p>
             </div>
 

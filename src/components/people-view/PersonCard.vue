@@ -19,7 +19,17 @@ const groupsStore = useBillGroupsStore();
 const isOwner = computed(() => groupsStore.activeGroup?.ownerName === props.person.name);
 
 function toggleOwner() {
-  groupsStore.setGroupOwner(props.person.name);
+  if (isOwner.value) {
+    const confirmMsg = $t("messages.confirmRemoveOwner", { name: props.person.name });
+    if (confirm(confirmMsg)) {
+      groupsStore.setGroupOwner(props.person.name);
+    }
+    return;
+  }
+  const confirmMsg = $t("messages.confirmChangeOwner", { name: props.person.name });
+  if (confirm(confirmMsg)) {
+    groupsStore.setGroupOwner(props.person.name);
+  }
 }
 
 function removePerson() {

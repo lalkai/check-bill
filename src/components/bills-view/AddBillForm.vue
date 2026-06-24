@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { preventNonNumberInput } from "../../utils/common";
+import { preventNonNumberInput, getTodayDate } from "../../utils/common";
 import Calculator from "../common/Calculator.vue";
 import IconPicker from "../common/IconPicker.vue";
 import SectionLabel from "../common/SectionLabel.vue";
@@ -17,7 +17,7 @@ const emit = defineEmits(["addBill", "openOcr"]);
 
 const newBillDescription = ref("");
 const newBillAmount = ref("");
-const newBillDate = ref(new Date().toISOString().split("T")[0]);
+const newBillDate = ref(getTodayDate());
 const selectedIcon = ref("general");
 
 const showCalculator = ref(false);
@@ -36,7 +36,7 @@ function addBill() {
     });
     newBillDescription.value = "";
     newBillAmount.value = "";
-    newBillDate.value = new Date().toISOString().split("T")[0];
+    newBillDate.value = getTodayDate();
     selectedIcon.value = "general";
   }
 }

@@ -7,28 +7,47 @@ import EditGroupModal from "../components/home-view/EditGroupModal.vue";
 import EmptyState from "../components/common/EmptyState.vue";
 import SectionLabel from "../components/common/SectionLabel.vue";
 import { useBillGroupsStore } from "../stores/BillGroups";
+import { version } from "../../package.json";
 
 const { locale, t: $t } = useI18n();
 const groupsStore = useBillGroupsStore();
 const emit = defineEmits(["open-group"]);
 
-const currentLocale = computed(() => locale.value.toUpperCase());
-
-function toggleLanguage() {
-  locale.value = locale.value === "en" ? "th" : "en";
-  localStorage.setItem("lang", locale.value);
-}
-
+import BaseModal from "../components/common/BaseModal.vue";
 import { formatCurrency } from "../utils/common";
+import { applyGroupTheme } from "../utils/theme";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import {
   Wallet01Icon,
   Add01Icon,
+  Settings01Icon,
+  Moon01Icon,
+  Sun01Icon,
   TranslationIcon,
 } from "@hugeicons/core-free-icons";
 
 const showCreateModal = ref(false);
+const showSettingsModal = ref(false);
 const editingGroup = ref(null);
+
+const isDarkMode = ref(document.documentElement.classList.contains("dark"));
+
+function toggleDarkMode() {
+  isDarkMode.value = !isDarkMode.value;
+  if (isDarkMode.value) {
+    document.documentElement.classList.add("dark");
+    localStorage.setItem("theme", "dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+    localStorage.setItem("theme", "light");
+  }
+  applyGroupTheme();
+}
+
+function setLanguage(lang) {
+  locale.value = lang;
+  localStorage.setItem("lang", lang);
+}
 
 function handleCreateGroup(name, color) {
   groupsStore.addGroup(name, color);
@@ -120,17 +139,16 @@ function handleDeleteGroup(groupId) {
             <HugeiconsIcon :icon="Add01Icon" size="14" :stroke-width="3" />
             {{ $t("home.newGroup") }}
           </button>
-          <!-- Language Toggle -->
+          <!-- Settings Button -->
           <button
-            @click="toggleLanguage"
-            class="text-[10px] font-black text-neutral-600 transition-colors uppercase tracking-[0.15em] bg-neutral-100 px-3 py-2 rounded-xl flex items-center gap-1.5 active:scale-95 border border-neutral-200"
+            @click="showSettingsModal = true"
+            class="text-neutral-600 dark:text-neutral-300 transition-colors bg-neutral-100 dark:bg-neutral-800 p-2.5 rounded-xl flex items-center justify-center active:scale-95 border border-neutral-200 dark:border-neutral-700/50"
           >
             <HugeiconsIcon
-              :icon="TranslationIcon"
-              size="14"
+              :icon="Settings01Icon"
+              size="15"
               :stroke-width="2.5"
             />
-            {{ currentLocale }}
           </button>
         </div>
       </div>
@@ -172,5 +190,62 @@ function handleDeleteGroup(groupId) {
       @save="handleSaveEdit"
       @close="editingGroup = null"
     />
+    <BaseModal
+      :show="showSettingsModal"
+      :title="$t('settings.title')"
+      maxWidth="max-w-xs"
+      @close="showSettingsModal = false"
+    >
+      <div class="space-y-6 py-2">
+        <!-- Dark Mode Section -->
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-black text-neutral-700 dark:text-neutral-300 tracking-tight flex items-center gap-2">
+            <HugeiconsIcon
+              :icon="isDarkMode ? Moon01Icon : Sun01Icon"
+              size="18"
+              class="text-neutral-500"
+            />
+            {{ $t("settings.darkMode") }}
+          </span>
+          <button
+            @click="toggleDarkMode"
+            class="w-12 h-6 flex items-center rounded-full p-1 transition-all duration-300 cursor-pointer"
+            :class="isDarkMode ? 'bg-primary justify-end' : 'bg-neutral-200 dark:bg-neutral-700 justify-start'"
+          >
+            <span class="bg-white w-4 h-4 rounded-full shadow-md transition-all duration-300"></span>
+          </button>
+        </div>
+
+        <!-- Language Section -->
+        <div class="space-y-3">
+          <label class="block text-[10px] font-black text-neutral-400 uppercase tracking-widest">
+            {{ $t("settings.language") }}
+          </label>
+          <div class="grid grid-cols-2 gap-2 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-2xl border border-neutral-200/50 dark:border-neutral-700/50 language-select-group">
+            <button
+              @click="setLanguage('th')"
+              class="py-2.5 px-3 rounded-xl font-bold text-xs transition-all tracking-wider text-center"
+              :class="locale === 'th' ? 'bg-white dark:bg-neutral-700 text-primary dark:text-white shadow-sm' : 'text-neutral-500 dark:text-neutral-400'"
+            >
+              ไทย (TH)
+            </button>
+            <button
+              @click="setLanguage('en')"
+              class="py-2.5 px-3 rounded-xl font-bold text-xs transition-all tracking-wider text-center"
+              :class="locale === 'en' ? 'bg-white dark:bg-neutral-700 text-primary dark:text-white shadow-sm' : 'text-neutral-500 dark:text-neutral-400'"
+            >
+              English (EN)
+            </button>
+          </div>
+        </div>
+
+        <!-- Version -->
+        <div class="text-center pt-2 border-t border-neutral-100 dark:border-neutral-700/50">
+          <p class="text-[10px] font-black text-neutral-400 uppercase tracking-widest">
+            {{ $t("settings.version") }} v{{ version }}
+          </p>
+        </div>
+      </div>
+    </BaseModal>
   </div>
 </template>

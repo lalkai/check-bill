@@ -53,15 +53,18 @@ function openGroup(groupId) {
   groupsStore.setActiveGroup(groupId);
   currentView.value = "dashboard";
   currentPage.value = "group-detail";
+  document.documentElement.scrollTop = 0;
 }
 
 function goHome() {
   groupsStore.setActiveGroup(null);
   currentPage.value = "home";
+  document.documentElement.scrollTop = 0;
 }
 
 function switchView(view) {
   currentView.value = view;
+  document.documentElement.scrollTop = 0;
 }
 </script>
 
@@ -114,7 +117,7 @@ function switchView(view) {
         </div>
 
         <!-- Desktop Nav -->
-        <div class="hidden sm:flex items-center gap-2">
+        <div class="hidden sm:flex items-center gap-2 top-nav-group">
           <button
             v-for="view in ['dashboard', 'bills', 'payerAmounts', 'people']"
             :key="view"
@@ -143,14 +146,12 @@ function switchView(view) {
     <!-- Content -->
     <main class="flex-grow py-8 pb-32">
       <div class="max-w-screen-md mx-auto px-6">
-        <Transition name="fade" mode="out-in">
-          <div :key="currentView">
-            <DashboardView v-if="currentView === 'dashboard'" />
-            <BillsView v-else-if="currentView === 'bills'" />
-            <PeopleView v-else-if="currentView === 'people'" />
-            <PayerAmountsView v-else-if="currentView === 'payerAmounts'" />
-          </div>
-        </Transition>
+        <div :key="currentView">
+          <DashboardView v-if="currentView === 'dashboard'" />
+          <BillsView v-else-if="currentView === 'bills'" />
+          <PeopleView v-else-if="currentView === 'people'" />
+          <PayerAmountsView v-else-if="currentView === 'payerAmounts'" />
+        </div>
       </div>
     </main>
 
@@ -162,7 +163,7 @@ function switchView(view) {
 
     <div class="fixed bottom-6 inset-x-0 z-30 px-4 sm:hidden">
       <div
-        class="max-w-md mx-auto bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-neutral-100 rounded-[2.5rem] p-1.5 flex justify-around items-center"
+        class="max-w-md mx-auto bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-neutral-100 rounded-[2.5rem] p-1.5 flex justify-around items-center bottom-nav-group"
       >
         <button
           @click="switchView('dashboard')"
