@@ -361,3 +361,35 @@
     opacity: 0;
   }
 }
+
+button,
+a,
+[role="button"],
+[class*="cursor-pointer"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: none) {
+  *:active {
+    transition: none !important;
+  }
+}
+
+/* Prevent text selection on mobile for non-input elements */
+@media (hover: none) {
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  input,
+  textarea,
+  [contenteditable="true"],
+  [contenteditable=""],
+  pre,
+  code {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
