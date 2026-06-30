@@ -3,6 +3,7 @@ import { ref, computed, onMounted, nextTick, watch } from "vue";
 import { useI18n } from "vue-i18n";
 const { t: $t, locale } = useI18n();
 import { useBillGroupsStore } from "../stores/BillGroups";
+import { applyRounding } from "../utils/common";
 import generatePayload from "promptpay-qr";
 import qrcode from "qrcode";
 import LZString from "lz-string";
@@ -72,14 +73,20 @@ const filteredPayerAmounts = computed(() => {
     if (isOwner) {
       const groupBills = groupsStore.activeBills || [];
       const totalAmountDue = groupBills.reduce(
-        (acc, b) => acc + (b.amount || 0),
+        (acc, b) => {
+          const serviceChargeRatio = 1 + (b.serviceCharge || 0) / 100;
+          const vatRatio = 1 + (b.vat || 0) / 100;
+          return acc + (b.amount || 0) * serviceChargeRatio * vatRatio;
+        },
         0,
       );
 
       const dates = {};
       groupBills.forEach((b) => {
+        const serviceChargeRatio = 1 + (b.serviceCharge || 0) / 100;
+        const vatRatio = 1 + (b.vat || 0) / 100;
         if (!dates[b.date]) dates[b.date] = 0;
-        dates[b.date] += b.amount || 0;
+        dates[b.date] += (b.amount || 0) * serviceChargeRatio * vatRatio;
       });
 
       return {
@@ -100,16 +107,22 @@ const filteredPayerAmounts = computed(() => {
         : payerBills;
 
       const totalAmountDue = filteredBills.reduce((acc, bill) => {
-        const split = bill.payers.length ? bill.amount / bill.payers.length : 0;
+        const serviceChargeRatio = 1 + (bill.serviceCharge || 0) / 100;
+        const vatRatio = 1 + (bill.vat || 0) / 100;
+        const rawSplit = bill.payers.length ? (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio : 0;
+        const split = applyRounding(rawSplit, groupsStore.roundingMode);
         return acc + split;
       }, 0);
 
       const unpaidAmountDue = filteredBills.reduce((acc, bill) => {
         const payerInfo = bill.payers.find((p) => p.name === name);
         if (payerInfo && !payerInfo.paid) {
-          const split = bill.payers.length
-            ? bill.amount / bill.payers.length
+          const serviceChargeRatio = 1 + (bill.serviceCharge || 0) / 100;
+          const vatRatio = 1 + (bill.vat || 0) / 100;
+          const rawSplit = bill.payers.length
+            ? (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio
             : 0;
+          const split = applyRounding(rawSplit, groupsStore.roundingMode);
           return acc + split;
         }
         return acc;
@@ -119,7 +132,10 @@ const filteredPayerAmounts = computed(() => {
 
       const dates = {};
       filteredBills.forEach((bill) => {
-        const split = bill.payers.length ? bill.amount / bill.payers.length : 0;
+        const serviceChargeRatio = 1 + (bill.serviceCharge || 0) / 100;
+        const vatRatio = 1 + (bill.vat || 0) / 100;
+        const rawSplit = bill.payers.length ? (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio : 0;
+        const split = applyRounding(rawSplit, groupsStore.roundingMode);
         if (!dates[bill.date]) dates[bill.date] = 0;
         dates[bill.date] += split;
       });
@@ -151,29 +167,38 @@ const selectedPayerData = computed(() => {
   if (!payer) return null;
 
   if (payer.isOwner) {
-    const billItems = groupsStore.activeBills.map((bill) => ({
-      id: bill.id,
-      description: bill.description,
-      amount: bill.amount,
-      date: bill.date,
-      icon: bill.icon || "general",
-      paid: true,
-      isOwnerBill: true,
-      payers: bill.payers.map((p) => ({
-        name: p.name,
-        paid: p.paid,
-      })),
-    }));
+    const billItems = groupsStore.activeBills.map((bill) => {
+      const serviceChargeRatio = 1 + (bill.serviceCharge || 0) / 100;
+      const vatRatio = 1 + (bill.vat || 0) / 100;
+      return {
+        id: bill.id,
+        description: bill.description,
+        amount: bill.amount * serviceChargeRatio * vatRatio,
+        date: bill.date,
+        icon: bill.icon || "general",
+        paid: true,
+        isOwnerBill: true,
+        payers: bill.payers.map((p) => ({
+          name: p.name,
+          paid: p.paid,
+        })),
+      };
+    });
     return { ...payer, billItems };
   } else {
     const billItems = groupsStore.activeBills
       .filter((bill) => bill.payers.some((p) => p.name === name))
       .map((bill) => {
         const billPayer = bill.payers.find((p) => p.name === name);
+        const serviceChargeRatio = 1 + (bill.serviceCharge || 0) / 100;
+        const vatRatio = 1 + (bill.vat || 0) / 100;
         return {
           id: bill.id,
           description: bill.description,
-          amount: bill.amount / bill.payers.length,
+          amount: applyRounding(
+            (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio,
+            groupsStore.roundingMode
+          ),
           date: bill.date,
           icon: bill.icon || "general",
           paid: billPayer ? billPayer.paid : false,
@@ -213,9 +238,14 @@ const generateShareUrl = async (selectedPayers) => {
           const isPayerInBill = bill.payers.some((p) => p.name === payer.name);
           if (isPayerInBill) {
             const payerInfo = bill.payers.find((p) => p.name === payer.name);
+            const serviceChargeRatio = 1 + (bill.serviceCharge || 0) / 100;
+            const vatRatio = 1 + (bill.vat || 0) / 100;
             billItems.push({
               description: bill.description,
-              amount: bill.amount / bill.payers.length,
+              amount: applyRounding(
+                (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio,
+                groupsStore.roundingMode
+              ),
               date: bill.date,
               paid: payerInfo ? payerInfo.paid : false,
             });
@@ -356,7 +386,7 @@ onMounted(() => {
   }
 
   if (typeof groupsStore.cleanUpDatesWithoutBills === "function") {
-    groupsStore.cleanUpDatesWithoutBills({ bills: groupsStore.activeBills });
+    groupsStore.cleanUpDatesWithoutBills();
   }
 });
 
@@ -364,7 +394,7 @@ watch(
   () => groupsStore.activeBills,
   () => {
     if (typeof groupsStore.cleanUpDatesWithoutBills === "function") {
-      groupsStore.cleanUpDatesWithoutBills({ bills: groupsStore.activeBills });
+      groupsStore.cleanUpDatesWithoutBills();
     }
   },
   { deep: true },

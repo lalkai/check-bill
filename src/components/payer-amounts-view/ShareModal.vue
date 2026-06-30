@@ -254,7 +254,7 @@ const handleGenerateShareUrl = () => {
                   class="bg-transparent w-full outline-none text-xs font-mono text-neutral-600"
                 />
                 <button
-                  class="ml-2 text-primary font-bold text-[10px] uppercase tracking-widest shrink-0"
+                  class="ml-2 text-primary font-bold text-[10px] uppercase tracking-widest shrink-0 cursor-pointer"
                   @click="
                     () => {
                       navigator.clipboard.writeText(shareUrl);
@@ -285,7 +285,7 @@ const handleGenerateShareUrl = () => {
             <button
               @click="handleGenerateShareUrl"
               :disabled="selectedPayers.length === 0"
-              class="w-full bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {{ $t("share.generate") }}
             </button>

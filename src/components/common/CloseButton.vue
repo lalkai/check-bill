@@ -24,7 +24,7 @@ const iconSizes = {
 <template>
   <button
     @click="emit('click')"
-    class="rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 hover:bg-neutral-200 transition-colors"
+    class="rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500 hover:bg-neutral-200 transition-colors cursor-pointer"
     :class="sizeClasses[size]"
   >
     <HugeiconsIcon :icon="Cancel01Icon" :size="iconSizes[size]" :stroke-width="2.5" />

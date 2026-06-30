@@ -200,7 +200,7 @@ const handlePaymentClick = () => {
       <div v-if="getHiddenItemsCount > 0" class="mt-4">
         <button
           @click="toggleBillItems"
-          class="w-full text-primary font-black text-[10px] uppercase tracking-widest px-4 py-3 rounded-xl border-2 border-primary/20 hover:bg-primary/5 transition-colors flex items-center justify-center gap-2"
+          class="w-full text-primary font-black text-[10px] uppercase tracking-widest px-4 py-3 rounded-xl border-2 border-primary/20 hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 cursor-pointer"
         >
           <HugeiconsIcon
             :icon="shouldShowAllItems ? ArrowUp01Icon : ArrowDown01Icon"
@@ -220,7 +220,7 @@ const handlePaymentClick = () => {
     <div v-if="overallPromptpayID" class="mt-6 flex justify-center">
       <button
         @click="handlePaymentClick"
-        class="w-full text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2"
+        class="w-full text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
         :class="
           payer.paid
             ? 'bg-green-500 cursor-default shadow-none opacity-80'

@@ -71,3 +71,32 @@ export function restoreTheme() {
     document.documentElement.classList.remove("dark");
   }
 }
+
+/**
+ * Clean PromptPay ID by removing non-digit characters
+ * @param {string} id - The PromptPay ID input
+ * @returns {string} - Cleaned ID
+ */
+export function cleanPromptpayID(id) {
+  return String(id || "").replace(/\D/g, "");
+}
+
+/**
+ * Validate PromptPay ID format (Mobile: 10 digits starting with 0, Citizen ID: 13 digits, e-Wallet: 15 digits)
+ * @param {string} id - The PromptPay ID input
+ * @returns {boolean} - True if valid
+ */
+export function validatePromptpayID(id) {
+  const cleaned = cleanPromptpayID(id);
+  return /^(0\d{9}|\d{13}|\d{15})$/.test(cleaned);
+}
+
+// Round amount based on mode
+export function applyRounding(amount, mode) {
+  const num = Number(amount) || 0;
+  if (mode === "round" || mode === "ceil") {
+    return Math.ceil(num);
+  }
+  return Number(num.toFixed(2));
+}
+

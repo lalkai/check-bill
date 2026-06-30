@@ -85,7 +85,7 @@ function removePerson() {
       <!-- Toggle Owner Button -->
       <button
         @click="toggleOwner"
-        class="w-10 h-10 flex items-center justify-center rounded-xl transition-colors flex-shrink-0"
+        class="w-10 h-10 flex items-center justify-center rounded-xl transition-colors flex-shrink-0 cursor-pointer"
         :class="isOwner ? 'text-amber-500 hover:text-amber-600 bg-amber-50' : 'text-neutral-300 hover:text-amber-500 hover:bg-amber-50/50'"
         :title="isOwner ? $t('summary.removeAsOwner') : $t('summary.setAsOwner')"
       >
@@ -95,7 +95,7 @@ function removePerson() {
       <!-- Delete Person Button -->
       <button
         @click="removePerson"
-        class="w-10 h-10 flex items-center justify-center rounded-xl text-neutral-300 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0"
+        class="w-10 h-10 flex items-center justify-center rounded-xl text-neutral-300 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0 cursor-pointer"
         :aria-label="$t('people.removeMember')"
         :title="$t('people.removeMember')"
       >

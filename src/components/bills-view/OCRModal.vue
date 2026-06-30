@@ -399,7 +399,7 @@ function startOcrOver() {
                 >
                   <button
                     @click.stop="resetOcrForm"
-                    class="bg-white/90 backdrop-blur px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest text-neutral-700 shadow-2xl border border-neutral-100 hover:bg-white active:scale-95 transition-all"
+                    class="bg-white/90 backdrop-blur px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest text-neutral-700 shadow-2xl border border-neutral-100 hover:bg-white active:scale-95 transition-all cursor-pointer"
                   >
                     {{ $t("ocr.changeImage") }}
                   </button>
@@ -546,7 +546,7 @@ function startOcrOver() {
                   <div class="flex-shrink-0 pt-6">
                     <button
                       @click="removeOcrItem(index)"
-                      class="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                      class="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -571,7 +571,7 @@ function startOcrOver() {
             <div v-if="rawOcrText" class="mt-4">
               <button
                 @click="showRawText = !showRawText"
-                class="text-[10px] font-bold text-neutral-400 hover:text-neutral-600 uppercase tracking-widest transition-colors flex items-center gap-1"
+                class="text-[10px] font-bold text-neutral-400 hover:text-neutral-600 uppercase tracking-widest transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -653,7 +653,7 @@ function startOcrOver() {
               <button
                 @click="processReceiptImage"
                 :disabled="!previewUrl"
-                class="flex-1 bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2"
+                class="flex-1 bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -677,7 +677,7 @@ function startOcrOver() {
             <div v-if="ocrStep === 3" class="flex gap-3">
               <button
                 @click="startOcrOver"
-                class="bg-white border-2 border-neutral-200 text-neutral-600 font-black text-[11px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-50 hover:border-neutral-300 transition-all active:scale-95 flex-1"
+                class="bg-white border-2 border-neutral-200 text-neutral-600 font-black text-[11px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-50 hover:border-neutral-300 transition-all active:scale-95 flex-1 cursor-pointer"
               >
                 {{ $t("ocr.startOver") }}
               </button>
@@ -686,7 +686,7 @@ function startOcrOver() {
                 :disabled="
                   extractedItems.filter((item) => item.selected).length === 0
                 "
-                class="bg-neutral-800 text-white font-black text-[11px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex-[2]"
+                class="bg-neutral-800 text-white font-black text-[11px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex-[2] cursor-pointer"
               >
                 {{
                   $t("ocr.addItems", {

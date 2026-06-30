@@ -33,7 +33,7 @@ const emit = defineEmits(["action"]);
     <button
       v-if="actionLabel"
       @click="emit('action')"
-      class="mt-2 bg-neutral-800 text-white font-black text-[11px] uppercase tracking-widest py-3 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg"
+      class="mt-2 bg-neutral-800 text-white font-black text-[11px] uppercase tracking-widest py-3 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg cursor-pointer"
     >
       {{ actionLabel }}
     </button>

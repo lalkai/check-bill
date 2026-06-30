@@ -155,13 +155,13 @@ function closeCalculator() {
               <!-- Row 1 -->
               <button
                 @click="handleClear"
-                class="col-span-2 h-11 xs:h-14 bg-red-50 text-red-500 font-black text-xs uppercase tracking-widest rounded-xl xs:rounded-2xl border border-red-100/50 hover:bg-red-100 active:scale-95 transition-all"
+                class="col-span-2 h-11 xs:h-14 bg-red-50 text-red-500 font-black text-xs uppercase tracking-widest rounded-xl xs:rounded-2xl border border-red-100/50 hover:bg-red-100 active:scale-95 transition-all cursor-pointer"
               >
                 {{ $t("actions.clear") }}
               </button>
               <button
                 @click="handleBackspace"
-                class="h-11 xs:h-14 bg-neutral-50 text-neutral-500 rounded-xl xs:rounded-2xl border border-neutral-100/50 flex items-center justify-center hover:bg-neutral-100 active:scale-95 transition-all"
+                class="h-11 xs:h-14 bg-neutral-50 text-neutral-500 rounded-xl xs:rounded-2xl border border-neutral-100/50 flex items-center justify-center hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -185,7 +185,7 @@ function closeCalculator() {
               </button>
               <button
                 @click="handleOperator('÷')"
-                class="h-11 xs:h-14 bg-primary/5 text-primary text-xl font-black rounded-xl xs:rounded-2xl border border-primary/10 hover:bg-primary/10 active:scale-95 transition-all"
+                class="h-11 xs:h-14 bg-primary/5 text-primary text-xl font-black rounded-xl xs:rounded-2xl border border-primary/10 hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
                 :class="operator === '÷' ? 'bg-primary text-white' : ''"
               >
                 ÷
@@ -196,13 +196,13 @@ function closeCalculator() {
                 v-for="n in ['7', '8', '9']"
                 :key="n"
                 @click="handleDigit(n)"
-                class="h-11 xs:h-14 bg-white text-neutral-700 font-black text-lg rounded-xl xs:rounded-2xl border border-neutral-100 shadow-sm hover:border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all"
+                class="h-11 xs:h-14 bg-white text-neutral-700 font-black text-lg rounded-xl xs:rounded-2xl border border-neutral-100 shadow-sm hover:border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 {{ n }}
               </button>
               <button
                 @click="handleOperator('×')"
-                class="h-11 xs:h-14 bg-primary/5 text-primary text-xl font-black rounded-xl xs:rounded-2xl border border-primary/10 hover:bg-primary/10 active:scale-95 transition-all"
+                class="h-11 xs:h-14 bg-primary/5 text-primary text-xl font-black rounded-xl xs:rounded-2xl border border-primary/10 hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
                 :class="operator === '×' ? 'bg-primary text-white' : ''"
               >
                 ×
@@ -213,13 +213,13 @@ function closeCalculator() {
                 v-for="n in ['4', '5', '6']"
                 :key="n"
                 @click="handleDigit(n)"
-                class="h-11 xs:h-14 bg-white text-neutral-700 font-black text-lg rounded-xl xs:rounded-2xl border border-neutral-100 shadow-sm hover:border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all"
+                class="h-11 xs:h-14 bg-white text-neutral-700 font-black text-lg rounded-xl xs:rounded-2xl border border-neutral-100 shadow-sm hover:border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 {{ n }}
               </button>
               <button
                 @click="handleOperator('-')"
-                class="h-11 xs:h-14 bg-primary/5 text-primary text-xl font-black rounded-xl xs:rounded-2xl border border-primary/10 hover:bg-primary/10 active:scale-95 transition-all"
+                class="h-11 xs:h-14 bg-primary/5 text-primary text-xl font-black rounded-xl xs:rounded-2xl border border-primary/10 hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
                 :class="operator === '-' ? 'bg-primary text-white' : ''"
               >
                 -
@@ -230,13 +230,13 @@ function closeCalculator() {
                 v-for="n in ['1', '2', '3']"
                 :key="n"
                 @click="handleDigit(n)"
-                class="h-11 xs:h-14 bg-white text-neutral-700 font-black text-lg rounded-xl xs:rounded-2xl border border-neutral-100 shadow-sm hover:border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all"
+                class="h-11 xs:h-14 bg-white text-neutral-700 font-black text-lg rounded-xl xs:rounded-2xl border border-neutral-100 shadow-sm hover:border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 {{ n }}
               </button>
               <button
                 @click="handleOperator('+')"
-                class="h-11 xs:h-14 bg-primary/5 text-primary text-xl font-black rounded-xl xs:rounded-2xl border border-primary/10 hover:bg-primary/10 active:scale-95 transition-all"
+                class="h-11 xs:h-14 bg-primary/5 text-primary text-xl font-black rounded-xl xs:rounded-2xl border border-primary/10 hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
                 :class="operator === '+' ? 'bg-primary text-white' : ''"
               >
                 +
@@ -245,19 +245,19 @@ function closeCalculator() {
               <!-- Row 5 -->
               <button
                 @click="handleDigit('0')"
-                class="col-span-2 h-11 xs:h-14 bg-white text-neutral-700 font-black text-lg rounded-xl xs:rounded-2xl border border-neutral-100 shadow-sm hover:border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all"
+                class="col-span-2 h-11 xs:h-14 bg-white text-neutral-700 font-black text-lg rounded-xl xs:rounded-2xl border border-neutral-100 shadow-sm hover:border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 0
               </button>
               <button
                 @click="handleDecimal"
-                class="h-11 xs:h-14 bg-white text-neutral-700 font-black text-lg rounded-xl xs:rounded-2xl border border-neutral-100 shadow-sm hover:border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all"
+                class="h-11 xs:h-14 bg-white text-neutral-700 font-black text-lg rounded-xl xs:rounded-2xl border border-neutral-100 shadow-sm hover:border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
               >
                 .
               </button>
               <button
                 @click="handleEquals"
-                class="h-11 xs:h-14 bg-neutral-800 text-white text-xl font-black rounded-xl xs:rounded-2xl shadow-lg border border-neutral-900 hover:bg-neutral-700 active:scale-95 transition-all"
+                class="h-11 xs:h-14 bg-neutral-800 text-white text-xl font-black rounded-xl xs:rounded-2xl shadow-lg border border-neutral-900 hover:bg-neutral-700 active:scale-95 transition-all cursor-pointer"
               >
                 =
               </button>
@@ -267,7 +267,7 @@ function closeCalculator() {
             <div class="flex gap-3 shrink-0">
               <button
                 @click="applyResult"
-                class="flex-1 bg-primary text-white font-black text-[12px] uppercase tracking-widest py-3.5 xs:py-4 rounded-xl xs:rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary-dark active:scale-95 transition-all flex items-center justify-center gap-2"
+                class="flex-1 bg-primary text-white font-black text-[12px] uppercase tracking-widest py-3.5 xs:py-4 rounded-xl xs:rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary-dark active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

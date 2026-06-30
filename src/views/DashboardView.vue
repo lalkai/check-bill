@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { useBillGroupsStore } from "../stores/BillGroups";
 import { useI18n } from "vue-i18n";
-import { formatCurrency } from "../utils/common";
+import { formatCurrency, applyRounding } from "../utils/common";
 import SectionLabel from "../components/common/SectionLabel.vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import { getIcon } from "../utils/icons";
@@ -30,7 +30,10 @@ const settlements = computed(() => {
     groupsStore.activeBills.forEach((bill) => {
       const payerInfo = bill.payers.find((p) => p.name === person.name);
       if (payerInfo && !payerInfo.paid) {
-        const split = bill.payers.length ? bill.amount / bill.payers.length : 0;
+        const serviceChargeRatio = 1 + (bill.serviceCharge || 0) / 100;
+        const vatRatio = 1 + (bill.vat || 0) / 100;
+        const rawSplit = bill.payers.length ? (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio : 0;
+        const split = applyRounding(rawSplit, groupsStore.roundingMode);
         unpaid += split;
       }
     });

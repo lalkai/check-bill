@@ -105,7 +105,7 @@ function switchView(view) {
         <div class="flex items-center gap-4">
           <button
             @click="goHome"
-            class="p-2 -ml-2 rounded-2xl hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700 transition-all active:scale-90 flex items-center justify-center"
+            class="p-2 -ml-2 rounded-2xl hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700 transition-all active:scale-90 flex items-center justify-center cursor-pointer"
           >
             <HugeiconsIcon :icon="ArrowLeft01Icon" size="20" :stroke-width="3" />
           </button>
@@ -122,7 +122,7 @@ function switchView(view) {
             v-for="view in ['dashboard', 'bills', 'payerAmounts', 'people']"
             :key="view"
             @click="switchView(view)"
-            class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+            class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer"
             :class="
               currentView === view
                 ? 'bg-primary text-white shadow-md'
@@ -167,7 +167,7 @@ function switchView(view) {
       >
         <button
           @click="switchView('dashboard')"
-          class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0"
+          class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0 cursor-pointer"
           :class="
             currentView === 'dashboard'
               ? 'bg-primary text-white shadow-lg scale-105 px-2'
@@ -183,7 +183,7 @@ function switchView(view) {
 
         <button
           @click="switchView('bills')"
-          class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0"
+          class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0 cursor-pointer"
           :class="
             currentView === 'bills'
               ? 'bg-primary text-white shadow-lg scale-105 px-2'
@@ -199,7 +199,7 @@ function switchView(view) {
 
         <button
           @click="switchView('payerAmounts')"
-          class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0"
+          class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0 cursor-pointer"
           :class="
             currentView === 'payerAmounts'
               ? 'bg-primary text-white shadow-lg scale-105 px-2'
@@ -215,7 +215,7 @@ function switchView(view) {
 
         <button
           @click="switchView('people')"
-          class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0"
+          class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0 cursor-pointer"
           :class="
             currentView === 'people'
               ? 'bg-primary text-white shadow-lg scale-105 px-2'

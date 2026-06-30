@@ -1,4 +1,4 @@
-import Tesseract from "tesseract.js";
+import { createWorker, OEM, PSM } from "tesseract.js";
 
 let worker = null;
 let isInitializing = false;
@@ -21,7 +21,7 @@ async function getWorker() {
     const corePath =
       "https://cdn.jsdelivr.net/npm/tesseract.js-core@7.0.0/tesseract-core-simd-lstm.wasm.js";
 
-    worker = await Tesseract.createWorker("tha+eng", Tesseract.OEM.LSTM_ONLY, {
+    worker = await createWorker("tha+eng", OEM.LSTM_ONLY, {
       corePath,
       langPath: "https://tessdata.projectnaptha.com/4.0.0_best",
       logger: (m) => {
@@ -43,7 +43,7 @@ async function getWorker() {
     });
 
     await worker.setParameters({
-      tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
+      tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
       preserve_interword_spaces: "1",
     });
 
@@ -100,6 +100,12 @@ function parseReceiptText(text) {
         description: parsed.description,
         amount: parsed.amount,
         selected: true,
+      });
+    } else {
+      items.push({
+        description: cleanLine,
+        amount: 0,
+        selected: false,
       });
     }
   }

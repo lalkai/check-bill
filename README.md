@@ -14,9 +14,9 @@ A web application designed to help you split bills and share expenses with frien
 
 - **Frontend:** Vue 3 (Composition API) + Vite
 - **State Management:** Pinia
-- **Styling:** Tailwind CSS + DaisyUI
+- **Styling:** Tailwind CSS
 - **OCR:** tesseract.js
-- **Utilities:** lz-string, html2canvas-pro, dom-to-image-more, promptpay-qr
+- **Utilities:** lz-string, promptpay-qr, qrcode
 
 ## 🚀 Project Setup
 

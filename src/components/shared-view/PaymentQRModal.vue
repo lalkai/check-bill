@@ -183,7 +183,7 @@ const closeModal = () => {
           <div class="px-8 py-5 border-t border-neutral-100 dark:border-neutral-700/50 bg-white dark:bg-neutral-800 flex-shrink-0">
             <button
               @click="closeModal"
-              class="w-full text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl transition-all active:scale-95 shadow-lg"
+              class="w-full text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl transition-all active:scale-95 shadow-lg cursor-pointer"
               :style="{
                 backgroundColor: groupColor,
                 boxShadow: `0 4px 14px rgba(${groupColorRgb.r}, ${groupColorRgb.g}, ${groupColorRgb.b}, 0.3)`

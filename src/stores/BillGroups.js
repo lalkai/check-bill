@@ -1,5 +1,6 @@
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
+import { applyRounding } from "../utils/common";
 
 const COLOR_PALETTE = [
   "#0066cc",
@@ -33,6 +34,7 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
       people: [],
       ownerName: "",
       promptpayID: "",
+      roundingMode: "none",
       createdAt: new Date().toISOString(),
     };
   }
@@ -104,9 +106,12 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
           // Migrate per-bill promptpayID to group level
           parsed.forEach(group => {
             if (!group.promptpayID) group.promptpayID = "";
+            if (!group.roundingMode) group.roundingMode = "none";
             if (group.bills) {
               group.bills.forEach(bill => {
                 if (!bill.icon) bill.icon = "general";
+                if (bill.serviceCharge === undefined) bill.serviceCharge = 0;
+                if (bill.vat === undefined) bill.vat = 0;
                 // Migrate per-bill promptpayID to group level
                 if (bill.promptpayID && !group.promptpayID) {
                   group.promptpayID = bill.promptpayID;
@@ -135,6 +140,12 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
 
   const groups = ref(initializeGroups());
   const activeGroupId = ref(null);
+  const roundingMode = ref(localStorage.getItem("roundingMode") || "none");
+
+  function setRoundingMode(mode) {
+    roundingMode.value = mode;
+    localStorage.setItem("roundingMode", mode);
+  }
 
   function saveToLocalStorage() {
     try {
@@ -200,7 +211,7 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     }
   }
 
-  function addBill(description, amount, date, icon = "general") {
+  function addBill(description, amount, date, icon = "general", serviceCharge = 0, vat = 0) {
     const group = activeGroup.value;
     if (!group) return false;
 
@@ -211,6 +222,8 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
       id: generateId(),
       description: clean,
       amount: Number(amount) || 0,
+      serviceCharge: Number(serviceCharge) || 0,
+      vat: Number(vat) || 0,
       date: date || new Date().toISOString().split("T")[0],
       icon: icon || "general",
       payers: [],
@@ -232,7 +245,7 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     return false;
   }
 
-  function updateBill(billId, description, amount, date, icon) {
+  function updateBill(billId, description, amount, date, icon, serviceCharge = 0, vat = 0) {
     const group = activeGroup.value;
     if (!group) return false;
     const bill = group.bills.find((b) => b.id === billId);
@@ -246,6 +259,12 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     bill.date = date || bill.date;
     if (icon !== undefined) {
       bill.icon = icon || "general";
+    }
+    if (serviceCharge !== undefined) {
+      bill.serviceCharge = Number(serviceCharge) || 0;
+    }
+    if (vat !== undefined) {
+      bill.vat = Number(vat) || 0;
     }
     saveToLocalStorage();
     return true;
@@ -466,9 +485,12 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     if (!group) return {};
     const amounts = {};
     group.bills.forEach((bill) => {
-      const splitAmount = bill.payers.length
-        ? bill.amount / bill.payers.length
+      const serviceChargeRatio = 1 + (bill.serviceCharge || 0) / 100;
+      const vatRatio = 1 + (bill.vat || 0) / 100;
+      const rawSplitAmount = bill.payers.length
+        ? (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio
         : 0;
+      const splitAmount = applyRounding(rawSplitAmount, roundingMode.value);
       bill.payers.forEach((payer) => {
         if (!amounts[payer.name]) amounts[payer.name] = {};
         if (!amounts[payer.name][bill.date]) amounts[payer.name][bill.date] = 0;
@@ -481,13 +503,21 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
   const totalAmount = computed(() => {
     const group = activeGroup.value;
     if (!group) return 0;
-    return group.bills.reduce((total, bill) => total + bill.amount, 0);
+    return group.bills.reduce((total, bill) => {
+      const serviceChargeRatio = 1 + (bill.serviceCharge || 0) / 100;
+      const vatRatio = 1 + (bill.vat || 0) / 100;
+      return total + bill.amount * serviceChargeRatio * vatRatio;
+    }, 0);
   });
 
   function getGroupTotalAmount(groupId) {
     const group = groups.value.find((g) => g.id === groupId);
     if (!group) return 0;
-    return group.bills.reduce((total, bill) => total + bill.amount, 0);
+    return group.bills.reduce((total, bill) => {
+      const serviceChargeRatio = 1 + (bill.serviceCharge || 0) / 100;
+      const vatRatio = 1 + (bill.vat || 0) / 100;
+      return total + bill.amount * serviceChargeRatio * vatRatio;
+    }, 0);
   }
 
   function getGroupBillCount(groupId) {
@@ -499,6 +529,7 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     const group = groups.value.find((g) => g.id === groupId);
     return group ? group.people.length : 0;
   }
+
 
   return {
     // Group management
@@ -543,13 +574,21 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
       return groups.value.reduce((total, group) => {
         return (
           total +
-          (group.bills || []).reduce((t, b) => t + (Number(b.amount) || 0), 0)
+          (group.bills || []).reduce((t, b) => {
+            const serviceChargeRatio = 1 + (b.serviceCharge || 0) / 100;
+            const vatRatio = 1 + (b.vat || 0) / 100;
+            return t + (Number(b.amount) || 0) * serviceChargeRatio * vatRatio;
+          }, 0)
         );
       }, 0);
     }),
 
     // Persistence
     saveToLocalStorage,
+
+    // Rounding settings
+    roundingMode,
+    setRoundingMode,
 
     COLOR_PALETTE,
   };

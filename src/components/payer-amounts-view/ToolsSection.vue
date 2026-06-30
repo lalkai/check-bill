@@ -16,7 +16,7 @@ defineEmits(["show-qr-popup", "share-payer"]);
       <!-- PromptPay QR -->
       <button
         @click="$emit('show-qr-popup')"
-        class="flex flex-col items-center justify-center gap-2.5 py-5 px-3 rounded-2xl bg-neutral-50 border border-neutral-200 text-neutral-600 hover:bg-neutral-100 transition-all active:scale-95"
+        class="flex flex-col items-center justify-center gap-2.5 py-5 px-3 rounded-2xl bg-neutral-50 border border-neutral-200 text-neutral-600 hover:bg-neutral-100 transition-all active:scale-95 cursor-pointer"
       >
         <div class="w-11 h-11 rounded-xl bg-neutral-100 flex items-center justify-center">
           <HugeiconsIcon :icon="QrCode01Icon" size="20" :stroke-width="2.5" />
@@ -27,7 +27,7 @@ defineEmits(["show-qr-popup", "share-payer"]);
       <!-- Share -->
       <button
         @click="$emit('share-payer')"
-        class="flex flex-col items-center justify-center gap-2.5 py-5 px-3 rounded-2xl bg-neutral-900 border border-neutral-800 text-white transition-all active:scale-95 shadow-lg hover:bg-black"
+        class="flex flex-col items-center justify-center gap-2.5 py-5 px-3 rounded-2xl bg-neutral-900 border border-neutral-800 text-white transition-all active:scale-95 shadow-lg hover:bg-black cursor-pointer"
       >
         <div class="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center">
           <HugeiconsIcon :icon="Share01Icon" size="20" :stroke-width="2.5" />

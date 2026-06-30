@@ -11,7 +11,7 @@ defineEmits(["click"]);
   <button
     @click="$emit('click')"
     :disabled="disabled"
-    class="font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+    class="font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
     :class="[
       variant === 'primary' ? 'bg-neutral-800 text-white hover:bg-neutral-900 shadow-lg' : '',
       variant === 'danger' ? 'bg-white border-2 border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300' : '',

@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from "vue";
 import { useBillGroupsStore } from "../../stores/BillGroups";
 
 import { useI18n } from "vue-i18n";
@@ -21,6 +22,13 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+});
+
+const finalTotal = computed(() => {
+  const subtotal = props.bill.amount || 0;
+  const sc = props.bill.serviceCharge || 0;
+  const vat = props.bill.vat || 0;
+  return subtotal * (1 + sc / 100) * (1 + vat / 100);
 });
 
 function removeBill() {
@@ -61,9 +69,12 @@ function editBill() {
             {{ bill.description }}
           </h3>
           <div
-            class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-1"
+            class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-1 flex flex-wrap gap-x-1 items-center"
           >
-            {{ bill.date }}
+            <span>{{ bill.date }}</span>
+            <span v-if="bill.serviceCharge || bill.vat" class="lowercase font-medium text-neutral-400">
+              (฿{{ formatCurrency(bill.amount) }} <span v-if="bill.serviceCharge">+{{ bill.serviceCharge }}% SC</span><span v-if="bill.vat">+{{ bill.vat }}% VAT</span>)
+            </span>
           </div>
         </div>
       </div>
@@ -71,7 +82,7 @@ function editBill() {
         class="text-xl sm:text-2xl font-black text-neutral-800 flex-shrink-0 tracking-tight truncate max-w-[45%] text-right"
       >
         <span class="text-base sm:text-lg opacity-60 mr-0.5">฿</span
-        >{{ formatCurrency(bill.amount) }}
+        >{{ formatCurrency(finalTotal) }}
       </span>
     </div>
 
@@ -101,7 +112,7 @@ function editBill() {
         >
           <button
             @click="editBill"
-            class="p-2 rounded-xl bg-neutral-50 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors flex items-center justify-center"
+            class="p-2 rounded-xl bg-neutral-50 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors flex items-center justify-center cursor-pointer"
             :title="$t('actions.edit')"
           >
             <HugeiconsIcon
@@ -112,7 +123,7 @@ function editBill() {
           </button>
           <button
             @click="removeBill"
-            class="p-2 rounded-xl bg-red-50 text-red-400 hover:text-red-600 hover:bg-red-100 transition-colors flex items-center justify-center"
+            class="p-2 rounded-xl bg-red-50 text-red-400 hover:text-red-600 hover:bg-red-100 transition-colors flex items-center justify-center cursor-pointer"
             :title="$t('actions.delete')"
           >
             <HugeiconsIcon :icon="Delete02Icon" size="16" :stroke-width="2.5" />

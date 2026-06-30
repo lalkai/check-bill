@@ -27,10 +27,78 @@ const editedBillDescription = ref("");
 const editedBillAmount = ref("");
 const editedBillDate = ref("");
 const editedBillIcon = ref("general");
+const editedBillServiceCharge = ref("");
+const editedBillVat = ref("");
+const taxPreset = ref("0");
 const selectedPeople = ref([]);
 const showCalculator = ref(false);
 
 const ownerName = computed(() => groupsStore.activeGroup?.ownerName || "");
+
+const finalTotalPreview = computed(() => {
+  const subtotal = Number(editedBillAmount.value) || 0;
+  const sc = Number(editedBillServiceCharge.value) || 0;
+  const vat = Number(editedBillVat.value) || 0;
+  return subtotal * (1 + sc / 100) * (1 + vat / 100);
+});
+
+const hasTaxOrSC = computed(() => {
+  const sc = Number(editedBillServiceCharge.value) || 0;
+  const vat = Number(editedBillVat.value) || 0;
+  return sc > 0 || vat > 0;
+});
+
+const finalTotalLabel = computed(() => {
+  const sc = Number(editedBillServiceCharge.value) || 0;
+  const vat = Number(editedBillVat.value) || 0;
+  if (sc > 0 && vat > 0) {
+    return $t("bills.totalPreviewBoth");
+  } else if (sc > 0) {
+    return $t("bills.totalPreviewSC");
+  } else if (vat > 0) {
+    return $t("bills.totalPreviewVAT");
+  }
+  return $t("bills.totalAmount");
+});
+
+function selectPreset(preset) {
+  taxPreset.value = preset;
+  if (preset === "0") {
+    editedBillServiceCharge.value = "";
+    editedBillVat.value = "";
+  } else if (preset === "sc10") {
+    editedBillServiceCharge.value = "10";
+    editedBillVat.value = "";
+  } else if (preset === "vat7") {
+    editedBillServiceCharge.value = "";
+    editedBillVat.value = "7";
+  } else if (preset === "both") {
+    editedBillServiceCharge.value = "10";
+    editedBillVat.value = "7";
+  } else if (preset === "custom") {
+    editedBillServiceCharge.value = "";
+    editedBillVat.value = "";
+  }
+}
+
+watch([editedBillServiceCharge, editedBillVat], ([sc, vat]) => {
+  if (taxPreset.value === "custom") {
+    return;
+  }
+  const scNum = Number(sc) || 0;
+  const vatNum = Number(vat) || 0;
+  if (scNum === 0 && vatNum === 0) {
+    taxPreset.value = "0";
+  } else if (scNum === 10 && vatNum === 0) {
+    taxPreset.value = "sc10";
+  } else if (scNum === 0 && vatNum === 7) {
+    taxPreset.value = "vat7";
+  } else if (scNum === 10 && vatNum === 7) {
+    taxPreset.value = "both";
+  } else {
+    taxPreset.value = "custom";
+  }
+});
 
 function applyResult(value) {
   editedBillAmount.value = value;
@@ -44,6 +112,8 @@ watch(
       editedBillAmount.value = newBill.amount.toString();
       editedBillDate.value = newBill.date;
       editedBillIcon.value = newBill.icon || "general";
+      editedBillServiceCharge.value = (newBill.serviceCharge || 0).toString();
+      editedBillVat.value = (newBill.vat || 0).toString();
       selectedPeople.value = newBill.payers.map((payer) => payer.name);
     }
   },
@@ -80,6 +150,8 @@ function saveEditedBill() {
       Number(editedBillAmount.value),
       editedBillDate.value,
       editedBillIcon.value,
+      Number(editedBillServiceCharge.value) || 0,
+      Number(editedBillVat.value) || 0,
     );
 
     if (!updateSuccess) {
@@ -209,7 +281,7 @@ function menuPeoplePay(person) {
                   />
                   <button
                     @click="showCalculator = true"
-                    class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-neutral-400 hover:text-primary transition-colors flex items-center justify-center"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-neutral-400 hover:text-primary transition-colors flex items-center justify-center cursor-pointer"
                   >
                     <HugeiconsIcon
                       :icon="Calculator01Icon"
@@ -232,6 +304,102 @@ function menuPeoplePay(person) {
                   class="w-full px-5 h-[58px] py-0 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-600 cursor-pointer appearance-none"
                 />
               </div>
+            </div>
+
+            <!-- Tax/SC Quick Segment Control -->
+            <div>
+              <label class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3">
+                {{ $t("bills.taxScPreset") }}
+              </label>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  @click="selectPreset('0')"
+                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+                  :class="taxPreset === '0' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+                >
+                  ปกติ (0%)
+                </button>
+                <button
+                  type="button"
+                  @click="selectPreset('sc10')"
+                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+                  :class="taxPreset === 'sc10' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+                >
+                  SC 10%
+                </button>
+                <button
+                  type="button"
+                  @click="selectPreset('vat7')"
+                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+                  :class="taxPreset === 'vat7' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+                >
+                  VAT 7%
+                </button>
+                <button
+                  type="button"
+                  @click="selectPreset('both')"
+                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+                  :class="taxPreset === 'both' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+                >
+                  SC 10% + VAT 7% (++)
+                </button>
+                <button
+                  type="button"
+                  @click="selectPreset('custom')"
+                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+                  :class="taxPreset === 'custom' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+                >
+                  {{ $t("bills.custom") }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Expandable Custom SC & VAT Inputs -->
+            <div v-if="taxPreset === 'custom'" class="grid grid-cols-2 gap-4 animate-slide-up">
+              <div>
+                <label
+                  for="edit-service-charge"
+                  class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3"
+                  >{{ $t("bills.serviceCharge") }}</label
+                >
+                <input
+                  id="edit-service-charge"
+                  v-model="editedBillServiceCharge"
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  class="w-full px-5 py-4 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-700 placeholder-neutral-300"
+                  @keypress="preventNonNumberInput"
+                />
+              </div>
+              <div>
+                <label
+                  for="edit-vat"
+                  class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3"
+                  >{{ $t("bills.vat") }}</label
+                >
+                <input
+                  id="edit-vat"
+                  v-model="editedBillVat"
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  class="w-full px-5 py-4 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-700 placeholder-neutral-300"
+                  @keypress="preventNonNumberInput"
+                />
+              </div>
+            </div>
+
+            <!-- Live Total Preview -->
+            <div
+              v-if="finalTotalPreview > 0 && hasTaxOrSC"
+              class="bg-neutral-50 rounded-2xl p-4 border border-neutral-100/50 flex items-center justify-between text-sm animate-slide-up"
+            >
+              <span class="font-bold text-neutral-500">{{ finalTotalLabel }}</span>
+              <span class="font-black text-primary text-base"
+                >฿{{ finalTotalPreview.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span
+              >
             </div>
 
             <!-- Icon Selector -->
@@ -305,7 +473,7 @@ function menuPeoplePay(person) {
           <div class="px-8 py-5 border-t border-neutral-100 bg-white flex-shrink-0">
             <button
               @click="saveEditedBill"
-              class="w-full bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg"
+              class="w-full bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg cursor-pointer"
             >
               {{ $t("actions.saveChanges") }}
             </button>

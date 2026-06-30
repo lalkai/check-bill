@@ -21,7 +21,7 @@ const emit = defineEmits(["update:modelValue"]);
       :key="item.value"
       type="button"
       @click="emit('update:modelValue', item.value)"
-      class="flex items-center justify-center p-3 rounded-2xl border-2 transition-all duration-200"
+      class="flex items-center justify-center p-3 rounded-2xl border-2 transition-all duration-200 cursor-pointer"
       :class="modelValue === item.value
         ? 'border-neutral-800 bg-neutral-800 text-white shadow-md scale-105'
         : 'border-neutral-100 bg-neutral-50/50 text-neutral-500 hover:border-neutral-200 hover:bg-neutral-50'"
@@ -40,7 +40,7 @@ const emit = defineEmits(["update:modelValue"]);
       :key="item.value"
       type="button"
       @click="emit('update:modelValue', item.value)"
-      class="flex items-center justify-center p-2.5 sm:p-3 rounded-xl border-2 transition-all duration-200 flex-shrink-0"
+      class="flex items-center justify-center p-2.5 sm:p-3 rounded-xl border-2 transition-all duration-200 flex-shrink-0 cursor-pointer"
       :class="modelValue === item.value
         ? 'border-neutral-800 bg-neutral-800 text-white'
         : 'border-neutral-200 bg-white text-neutral-400 hover:border-neutral-300 hover:text-neutral-600'"

@@ -69,7 +69,7 @@ function onDelete(e) {
       >
         <button
           @click="onEdit"
-          class="p-2 rounded-xl bg-neutral-50 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors flex items-center justify-center"
+          class="p-2 rounded-xl bg-neutral-50 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors flex items-center justify-center cursor-pointer"
           :title="$t('actions.edit')"
         >
           <HugeiconsIcon
@@ -80,7 +80,7 @@ function onDelete(e) {
         </button>
         <button
           @click="onDelete"
-          class="p-2 rounded-xl bg-red-50 text-red-400 hover:text-red-600 hover:bg-red-100 transition-colors flex items-center justify-center"
+          class="p-2 rounded-xl bg-red-50 text-red-400 hover:text-red-600 hover:bg-red-100 transition-colors flex items-center justify-center cursor-pointer"
           :title="$t('actions.delete')"
         >
           <HugeiconsIcon :icon="Delete02Icon" size="16" :stroke-width="2.5" />

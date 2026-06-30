@@ -162,7 +162,7 @@ const allDatesArray = computed(() => {
                     </div>
                     <button
                       @click="emit('toggle-payment-status', payer, dateItem.date)"
-                      class="flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide transition-all active:scale-95"
+                      class="flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-wide transition-all active:scale-95 cursor-pointer"
                       :class="groupsStore.getPaidStatusByDate(payer.name, dateItem.date)
                         ? 'bg-green-500 text-white shadow-sm hover:bg-green-600'
                         : 'bg-white border-2 border-orange-200 text-orange-500 hover:bg-orange-50'"
@@ -266,7 +266,7 @@ const allDatesArray = computed(() => {
             <button
               v-if="!payer.paid"
               @click="emit('settle-all', payer)"
-              class="w-full bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2"
+              class="w-full bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 cursor-pointer"
             >
               <HugeiconsIcon :icon="Tick01Icon" size="15" :stroke-width="3" />
               {{ $t("summary.settleAllComplete") }}
@@ -275,7 +275,7 @@ const allDatesArray = computed(() => {
             <button
               v-else
               @click="emit('cancel-all', payer)"
-              class="w-full bg-white border-2 border-neutral-200 text-neutral-600 font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-50 hover:border-neutral-300 transition-all active:scale-95 flex items-center justify-center gap-2"
+              class="w-full bg-white border-2 border-neutral-200 text-neutral-600 font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-50 hover:border-neutral-300 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
             >
               <HugeiconsIcon :icon="Cancel01Icon" size="15" :stroke-width="2.5" />
               {{ $t("summary.cancelPayment") }}

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { preventNonNumberInput, getTodayDate } from "../../utils/common";
 import Calculator from "../common/Calculator.vue";
@@ -19,8 +19,76 @@ const newBillDescription = ref("");
 const newBillAmount = ref("");
 const newBillDate = ref(getTodayDate());
 const selectedIcon = ref("general");
+const newBillServiceCharge = ref("");
+const newBillVat = ref("");
+const taxPreset = ref("0");
 
 const showCalculator = ref(false);
+
+const finalTotalPreview = computed(() => {
+  const subtotal = Number(newBillAmount.value) || 0;
+  const sc = Number(newBillServiceCharge.value) || 0;
+  const vat = Number(newBillVat.value) || 0;
+  return subtotal * (1 + sc / 100) * (1 + vat / 100);
+});
+
+const hasTaxOrSC = computed(() => {
+  const sc = Number(newBillServiceCharge.value) || 0;
+  const vat = Number(newBillVat.value) || 0;
+  return sc > 0 || vat > 0;
+});
+
+const finalTotalLabel = computed(() => {
+  const sc = Number(newBillServiceCharge.value) || 0;
+  const vat = Number(newBillVat.value) || 0;
+  if (sc > 0 && vat > 0) {
+    return $t("bills.totalPreviewBoth");
+  } else if (sc > 0) {
+    return $t("bills.totalPreviewSC");
+  } else if (vat > 0) {
+    return $t("bills.totalPreviewVAT");
+  }
+  return $t("bills.totalAmount");
+});
+
+function selectPreset(preset) {
+  taxPreset.value = preset;
+  if (preset === "0") {
+    newBillServiceCharge.value = "";
+    newBillVat.value = "";
+  } else if (preset === "sc10") {
+    newBillServiceCharge.value = "10";
+    newBillVat.value = "";
+  } else if (preset === "vat7") {
+    newBillServiceCharge.value = "";
+    newBillVat.value = "7";
+  } else if (preset === "both") {
+    newBillServiceCharge.value = "10";
+    newBillVat.value = "7";
+  } else if (preset === "custom") {
+    newBillServiceCharge.value = "";
+    newBillVat.value = "";
+  }
+}
+
+watch([newBillServiceCharge, newBillVat], ([sc, vat]) => {
+  if (taxPreset.value === "custom") {
+    return;
+  }
+  const scNum = Number(sc) || 0;
+  const vatNum = Number(vat) || 0;
+  if (scNum === 0 && vatNum === 0) {
+    taxPreset.value = "0";
+  } else if (scNum === 10 && vatNum === 0) {
+    taxPreset.value = "sc10";
+  } else if (scNum === 0 && vatNum === 7) {
+    taxPreset.value = "vat7";
+  } else if (scNum === 10 && vatNum === 7) {
+    taxPreset.value = "both";
+  } else {
+    taxPreset.value = "custom";
+  }
+});
 
 function applyResult(value) {
   newBillAmount.value = value;
@@ -33,11 +101,16 @@ function addBill() {
       amount: Number(newBillAmount.value) || 0,
       date: newBillDate.value,
       icon: selectedIcon.value,
+      serviceCharge: Number(newBillServiceCharge.value) || 0,
+      vat: Number(newBillVat.value) || 0,
     });
     newBillDescription.value = "";
     newBillAmount.value = "";
     newBillDate.value = getTodayDate();
     selectedIcon.value = "general";
+    newBillServiceCharge.value = "";
+    newBillVat.value = "";
+    taxPreset.value = "0";
   }
 }
 
@@ -54,7 +127,7 @@ function openOcrModal() {
       <SectionLabel>{{ $t("bills.addNewExpense") }}</SectionLabel>
       <button
         @click="openOcrModal"
-        class="text-[10px] font-black text-primary hover:text-primary-dark transition-colors uppercase tracking-widest bg-primary/10 px-3 py-1.5 rounded-xl flex items-center gap-1.5 active:scale-95"
+        class="text-[10px] font-black text-primary hover:text-primary-dark transition-colors uppercase tracking-widest bg-primary/10 px-3 py-1.5 rounded-xl flex items-center gap-1.5 active:scale-95 cursor-pointer"
         :title="$t('ocr.scanReceipt')"
       >
         <HugeiconsIcon :icon="Camera01Icon" size="14" :stroke-width="2.5" />
@@ -95,7 +168,7 @@ function openOcrModal() {
           />
           <button
             @click="showCalculator = true"
-            class="absolute right-3 top-9 p-1 text-neutral-400 hover:text-primary transition-colors flex items-center justify-center"
+            class="absolute right-3 top-9 p-1 text-neutral-400 hover:text-primary transition-colors flex items-center justify-center cursor-pointer"
           >
             <HugeiconsIcon
               :icon="Calculator01Icon"
@@ -104,6 +177,102 @@ function openOcrModal() {
             />
           </button>
         </div>
+      </div>
+
+      <!-- Tax/SC Quick Segment Control -->
+      <div>
+        <label class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3">
+          {{ $t("bills.taxScPreset") }}
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <button
+            type="button"
+            @click="selectPreset('0')"
+            class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+            :class="taxPreset === '0' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+          >
+            ปกติ (0%)
+          </button>
+          <button
+            type="button"
+            @click="selectPreset('sc10')"
+            class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+            :class="taxPreset === 'sc10' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+          >
+            SC 10%
+          </button>
+          <button
+            type="button"
+            @click="selectPreset('vat7')"
+            class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+            :class="taxPreset === 'vat7' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+          >
+            VAT 7%
+          </button>
+          <button
+            type="button"
+            @click="selectPreset('both')"
+            class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+            :class="taxPreset === 'both' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+          >
+            SC 10% + VAT 7% (++)
+          </button>
+          <button
+            type="button"
+            @click="selectPreset('custom')"
+            class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+            :class="taxPreset === 'custom' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+          >
+            {{ $t("bills.custom") }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Expandable Custom SC & VAT Inputs -->
+      <div v-if="taxPreset === 'custom'" class="grid grid-cols-2 gap-4 animate-slide-up">
+        <div>
+          <label
+            for="bill-service-charge"
+            class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-2"
+            >{{ $t("bills.serviceCharge") }}</label
+          >
+          <input
+            id="bill-service-charge"
+            v-model="newBillServiceCharge"
+            type="number"
+            min="0"
+            placeholder="0"
+            class="w-full px-4 py-3.5 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-700 placeholder-neutral-300"
+            @keypress="preventNonNumberInput"
+          />
+        </div>
+        <div>
+          <label
+            for="bill-vat"
+            class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-2"
+            >{{ $t("bills.vat") }}</label
+          >
+          <input
+            id="bill-vat"
+            v-model="newBillVat"
+            type="number"
+            min="0"
+            placeholder="0"
+            class="w-full px-4 py-3.5 rounded-2xl bg-neutral-50 border border-neutral-200 focus:border-primary/20 focus:bg-white focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-neutral-700 placeholder-neutral-300"
+            @keypress="preventNonNumberInput"
+          />
+        </div>
+      </div>
+
+      <!-- Live Total Preview -->
+      <div
+        v-if="finalTotalPreview > 0 && hasTaxOrSC"
+        class="bg-neutral-50 rounded-2xl p-4 border border-neutral-100/50 flex items-center justify-between text-sm animate-slide-up"
+      >
+        <span class="font-bold text-neutral-500">{{ finalTotalLabel }}</span>
+        <span class="font-black text-primary text-base"
+          >฿{{ finalTotalPreview.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span
+        >
       </div>
 
       <!-- Icon Selector -->
@@ -133,7 +302,7 @@ function openOcrModal() {
           <button
             @click="addBill"
             :disabled="!newBillDescription.trim()"
-            class="w-full bg-neutral-800 text-white font-black text-[11px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2"
+            class="w-full bg-neutral-800 text-white font-black text-[11px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 cursor-pointer"
           >
             <HugeiconsIcon :icon="Add01Icon" size="16" :stroke-width="3" />
             {{ $t("bills.addExpense") }}

@@ -16,7 +16,7 @@ const emit = defineEmits(["update:modelValue"]);
       v-for="color in COLOR_PALETTE"
       :key="color"
       @click="emit('update:modelValue', color)"
-      class="w-10 h-10 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center shadow-sm"
+      class="w-10 h-10 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center shadow-sm cursor-pointer"
       :style="{
         backgroundColor: color,
         '--tw-ring-color':
