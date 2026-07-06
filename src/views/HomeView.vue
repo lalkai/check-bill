@@ -81,7 +81,7 @@ function handleDeleteGroup(groupId) {
       class="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-4 px-4 sm:grid sm:grid-cols-2 sm:mx-0 sm:px-0 sm:overflow-visible"
     >
       <div
-        class="min-w-[85%] sm:min-w-0 snap-center bg-gradient-to-br from-primary to-primary-light text-white rounded-[2.5rem] p-8 shadow-primary/30 flex flex-col justify-center border border-white/10 relative overflow-hidden"
+        class="min-w-[85%] sm:min-w-0 snap-center bg-gradient-to-br from-primary to-primary-light text-white rounded-[2.5rem] p-8 shadow-primary/30 flex flex-col justify-center border border-white/10 relative overflow-hidden [transform:translateZ(0)] [isolation:isolate] [-webkit-mask-image:-webkit-radial-gradient(white,black)]"
       >
         <div
           class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white/10 blur-2xl"
