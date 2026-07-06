@@ -85,6 +85,7 @@ export default {
     serviceCharge: "ค่าบริการ SC (%)",
     vat: "ภาษี VAT (%)",
     taxScPreset: "ภาษี / ค่าบริการ",
+    normalPreset: "ปกติ (0%)",
     custom: "ระบุเอง",
     totalPreviewBoth: "ยอดรวมสุทธิ (รวมบริการ/ภาษี)",
     totalPreviewSC: "ยอดรวมสุทธิ (รวมบริการ)",

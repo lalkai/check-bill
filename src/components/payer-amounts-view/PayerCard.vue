@@ -87,7 +87,7 @@ const openDetails = () => {
             v-else
             class="text-[8px] font-black text-orange-500 uppercase tracking-widest bg-orange-50 px-1.5 py-0.5 rounded-md border border-orange-200 flex-shrink-0"
           >
-            ค้างจ่าย
+            {{ $t("dashboard.owes") }}
           </span>
         </div>
         <p class="text-[11px] text-neutral-400 font-bold mt-0.5">

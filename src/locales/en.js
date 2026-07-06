@@ -85,6 +85,7 @@ export default {
     serviceCharge: "Service Charge (%)",
     vat: "VAT (%)",
     taxScPreset: "Tax / Service Charge",
+    normalPreset: "Normal (0%)",
     custom: "Custom",
     totalPreviewBoth: "Total (incl. Tax/SC)",
     totalPreviewSC: "Total (incl. SC)",

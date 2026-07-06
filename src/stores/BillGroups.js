@@ -353,6 +353,9 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     if (!group) return null;
     const idx = group.people.findIndex((p) => p.name === name);
     if (idx !== -1) {
+      if (group.ownerName === name) {
+        group.ownerName = "";
+      }
       const removed = group.people[idx];
       group.people.splice(idx, 1);
       saveToLocalStorage();

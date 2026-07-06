@@ -311,19 +311,19 @@ function menuPeoplePay(person) {
               <label class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3">
                 {{ $t("bills.taxScPreset") }}
               </label>
-              <div class="flex flex-wrap gap-2">
+              <div class="flex sm:flex-wrap gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
                 <button
                   type="button"
                   @click="selectPreset('0')"
-                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
                   :class="taxPreset === '0' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
                 >
-                  ปกติ (0%)
+                  {{ $t("bills.normalPreset") }}
                 </button>
                 <button
                   type="button"
                   @click="selectPreset('sc10')"
-                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
                   :class="taxPreset === 'sc10' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
                 >
                   SC 10%
@@ -331,7 +331,7 @@ function menuPeoplePay(person) {
                 <button
                   type="button"
                   @click="selectPreset('vat7')"
-                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
                   :class="taxPreset === 'vat7' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
                 >
                   VAT 7%
@@ -339,7 +339,7 @@ function menuPeoplePay(person) {
                 <button
                   type="button"
                   @click="selectPreset('both')"
-                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
                   :class="taxPreset === 'both' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
                 >
                   SC 10% + VAT 7% (++)
@@ -347,7 +347,7 @@ function menuPeoplePay(person) {
                 <button
                   type="button"
                   @click="selectPreset('custom')"
-                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer"
+                  class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
                   :class="taxPreset === 'custom' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
                 >
                   {{ $t("bills.custom") }}

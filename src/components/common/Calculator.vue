@@ -42,6 +42,9 @@ function handleDecimal() {
 }
 
 function handleOperator(nextOperator) {
+  if (operator.value && previousValue.value !== "" && !waitingForOperand.value) {
+    handleEquals();
+  }
   previousValue.value = parseFloat(display.value);
   operator.value = nextOperator;
   waitingForOperand.value = true;

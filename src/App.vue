@@ -41,6 +41,18 @@ watch(
   { immediate: true },
 );
 
+watch(
+  () => $t("meta.title"),
+  (newTitle) => {
+    document.title = newTitle;
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) {
+      desc.setAttribute("content", $t("meta.description"));
+    }
+  },
+  { immediate: true }
+);
+
 onMounted(() => {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has("payer_info")) {

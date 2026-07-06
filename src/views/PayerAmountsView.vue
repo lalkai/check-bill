@@ -128,7 +128,7 @@ const filteredPayerAmounts = computed(() => {
         return acc;
       }, 0);
 
-      const isPaid = totalAmountDue > 0 ? unpaidAmountDue === 0 : false;
+      const isPaid = totalAmountDue > 0 ? unpaidAmountDue === 0 : true;
 
       const dates = {};
       filteredBills.forEach((bill) => {

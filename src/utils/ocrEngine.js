@@ -1,4 +1,5 @@
 import { createWorker, OEM, PSM } from "tesseract.js";
+import { preprocessImage } from "./imagePreprocess.js";
 
 let worker = null;
 let isInitializing = false;
@@ -73,7 +74,9 @@ export async function recognizeReceipt(imageFile, onProgress) {
   lastProgress = 0;
   if (onProgress) onProgress({ status: "กำลังประมวลผล...", progress: 0 });
 
-  const { data } = await ocrWorker.recognize(imageFile);
+  const processedCanvas = await preprocessImage(imageFile);
+
+  const { data } = await ocrWorker.recognize(processedCanvas);
 
   if (onProgress)
     onProgress({ status: "กำลังวิเคราะห์ผลลัพธ์...", progress: 100 });

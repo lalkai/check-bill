@@ -129,7 +129,7 @@ const allDatesArray = computed(() => {
                   {{ $t("summary.paid") }}
                 </span>
                 <span v-else class="text-[11px] font-black text-orange-500 bg-orange-100 px-3 py-1.5 rounded-xl">
-                  ค้างจ่าย
+                  {{ $t("dashboard.owes") }}
                 </span>
               </div>
             </div>
@@ -216,7 +216,7 @@ const allDatesArray = computed(() => {
             <!-- ── BILL ITEMS (Owner only) ── -->
             <div v-if="payer.isOwner && payer.billItems && payer.billItems.length > 0" class="space-y-2">
               <div class="flex items-center gap-2 mb-2.5">
-                <span class="text-[10px] font-black text-neutral-400 uppercase tracking-widest">รายการ</span>
+                <span class="text-[10px] font-black text-neutral-400 uppercase tracking-widest">{{ $t("bills.items") }}</span>
               </div>
 
               <div

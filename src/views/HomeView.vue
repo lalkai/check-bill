@@ -49,8 +49,8 @@ function setLanguage(lang) {
   localStorage.setItem("lang", lang);
 }
 
-function handleCreateGroup(name, color) {
-  groupsStore.addGroup(name, color);
+function handleCreateGroup(name, color, icon) {
+  groupsStore.addGroup(name, color, icon);
   showCreateModal.value = false;
 }
 
