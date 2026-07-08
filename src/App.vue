@@ -61,15 +61,20 @@ onMounted(() => {
   }
 });
 
+const pendingGroupId = ref(null);
+const hasPendingThemeUpdate = ref(false);
+
 function openGroup(groupId) {
-  groupsStore.setActiveGroup(groupId);
   currentView.value = "dashboard";
+  pendingGroupId.value = groupId;
+  hasPendingThemeUpdate.value = true;
   currentPage.value = "group-detail";
   document.documentElement.scrollTop = 0;
 }
 
 function goHome() {
-  groupsStore.setActiveGroup(null);
+  pendingGroupId.value = null;
+  hasPendingThemeUpdate.value = true;
   currentPage.value = "home";
   document.documentElement.scrollTop = 0;
 }
@@ -78,10 +83,17 @@ function switchView(view) {
   currentView.value = view;
   document.documentElement.scrollTop = 0;
 }
+
+function handleAfterLeave() {
+  if (hasPendingThemeUpdate.value) {
+    groupsStore.setActiveGroup(pendingGroupId.value);
+    hasPendingThemeUpdate.value = false;
+  }
+}
 </script>
 
 <template>
-  <Transition name="page-fade" mode="out-in">
+  <Transition name="page-fade" mode="out-in" @after-leave="handleAfterLeave">
     <!-- Shared View (standalone) -->
     <div
       v-if="currentPage === 'shared'"
