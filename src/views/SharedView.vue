@@ -1,9 +1,11 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, defineAsyncComponent } from "vue";
 import { useI18n } from "vue-i18n";
 import LZString from "lz-string";
 import SharedPayerCard from "@/components/shared-view/SharedPayerCard.vue";
-import PaymentQRModal from "@/components/shared-view/PaymentQRModal.vue";
+const PaymentQRModal = defineAsyncComponent(
+  () => import("@/components/shared-view/PaymentQRModal.vue"),
+);
 import SharedLoadingState from "@/components/shared-view/SharedLoadingState.vue";
 import SharedErrorState from "@/components/shared-view/SharedErrorState.vue";
 import SharedEmptyState from "@/components/shared-view/SharedEmptyState.vue";

@@ -10,7 +10,8 @@ export default defineConfig({
     vue(),
     transformImports({
       "@hugeicons/core-free-icons": {
-        transform: "@hugeicons/core-free-icons/{{member}}",
+        transform: "@hugeicons/core-free-icons/dist/esm/{{member}}",
+        defaultImport: true,
       },
     }),
     VitePWA({
@@ -69,7 +70,12 @@ export default defineConfig({
   build: {
     rollupOptions: {
       onwarn(warning, warn) {
-        if (warning.code === "LARGE_BARREL_MODULES") return;
+        if (
+          warning.code === "LARGE_BARREL_MODULES" ||
+          warning.code === "INVALID_ANNOTATION" ||
+          warning.code === "EVAL"
+        )
+          return;
         warn(warning);
       },
     },
