@@ -373,3 +373,9 @@ a,
     user-select: text;
   }
 }
+
+/* Lottie Mono Tint Interactions */
+.lottie-mono svg {
+  filter: grayscale(100%) opacity(0.7);
+  transition: filter 0.4s ease, opacity 0.4s ease;
+}

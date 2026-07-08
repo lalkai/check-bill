@@ -3,6 +3,7 @@ import { useBillGroupsStore } from "../stores/BillGroups";
 import AddPersonForm from "../components/people-view/AddPersonForm.vue";
 import PeopleList from "../components/people-view/PeopleList.vue";
 import EmptyState from "../components/common/EmptyState.vue";
+import memberData from "../assets/animations/member.json";
 
 const groupsStore = useBillGroupsStore();
 </script>
@@ -23,7 +24,9 @@ const groupsStore = useBillGroupsStore();
     <PeopleList v-if="groupsStore.activePeople.length > 0" />
     <EmptyState
       v-else
-      icon="general"
+      :animation-data="memberData"
+      :animation-size="80"
+      :animation-margin="'mt-2 mb-4'"
       :title="$t('people.noMembers')"
       :description="$t('people.addFirstMember')"
     />

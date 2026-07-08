@@ -11,6 +11,7 @@ const EditGroupModal = defineAsyncComponent(
   () => import("../components/home-view/EditGroupModal.vue"),
 );
 import EmptyState from "../components/common/EmptyState.vue";
+import walletData from "../assets/animations/wallet.json";
 import SectionLabel from "../components/common/SectionLabel.vue";
 import { useBillGroupsStore } from "../stores/BillGroups";
 import { version } from "../../package.json";
@@ -100,15 +101,28 @@ function handleDeleteGroup(groupId) {
       class="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-4 px-4 sm:grid sm:grid-cols-2 sm:mx-0 sm:px-0 sm:overflow-visible"
     >
       <div
-        class="min-w-[85%] sm:min-w-0 snap-center bg-gradient-to-br from-primary to-primary-light text-white rounded-[2.5rem] p-8 shadow-primary/30 flex flex-col justify-center border border-white/10 relative overflow-hidden [transform:translateZ(0)] [isolation:isolate] [-webkit-mask-image:-webkit-radial-gradient(white,black)]"
+        class="min-w-[85%] sm:min-w-0 snap-center text-white rounded-[2.5rem] p-8 shadow-lg relative overflow-hidden"
+        style="
+          background:
+            radial-gradient(
+              circle at top right,
+              rgba(255, 255, 255, 0.15) 0%,
+              transparent 60%
+            ),
+            radial-gradient(
+              circle at bottom left,
+              rgba(0, 0, 0, 0.15) 0%,
+              transparent 60%
+            ),
+            linear-gradient(
+              135deg,
+              rgb(var(--color-primary-rgb)) 0%,
+              rgb(var(--color-primary-light-rgb)) 100%
+            );
+          -webkit-mask-image: -webkit-radial-gradient(white, black);
+          mask-image: radial-gradient(white, black);
+        "
       >
-        <div
-          class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white/10 blur-2xl"
-        ></div>
-        <div
-          class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-black/10 blur-xl"
-        ></div>
-
         <div
           class="flex items-center gap-2 text-white/80 text-[10px] font-black uppercase tracking-[0.15em] mb-2 relative z-10"
         >
@@ -175,7 +189,9 @@ function handleDeleteGroup(groupId) {
       <!-- Empty State -->
       <EmptyState
         v-if="groupsStore.groups.length === 0"
-        icon="general"
+        :animation-data="walletData"
+        :animation-size="80"
+        :animation-margin="'mt-2 mb-4'"
         :title="$t('home.noGroups')"
         :description="$t('home.startTracking')"
         :action-label="$t('home.createGroup')"

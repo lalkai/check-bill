@@ -21,8 +21,8 @@ const emit = defineEmits(["update:modelValue"]);
       class="flex items-center justify-center p-3 rounded-2xl border-2 transition-all duration-200 cursor-pointer"
       :class="
         modelValue === item.value
-          ? 'border-neutral-800 bg-neutral-800 text-white shadow-md scale-105'
-          : 'border-neutral-100 bg-neutral-50/50 text-neutral-500 hover:border-neutral-200 hover:bg-neutral-50'
+          ? 'border-neutral-800 bg-neutral-800 text-white dark:border-neutral-200 dark:bg-neutral-200 dark:text-neutral-900 shadow-md scale-105'
+          : 'border-neutral-100 bg-neutral-50/50 text-neutral-500 dark:border-neutral-800/80 dark:bg-neutral-900/40 dark:text-neutral-400 hover:border-neutral-200 hover:bg-neutral-50 dark:hover:border-neutral-700 dark:hover:bg-neutral-900/80'
       "
     >
       <HugeiconsIcon :icon="item.icon" size="22" :stroke-width="2.5" />
@@ -42,8 +42,8 @@ const emit = defineEmits(["update:modelValue"]);
       class="flex items-center justify-center p-2.5 sm:p-3 rounded-xl border-2 transition-all duration-200 flex-shrink-0 cursor-pointer"
       :class="
         modelValue === item.value
-          ? 'border-neutral-800 bg-neutral-800 text-white'
-          : 'border-neutral-200 bg-white text-neutral-400 hover:border-neutral-300 hover:text-neutral-600'
+          ? 'border-neutral-800 bg-neutral-800 text-white dark:border-neutral-200 dark:bg-neutral-200 dark:text-neutral-900'
+          : 'border-neutral-200 bg-white text-neutral-400 dark:border-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-500 hover:border-neutral-300 hover:text-neutral-600 dark:hover:border-neutral-700 dark:hover:text-neutral-300'
       "
     >
       <HugeiconsIcon :icon="item.icon" size="18" :stroke-width="2.5" />

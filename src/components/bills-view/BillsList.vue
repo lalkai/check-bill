@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { computed } from "vue";
 import EmptyState from "../common/EmptyState.vue";
 import SectionLabel from "../common/SectionLabel.vue";
+import receiptData from "../../assets/animations/receipt.json";
 
 const { t: $t } = useI18n();
 import BillCard from "./BillCard.vue";
@@ -29,7 +30,8 @@ function openEditModal(bill) {
   <div class="space-y-4">
     <EmptyState
       v-if="groupsStore.activeBills.length === 0"
-      icon="general"
+      :animation-data="receiptData"
+      :animation-size="110"
       :title="$t('bills.noExpensesYet')"
       :description="$t('bills.addFirstExpense')"
     />

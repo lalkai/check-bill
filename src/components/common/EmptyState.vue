@@ -2,6 +2,11 @@
 import { useI18n } from "vue-i18n";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import { getIcon } from "../../utils/icons";
+import { defineAsyncComponent } from "vue";
+
+const Vue3Lottie = defineAsyncComponent(() =>
+  import("vue3-lottie").then((m) => m.Vue3Lottie),
+);
 
 const { t: $t } = useI18n();
 
@@ -10,6 +15,9 @@ const props = defineProps({
   title: { type: String, required: true },
   description: { type: String, default: "" },
   actionLabel: { type: String, default: "" },
+  animationData: { type: Object, default: null },
+  animationSize: { type: Number, default: 120 },
+  animationMargin: { type: String, default: "-mt-6 -mb-4" },
 });
 
 const emit = defineEmits(["action"]);
@@ -27,6 +35,18 @@ const emit = defineEmits(["action"]);
     }"
   >
     <div
+      v-if="animationData"
+      :class="[animationMargin, 'flex justify-center items-center']"
+    >
+      <Vue3Lottie
+        :animation-data="animationData"
+        :height="animationSize"
+        :width="animationSize"
+        class="lottie-mono"
+      />
+    </div>
+    <div
+      v-else
       class="w-20 h-20 mx-auto rounded-[1.5rem] bg-neutral-50 flex items-center justify-center border border-neutral-100 mb-6"
     >
       <HugeiconsIcon :icon="getIcon(icon)" size="40" class="text-neutral-300" />

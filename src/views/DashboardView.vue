@@ -68,15 +68,28 @@ const settlements = computed(() => {
   >
     <!-- Header Section -->
     <div
-      class="bg-gradient-to-br from-primary to-primary-light text-white rounded-[2.5rem] p-8 shadow-lg border border-white/10 relative overflow-hidden"
+      class="text-white rounded-[2.5rem] p-8 shadow-lg relative overflow-hidden"
+      style="
+        background:
+          radial-gradient(
+            circle at top right,
+            rgba(255, 255, 255, 0.15) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            circle at bottom left,
+            rgba(0, 0, 0, 0.15) 0%,
+            transparent 60%
+          ),
+          linear-gradient(
+            135deg,
+            rgb(var(--color-primary-rgb)) 0%,
+            rgb(var(--color-primary-light-rgb)) 100%
+          );
+        -webkit-mask-image: -webkit-radial-gradient(white, black);
+        mask-image: radial-gradient(white, black);
+      "
     >
-      <div
-        class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white/10 blur-2xl"
-      ></div>
-      <div
-        class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-black/10 blur-xl"
-      ></div>
-
       <div class="flex flex-col gap-1.5 min-w-0 relative z-10">
         <span
           class="text-[10px] font-black text-white/70 uppercase tracking-[0.15em] flex-shrink-0"
