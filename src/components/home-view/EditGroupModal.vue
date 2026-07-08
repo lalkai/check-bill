@@ -29,13 +29,17 @@ watch(
       selectedIcon.value = newGroup.icon || "general";
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 function handleSave() {
   const trimmed = name.value.trim();
   if (!trimmed || !props.group) return;
-  emit("save", props.group.id, { name: trimmed, color: selectedColor.value, icon: selectedIcon.value });
+  emit("save", props.group.id, {
+    name: trimmed,
+    color: selectedColor.value,
+    icon: selectedIcon.value,
+  });
 }
 </script>
 

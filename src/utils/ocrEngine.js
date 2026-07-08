@@ -131,7 +131,7 @@ function isHeaderOrFooter(line) {
 
 function extractItemAndPrice(line) {
   const priceAtEnd = line.match(
-    /^(.+?)\s{2,}(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)\s*$/
+    /^(.+?)\s{2,}(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)\s*$/,
   );
   if (priceAtEnd) {
     const desc = cleanDescription(priceAtEnd[1]);
@@ -140,7 +140,7 @@ function extractItemAndPrice(line) {
   }
 
   const qtyPattern = line.match(
-    /^\d+\s*[xX×]\s*(.+?)\s+(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)\s*$/
+    /^\d+\s*[xX×]\s*(.+?)\s+(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)\s*$/,
   );
   if (qtyPattern) {
     const desc = cleanDescription(qtyPattern[1]);
@@ -149,7 +149,7 @@ function extractItemAndPrice(line) {
   }
 
   const dotsPattern = line.match(
-    /^(.+?)[.\-_]{2,}\s*(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)\s*$/
+    /^(.+?)[.\-_]{2,}\s*(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)\s*$/,
   );
   if (dotsPattern) {
     const desc = cleanDescription(dotsPattern[1]);

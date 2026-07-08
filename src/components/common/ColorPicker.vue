@@ -19,12 +19,9 @@ const emit = defineEmits(["update:modelValue"]);
       class="w-10 h-10 rounded-xl transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center shadow-sm cursor-pointer"
       :style="{
         backgroundColor: color,
-        '--tw-ring-color':
-          modelValue === color ? `${color}40` : 'transparent',
+        '--tw-ring-color': modelValue === color ? `${color}40` : 'transparent',
       }"
-      :class="
-        modelValue === color ? 'ring-4 ring-offset-2 scale-110' : ''
-      "
+      :class="modelValue === color ? 'ring-4 ring-offset-2 scale-110' : ''"
     >
       <HugeiconsIcon
         v-if="modelValue === color"

@@ -1,5 +1,12 @@
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from "vue";
+import {
+  ref,
+  computed,
+  onMounted,
+  nextTick,
+  watch,
+  defineAsyncComponent,
+} from "vue";
 import { useI18n } from "vue-i18n";
 const { t: $t, locale } = useI18n();
 import { useBillGroupsStore } from "../stores/BillGroups";
@@ -10,11 +17,20 @@ import LZString from "lz-string";
 import ToolsSection from "../components/payer-amounts-view/ToolsSection.vue";
 import QRCodeDisplay from "../components/payer-amounts-view/QRCodeDisplay.vue";
 import PayerCard from "../components/payer-amounts-view/PayerCard.vue";
-import AddQRCodeModal from "../components/payer-amounts-view/AddQRCodeModal.vue";
-import ShareModal from "../components/payer-amounts-view/ShareModal.vue";
 import EmptyState from "../components/payer-amounts-view/EmptyState.vue";
-import PayerDetailsModal from "../components/payer-amounts-view/PayerDetailsModal.vue";
-import PaymentQRModal from "../components/shared-view/PaymentQRModal.vue";
+
+const AddQRCodeModal = defineAsyncComponent(
+  () => import("../components/payer-amounts-view/AddQRCodeModal.vue"),
+);
+const ShareModal = defineAsyncComponent(
+  () => import("../components/payer-amounts-view/ShareModal.vue"),
+);
+const PayerDetailsModal = defineAsyncComponent(
+  () => import("../components/payer-amounts-view/PayerDetailsModal.vue"),
+);
+const PaymentQRModal = defineAsyncComponent(
+  () => import("../components/shared-view/PaymentQRModal.vue"),
+);
 
 const groupsStore = useBillGroupsStore();
 const selectedDate = ref(null);
@@ -72,14 +88,11 @@ const filteredPayerAmounts = computed(() => {
 
     if (isOwner) {
       const groupBills = groupsStore.activeBills || [];
-      const totalAmountDue = groupBills.reduce(
-        (acc, b) => {
-          const serviceChargeRatio = 1 + (b.serviceCharge || 0) / 100;
-          const vatRatio = 1 + (b.vat || 0) / 100;
-          return acc + (b.amount || 0) * serviceChargeRatio * vatRatio;
-        },
-        0,
-      );
+      const totalAmountDue = groupBills.reduce((acc, b) => {
+        const serviceChargeRatio = 1 + (b.serviceCharge || 0) / 100;
+        const vatRatio = 1 + (b.vat || 0) / 100;
+        return acc + (b.amount || 0) * serviceChargeRatio * vatRatio;
+      }, 0);
 
       const dates = {};
       groupBills.forEach((b) => {
@@ -109,7 +122,9 @@ const filteredPayerAmounts = computed(() => {
       const totalAmountDue = filteredBills.reduce((acc, bill) => {
         const serviceChargeRatio = 1 + (bill.serviceCharge || 0) / 100;
         const vatRatio = 1 + (bill.vat || 0) / 100;
-        const rawSplit = bill.payers.length ? (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio : 0;
+        const rawSplit = bill.payers.length
+          ? (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio
+          : 0;
         const split = applyRounding(rawSplit, groupsStore.roundingMode);
         return acc + split;
       }, 0);
@@ -134,7 +149,9 @@ const filteredPayerAmounts = computed(() => {
       filteredBills.forEach((bill) => {
         const serviceChargeRatio = 1 + (bill.serviceCharge || 0) / 100;
         const vatRatio = 1 + (bill.vat || 0) / 100;
-        const rawSplit = bill.payers.length ? (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio : 0;
+        const rawSplit = bill.payers.length
+          ? (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio
+          : 0;
         const split = applyRounding(rawSplit, groupsStore.roundingMode);
         if (!dates[bill.date]) dates[bill.date] = 0;
         dates[bill.date] += split;
@@ -197,7 +214,7 @@ const selectedPayerData = computed(() => {
           description: bill.description,
           amount: applyRounding(
             (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio,
-            groupsStore.roundingMode
+            groupsStore.roundingMode,
           ),
           date: bill.date,
           icon: bill.icon || "general",
@@ -243,8 +260,10 @@ const generateShareUrl = async (selectedPayers) => {
             billItems.push({
               description: bill.description,
               amount: applyRounding(
-                (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio,
-                groupsStore.roundingMode
+                (bill.amount / bill.payers.length) *
+                  serviceChargeRatio *
+                  vatRatio,
+                groupsStore.roundingMode,
               ),
               date: bill.date,
               paid: payerInfo ? payerInfo.paid : false,
@@ -378,13 +397,13 @@ const toggleItemStatus = (payerName, itemId) => {
   groupsStore.togglePayerStatus(itemId, payerName);
 };
 
-onMounted(() => {
-  const groupPromptpayID = groupsStore.activeGroup?.promptpayID || "";
-  if (groupPromptpayID) {
-    inputPromptpay.value = groupPromptpayID;
-    generateQRCode(groupPromptpayID);
-  }
+const groupPromptpayID = groupsStore.activeGroup?.promptpayID || "";
+if (groupPromptpayID) {
+  inputPromptpay.value = groupPromptpayID;
+  generateQRCode(groupPromptpayID);
+}
 
+onMounted(() => {
   if (typeof groupsStore.cleanUpDatesWithoutBills === "function") {
     groupsStore.cleanUpDatesWithoutBills();
   }
@@ -402,7 +421,17 @@ watch(
 </script>
 
 <template>
-  <div class="pb-12 animate-slide-up">
+  <div
+    class="pb-12"
+    v-motion
+    :initial="{ opacity: 0, scale: 0.97, y: 15 }"
+    :enter="{
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 220, damping: 24 },
+    }"
+  >
     <!-- Tools Section -->
     <ToolsSection
       @show-qr-popup="showAddQrCodePopup = true"
@@ -410,14 +439,16 @@ watch(
     />
 
     <!-- QR Code Display -->
-    <QRCodeDisplay
-      :show-qr-code="showQrCode"
-      :promptpay-id="inputPromptpay"
-      :qr-code-url="qrCodeUrl"
-    />
+    <div v-auto-animate>
+      <QRCodeDisplay
+        :show-qr-code="showQrCode"
+        :promptpay-id="inputPromptpay"
+        :qr-code-url="qrCodeUrl"
+      />
+    </div>
 
     <!-- Payer Amounts List -->
-    <div class="space-y-4">
+    <div class="space-y-4" v-auto-animate>
       <PayerCard
         v-for="payer in filteredPayerAmounts"
         :key="payer.name"

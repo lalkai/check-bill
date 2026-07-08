@@ -21,8 +21,12 @@ const props = defineProps({
     >
       <HugeiconsIcon :icon="AlertCircleIcon" size="40" class="text-red-400" />
     </div>
-    <h3 class="text-red-600 dark:text-red-400 font-black text-lg mb-2">{{ error }}</h3>
-    <p class="text-neutral-400 dark:text-neutral-400 text-sm font-medium mb-2 max-w-xs">
+    <h3 class="text-red-600 dark:text-red-400 font-black text-lg mb-2">
+      {{ error }}
+    </h3>
+    <p
+      class="text-neutral-400 dark:text-neutral-400 text-sm font-medium mb-2 max-w-xs"
+    >
       {{ $t("shared.verifyLink") }}
     </p>
   </div>

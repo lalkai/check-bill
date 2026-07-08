@@ -1,10 +1,15 @@
 <script setup>
-import { ref } from "vue";
+import { ref, defineAsyncComponent } from "vue";
 import { useBillGroupsStore } from "../stores/BillGroups";
 import AddBillForm from "../components/bills-view/AddBillForm.vue";
 import BillsList from "../components/bills-view/BillsList.vue";
-import EditBillModal from "../components/bills-view/EditBillModal.vue";
-import OCRModal from "../components/bills-view/OCRModal.vue";
+
+const EditBillModal = defineAsyncComponent(
+  () => import("../components/bills-view/EditBillModal.vue"),
+);
+const OCRModal = defineAsyncComponent(
+  () => import("../components/bills-view/OCRModal.vue"),
+);
 
 const groupsStore = useBillGroupsStore();
 
@@ -38,7 +43,16 @@ function handleCloseOcrModal() {
 </script>
 
 <template>
-  <div class="animate-slide-up">
+  <div
+    v-motion
+    :initial="{ opacity: 0, scale: 0.97, y: 15 }"
+    :enter="{
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 220, damping: 24 },
+    }"
+  >
     <!-- Add Bill Form -->
     <AddBillForm @add-bill="handleAddBill" @open-ocr="handleOpenOcr" />
 

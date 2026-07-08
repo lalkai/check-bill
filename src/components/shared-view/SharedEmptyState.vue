@@ -12,7 +12,11 @@ const { t: $t } = useI18n();
     <div
       class="w-20 h-20 mx-auto rounded-[1.5rem] bg-neutral-50 dark:bg-neutral-700 flex items-center justify-center border border-neutral-100 dark:border-neutral-600 mb-6"
     >
-      <HugeiconsIcon :icon="Cancel01Icon" size="40" class="text-neutral-300 dark:text-neutral-400" />
+      <HugeiconsIcon
+        :icon="Cancel01Icon"
+        size="40"
+        class="text-neutral-300 dark:text-neutral-400"
+      />
     </div>
     <h3 class="text-neutral-700 dark:text-neutral-200 font-black text-lg mb-2">
       {{ $t("shared.emptyTitle") }}

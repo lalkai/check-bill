@@ -16,21 +16,16 @@ const props = defineProps({
 
 import { formatCurrency } from "../../utils/common";
 import { HugeiconsIcon } from "@hugeicons/vue";
-import {
-  CrownIcon,
-  ArrowRight01Icon,
-} from "@hugeicons/core-free-icons";
+import { CrownIcon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
-const emit = defineEmits([
-  "open-details",
-]);
+const emit = defineEmits(["open-details"]);
 
 const groupColor = computed(() => groupsStore.activeGroup?.color || "#0066cc");
 const groupColorRgb = computed(() => hexToRgb(groupColor.value));
 
 const avatarStyle = computed(() => {
   if (props.payer.isOwner) {
-    return { backgroundColor: '#f59e0b' };
+    return { backgroundColor: "#f59e0b" };
   }
   return { backgroundColor: groupColor.value };
 });
@@ -68,7 +63,9 @@ const openDetails = () => {
       <!-- Info -->
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2">
-          <h2 class="text-base font-black text-neutral-800 tracking-tight truncate">
+          <h2
+            class="text-base font-black text-neutral-800 tracking-tight truncate"
+          >
             {{ payer.name }}
           </h2>
           <span
@@ -91,8 +88,12 @@ const openDetails = () => {
           </span>
         </div>
         <p class="text-[11px] text-neutral-400 font-bold mt-0.5">
-          {{ payer.isOwner ? $t("summary.totalSponsored") : $t("summary.total") }}
-          <span class="text-neutral-700 font-black">฿{{ formatCurrency(payer.totalAmountDue) }}</span>
+          {{
+            payer.isOwner ? $t("summary.totalSponsored") : $t("summary.total")
+          }}
+          <span class="text-neutral-700 font-black"
+            >฿{{ formatCurrency(payer.totalAmountDue) }}</span
+          >
         </p>
       </div>
 
@@ -103,13 +104,23 @@ const openDetails = () => {
           class="w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-95"
           :style="viewDetailsBtnStyle"
         >
-          <HugeiconsIcon :icon="ArrowRight01Icon" size="16" :stroke-width="2.5" class="text-white" />
+          <HugeiconsIcon
+            :icon="ArrowRight01Icon"
+            size="16"
+            :stroke-width="2.5"
+            class="text-white"
+          />
         </div>
         <div
           v-else
           class="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-50 border border-amber-200"
         >
-          <HugeiconsIcon :icon="ArrowRight01Icon" size="16" :stroke-width="2.5" class="text-amber-500" />
+          <HugeiconsIcon
+            :icon="ArrowRight01Icon"
+            size="16"
+            :stroke-width="2.5"
+            class="text-amber-500"
+          />
         </div>
       </div>
     </div>

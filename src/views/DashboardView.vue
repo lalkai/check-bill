@@ -32,7 +32,9 @@ const settlements = computed(() => {
       if (payerInfo && !payerInfo.paid) {
         const serviceChargeRatio = 1 + (bill.serviceCharge || 0) / 100;
         const vatRatio = 1 + (bill.vat || 0) / 100;
-        const rawSplit = bill.payers.length ? (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio : 0;
+        const rawSplit = bill.payers.length
+          ? (bill.amount / bill.payers.length) * serviceChargeRatio * vatRatio
+          : 0;
         const split = applyRounding(rawSplit, groupsStore.roundingMode);
         unpaid += split;
       }
@@ -53,7 +55,17 @@ const settlements = computed(() => {
 </script>
 
 <template>
-  <div class="space-y-8 pb-12 animate-slide-up">
+  <div
+    class="space-y-8 pb-12"
+    v-motion
+    :initial="{ opacity: 0, scale: 0.97, y: 15 }"
+    :enter="{
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 220, damping: 24 },
+    }"
+  >
     <!-- Header Section -->
     <div
       class="bg-gradient-to-br from-primary to-primary-light text-white rounded-[2.5rem] p-8 shadow-lg border border-white/10 relative overflow-hidden"

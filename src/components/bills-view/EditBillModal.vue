@@ -7,7 +7,11 @@ import Calculator from "../common/Calculator.vue";
 import CloseButton from "../common/CloseButton.vue";
 import IconPicker from "../common/IconPicker.vue";
 import { HugeiconsIcon } from "@hugeicons/vue";
-import { Tick01Icon, Calculator01Icon, CrownIcon } from "@hugeicons/core-free-icons";
+import {
+  Tick01Icon,
+  Calculator01Icon,
+  CrownIcon,
+} from "@hugeicons/core-free-icons";
 import { useScrollLock } from "../../composables/useScrollLock";
 
 const { t: $t } = useI18n();
@@ -117,7 +121,7 @@ watch(
       selectedPeople.value = newBill.payers.map((payer) => payer.name);
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 function saveEditedBill() {
@@ -133,7 +137,7 @@ function saveEditedBill() {
     }));
 
     const originalBill = groupsStore.activeBills.find(
-      (bill) => bill.id === props.bill.id
+      (bill) => bill.id === props.bill.id,
     );
     if (!originalBill) {
       alert($t("messages.billNotFound"));
@@ -167,7 +171,7 @@ function saveEditedBill() {
 
     const anyUnpaid = selectedPeople.value.some((personName) => {
       const personPaidStatus = initialPaidStatus.find(
-        (payer) => payer.name === personName
+        (payer) => payer.name === personName,
       );
       return personPaidStatus && !personPaidStatus.paid;
     });
@@ -178,20 +182,20 @@ function saveEditedBill() {
       const wasPayer = originalPayers.includes(personName);
       const isPayer = selectedPeople.value.includes(personName);
       const personPaidStatus = initialPaidStatus.find(
-        (payer) => payer.name === personName
+        (payer) => payer.name === personName,
       );
 
       if (wasPayer && isPayer) {
         groupsStore.resetPaidStatus(
           [personName],
           editedBillDate.value,
-          personPaidStatus ? personPaidStatus.paid : false
+          personPaidStatus ? personPaidStatus.paid : false,
         );
       } else if (isPayer) {
         groupsStore.resetPaidStatus(
           [personName],
           editedBillDate.value,
-          !anyUnpaid
+          !anyUnpaid,
         );
       } else if (wasPayer) {
         groupsStore.resetPaidStatus([personName], editedBillDate.value, false);
@@ -238,7 +242,9 @@ function menuPeoplePay(person) {
           @focusin="handleFocusIn"
         >
           <!-- Header -->
-          <div class="px-8 pt-8 pb-5 flex justify-between items-center border-b border-neutral-100 flex-shrink-0">
+          <div
+            class="px-8 pt-8 pb-5 flex justify-between items-center border-b border-neutral-100 flex-shrink-0"
+          >
             <h2 class="text-2xl font-black text-neutral-800 tracking-tight">
               {{ $t("bills.editExpense") }}
             </h2>
@@ -246,7 +252,11 @@ function menuPeoplePay(person) {
           </div>
 
           <!-- Scrollable body -->
-          <div data-scroll-inner class="flex-1 overflow-y-auto scrollbar-hide px-8 py-6 space-y-6">
+          <div
+            data-scroll-inner
+            class="flex-1 overflow-y-auto scrollbar-hide px-8 py-6 space-y-6"
+            v-auto-animate
+          >
             <div>
               <label
                 for="edit-description"
@@ -308,15 +318,23 @@ function menuPeoplePay(person) {
 
             <!-- Tax/SC Quick Segment Control -->
             <div>
-              <label class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3">
+              <label
+                class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3"
+              >
                 {{ $t("bills.taxScPreset") }}
               </label>
-              <div class="flex sm:flex-wrap gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+              <div
+                class="flex sm:flex-wrap gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide"
+              >
                 <button
                   type="button"
                   @click="selectPreset('0')"
                   class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
-                  :class="taxPreset === '0' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+                  :class="
+                    taxPreset === '0'
+                      ? 'bg-primary text-white border-primary shadow-sm'
+                      : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                  "
                 >
                   {{ $t("bills.normalPreset") }}
                 </button>
@@ -324,7 +342,11 @@ function menuPeoplePay(person) {
                   type="button"
                   @click="selectPreset('sc10')"
                   class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
-                  :class="taxPreset === 'sc10' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+                  :class="
+                    taxPreset === 'sc10'
+                      ? 'bg-primary text-white border-primary shadow-sm'
+                      : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                  "
                 >
                   SC 10%
                 </button>
@@ -332,7 +354,11 @@ function menuPeoplePay(person) {
                   type="button"
                   @click="selectPreset('vat7')"
                   class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
-                  :class="taxPreset === 'vat7' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+                  :class="
+                    taxPreset === 'vat7'
+                      ? 'bg-primary text-white border-primary shadow-sm'
+                      : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                  "
                 >
                   VAT 7%
                 </button>
@@ -340,7 +366,11 @@ function menuPeoplePay(person) {
                   type="button"
                   @click="selectPreset('both')"
                   class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
-                  :class="taxPreset === 'both' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+                  :class="
+                    taxPreset === 'both'
+                      ? 'bg-primary text-white border-primary shadow-sm'
+                      : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                  "
                 >
                   SC 10% + VAT 7% (++)
                 </button>
@@ -348,7 +378,11 @@ function menuPeoplePay(person) {
                   type="button"
                   @click="selectPreset('custom')"
                   class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
-                  :class="taxPreset === 'custom' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+                  :class="
+                    taxPreset === 'custom'
+                      ? 'bg-primary text-white border-primary shadow-sm'
+                      : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                  "
                 >
                   {{ $t("bills.custom") }}
                 </button>
@@ -356,7 +390,7 @@ function menuPeoplePay(person) {
             </div>
 
             <!-- Expandable Custom SC & VAT Inputs -->
-            <div v-if="taxPreset === 'custom'" class="grid grid-cols-2 gap-4 animate-slide-up">
+            <div v-if="taxPreset === 'custom'" class="grid grid-cols-2 gap-4">
               <div>
                 <label
                   for="edit-service-charge"
@@ -394,11 +428,18 @@ function menuPeoplePay(person) {
             <!-- Live Total Preview -->
             <div
               v-if="finalTotalPreview > 0 && hasTaxOrSC"
-              class="bg-neutral-50 rounded-2xl p-4 border border-neutral-100/50 flex items-center justify-between text-sm animate-slide-up"
+              class="bg-neutral-50 rounded-2xl p-4 border border-neutral-100/50 flex items-center justify-between text-sm"
             >
-              <span class="font-bold text-neutral-500">{{ finalTotalLabel }}</span>
+              <span class="font-bold text-neutral-500">{{
+                finalTotalLabel
+              }}</span>
               <span class="font-black text-primary text-base"
-                >฿{{ finalTotalPreview.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span
+                >฿{{
+                  finalTotalPreview.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })
+                }}</span
               >
             </div>
 
@@ -453,7 +494,9 @@ function menuPeoplePay(person) {
                         class="text-white"
                       />
                     </div>
-                    <span class="text-sm font-black text-neutral-700 flex items-center gap-1.5">
+                    <span
+                      class="text-sm font-black text-neutral-700 flex items-center gap-1.5"
+                    >
                       {{ person.name }}
                       <HugeiconsIcon
                         v-if="person.name === ownerName"
@@ -470,7 +513,9 @@ function menuPeoplePay(person) {
           </div>
 
           <!-- Sticky footer -->
-          <div class="px-8 py-5 border-t border-neutral-100 bg-white flex-shrink-0">
+          <div
+            class="px-8 py-5 border-t border-neutral-100 bg-white flex-shrink-0"
+          >
             <button
               @click="saveEditedBill"
               class="w-full bg-neutral-800 text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl hover:bg-neutral-900 transition-all active:scale-95 shadow-lg cursor-pointer"

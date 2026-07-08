@@ -118,7 +118,9 @@ const closePaymentModal = () => {
     <div
       class="bg-white dark:bg-neutral-800 rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50 dark:border-neutral-700/50"
     >
-      <h1 class="text-3xl font-black text-neutral-800 dark:text-white tracking-tight mb-2">
+      <h1
+        class="text-3xl font-black text-neutral-800 dark:text-white tracking-tight mb-2"
+      >
         {{ $t("shared.title") }}
       </h1>
       <p
@@ -143,9 +145,10 @@ const closePaymentModal = () => {
             d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
           />
         </svg>
-        <span class="text-sm font-bold text-orange-700 dark:text-orange-300 leading-snug">{{
-          $t("shared.note")
-        }}</span>
+        <span
+          class="text-sm font-bold text-orange-700 dark:text-orange-300 leading-snug"
+          >{{ $t("shared.note") }}</span
+        >
       </div>
     </div>
 

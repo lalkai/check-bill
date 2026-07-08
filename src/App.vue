@@ -50,7 +50,7 @@ watch(
       desc.setAttribute("content", $t("meta.description"));
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 onMounted(() => {
@@ -81,166 +81,185 @@ function switchView(view) {
 </script>
 
 <template>
-  <!-- Shared View (standalone) -->
-  <div
-    v-if="currentPage === 'shared'"
-    class="min-h-screen bg-surface flex flex-col animate-slide-up"
-  >
-    <main class="flex-grow py-6 pb-24 sm:pb-6">
-      <div class="max-w-screen-md mx-auto py-6 px-6">
-        <SharedView />
-      </div>
-    </main>
-  </div>
-
-  <!-- Home Page -->
-  <div
-    v-else-if="currentPage === 'home'"
-    class="min-h-screen bg-surface flex flex-col"
-  >
-    <main class="flex-grow py-6 pb-24 sm:pb-6">
-      <div class="max-w-screen-md mx-auto px-4">
-        <HomeView @open-group="openGroup" />
-      </div>
-    </main>
-  </div>
-
-  <!-- Group Detail Page -->
-  <div
-    v-else-if="currentPage === 'group-detail'"
-    class="min-h-screen bg-surface flex flex-col"
-  >
-    <header class="bg-white border-b border-neutral-100 sticky top-0 z-20">
-      <div
-        class="max-w-screen-md mx-auto px-6 py-4 flex items-center justify-between"
-      >
-        <div class="flex items-center gap-4">
-          <button
-            @click="goHome"
-            class="p-2 -ml-2 rounded-2xl hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700 transition-all active:scale-90 flex items-center justify-center cursor-pointer"
-          >
-            <HugeiconsIcon :icon="ArrowLeft01Icon" size="20" :stroke-width="3" />
-          </button>
-          <h1
-            class="text-sm font-black text-neutral-700 uppercase tracking-widest truncate max-w-[200px]"
-          >
-            {{ activeGroupName }}
-          </h1>
+  <Transition name="page-fade" mode="out-in">
+    <!-- Shared View (standalone) -->
+    <div
+      v-if="currentPage === 'shared'"
+      key="shared"
+      class="min-h-screen bg-surface flex flex-col"
+      v-motion
+      :initial="{ opacity: 0, scale: 0.97, y: 15 }"
+      :enter="{
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        transition: { type: 'spring', stiffness: 220, damping: 24 },
+      }"
+    >
+      <main class="flex-grow py-6 pb-24 sm:pb-6">
+        <div class="max-w-screen-md mx-auto py-6 px-6">
+          <SharedView />
         </div>
+      </main>
+    </div>
 
-        <!-- Desktop Nav -->
-        <div class="hidden sm:flex items-center gap-2 top-nav-group">
+    <!-- Home Page -->
+    <div
+      v-else-if="currentPage === 'home'"
+      key="home"
+      class="min-h-screen bg-surface flex flex-col"
+    >
+      <main class="flex-grow py-6 pb-24 sm:pb-6">
+        <div class="max-w-screen-md mx-auto px-4">
+          <HomeView @open-group="openGroup" />
+        </div>
+      </main>
+    </div>
+
+    <!-- Group Detail Page -->
+    <div
+      v-else-if="currentPage === 'group-detail'"
+      key="group-detail"
+      class="min-h-screen bg-surface flex flex-col"
+    >
+      <header class="bg-white border-b border-neutral-100 sticky top-0 z-20">
+        <div
+          class="max-w-screen-md mx-auto px-6 py-4 flex items-center justify-between"
+        >
+          <div class="flex items-center gap-4">
+            <button
+              @click="goHome"
+              class="p-2 -ml-2 rounded-2xl hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700 transition-all active:scale-90 flex items-center justify-center cursor-pointer"
+            >
+              <HugeiconsIcon
+                :icon="ArrowLeft01Icon"
+                size="20"
+                :stroke-width="3"
+              />
+            </button>
+            <h1
+              class="text-sm font-black text-neutral-700 uppercase tracking-widest truncate max-w-[200px]"
+            >
+              {{ activeGroupName }}
+            </h1>
+          </div>
+
+          <!-- Desktop Nav -->
+          <div class="hidden sm:flex items-center gap-2 top-nav-group">
+            <button
+              v-for="view in ['dashboard', 'bills', 'payerAmounts', 'people']"
+              :key="view"
+              @click="switchView(view)"
+              class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer"
+              :class="
+                currentView === view
+                  ? 'bg-primary text-white shadow-md'
+                  : 'text-neutral-400 hover:bg-neutral-50 hover:text-neutral-600'
+              "
+            >
+              {{
+                view === "dashboard"
+                  ? $t("nav.dashboard")
+                  : view === "bills"
+                    ? $t("nav.activity")
+                    : view === "payerAmounts"
+                      ? $t("nav.settle")
+                      : $t("nav.people")
+              }}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="flex-grow py-8 pb-32">
+        <div class="max-w-screen-md mx-auto px-6">
+          <Transition name="page-fade" mode="out-in">
+            <div :key="currentView">
+              <DashboardView v-if="currentView === 'dashboard'" />
+              <BillsView v-else-if="currentView === 'bills'" />
+              <PeopleView v-else-if="currentView === 'people'" />
+              <PayerAmountsView v-else-if="currentView === 'payerAmounts'" />
+            </div>
+          </Transition>
+        </div>
+      </main>
+
+      <!-- Sticky Bottom Navigation -->
+      <div
+        class="fixed bottom-0 inset-x-0 h-36 bg-gradient-to-t from-white/60 to-transparent backdrop-blur-sm z-20 pointer-events-none sm:hidden"
+        style="mask-image: linear-gradient(to top, black 30%, transparent 100%)"
+      ></div>
+
+      <div class="fixed bottom-6 inset-x-0 z-30 px-4 sm:hidden">
+        <div
+          class="max-w-md mx-auto bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-neutral-100 rounded-[2.5rem] p-1.5 flex justify-around items-center bottom-nav-group"
+        >
           <button
-            v-for="view in ['dashboard', 'bills', 'payerAmounts', 'people']"
-            :key="view"
-            @click="switchView(view)"
-            class="px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer"
+            @click="switchView('dashboard')"
+            class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0 cursor-pointer"
             :class="
-              currentView === view
-                ? 'bg-primary text-white shadow-md'
-                : 'text-neutral-400 hover:bg-neutral-50 hover:text-neutral-600'
+              currentView === 'dashboard'
+                ? 'bg-primary text-white shadow-lg scale-105 px-2'
+                : 'text-neutral-400 px-1'
             "
           >
-            {{
-              view === "dashboard"
-                ? $t("nav.dashboard")
-                : view === "bills"
-                ? $t("nav.activity")
-                : view === "payerAmounts"
-                ? $t("nav.settle")
-                : $t("nav.people")
-            }}
+            <HugeiconsIcon :icon="DashboardSquare01Icon" size="24" />
+            <span
+              class="text-[9px] font-black uppercase tracking-widest truncate w-full text-center"
+              >{{ $t("nav.dashboard") }}</span
+            >
+          </button>
+
+          <button
+            @click="switchView('bills')"
+            class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0 cursor-pointer"
+            :class="
+              currentView === 'bills'
+                ? 'bg-primary text-white shadow-lg scale-105 px-2'
+                : 'text-neutral-400 px-1'
+            "
+          >
+            <HugeiconsIcon :icon="Invoice01Icon" size="24" />
+            <span
+              class="text-[9px] font-black uppercase tracking-widest truncate w-full text-center"
+              >{{ $t("nav.activity") }}</span
+            >
+          </button>
+
+          <button
+            @click="switchView('payerAmounts')"
+            class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0 cursor-pointer"
+            :class="
+              currentView === 'payerAmounts'
+                ? 'bg-primary text-white shadow-lg scale-105 px-2'
+                : 'text-neutral-400 px-1'
+            "
+          >
+            <HugeiconsIcon :icon="Wallet01Icon" size="24" />
+            <span
+              class="text-[9px] font-black uppercase tracking-widest truncate w-full text-center"
+              >{{ $t("nav.settle") }}</span
+            >
+          </button>
+
+          <button
+            @click="switchView('people')"
+            class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0 cursor-pointer"
+            :class="
+              currentView === 'people'
+                ? 'bg-primary text-white shadow-lg scale-105 px-2'
+                : 'text-neutral-400 px-1'
+            "
+          >
+            <HugeiconsIcon :icon="UserIcon" size="24" />
+            <span
+              class="text-[9px] font-black uppercase tracking-widest truncate w-full text-center"
+              >{{ $t("nav.people") }}</span
+            >
           </button>
         </div>
       </div>
-    </header>
-
-    <!-- Content -->
-    <main class="flex-grow py-8 pb-32">
-      <div class="max-w-screen-md mx-auto px-6">
-        <div :key="currentView">
-          <DashboardView v-if="currentView === 'dashboard'" />
-          <BillsView v-else-if="currentView === 'bills'" />
-          <PeopleView v-else-if="currentView === 'people'" />
-          <PayerAmountsView v-else-if="currentView === 'payerAmounts'" />
-        </div>
-      </div>
-    </main>
-
-    <!-- Sticky Bottom Navigation -->
-    <div
-      class="fixed bottom-0 inset-x-0 h-36 bg-gradient-to-t from-white/60 to-transparent backdrop-blur-sm z-20 pointer-events-none sm:hidden"
-      style="mask-image: linear-gradient(to top, black 30%, transparent 100%)"
-    ></div>
-
-    <div class="fixed bottom-6 inset-x-0 z-30 px-4 sm:hidden">
-      <div
-        class="max-w-md mx-auto bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-neutral-100 rounded-[2.5rem] p-1.5 flex justify-around items-center bottom-nav-group"
-      >
-        <button
-          @click="switchView('dashboard')"
-          class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0 cursor-pointer"
-          :class="
-            currentView === 'dashboard'
-              ? 'bg-primary text-white shadow-lg scale-105 px-2'
-              : 'text-neutral-400 px-1'
-          "
-        >
-          <HugeiconsIcon :icon="DashboardSquare01Icon" size="24" />
-          <span
-            class="text-[9px] font-black uppercase tracking-widest truncate w-full text-center"
-            >{{ $t("nav.dashboard") }}</span
-          >
-        </button>
-
-        <button
-          @click="switchView('bills')"
-          class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0 cursor-pointer"
-          :class="
-            currentView === 'bills'
-              ? 'bg-primary text-white shadow-lg scale-105 px-2'
-              : 'text-neutral-400 px-1'
-          "
-        >
-          <HugeiconsIcon :icon="Invoice01Icon" size="24" />
-          <span
-            class="text-[9px] font-black uppercase tracking-widest truncate w-full text-center"
-            >{{ $t("nav.activity") }}</span
-          >
-        </button>
-
-        <button
-          @click="switchView('payerAmounts')"
-          class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0 cursor-pointer"
-          :class="
-            currentView === 'payerAmounts'
-              ? 'bg-primary text-white shadow-lg scale-105 px-2'
-              : 'text-neutral-400 px-1'
-          "
-        >
-          <HugeiconsIcon :icon="Wallet01Icon" size="24" />
-          <span
-            class="text-[9px] font-black uppercase tracking-widest truncate w-full text-center"
-            >{{ $t("nav.settle") }}</span
-          >
-        </button>
-
-        <button
-          @click="switchView('people')"
-          class="flex-1 flex flex-col items-center gap-0.5 py-3 rounded-[2rem] transition-all min-w-0 cursor-pointer"
-          :class="
-            currentView === 'people'
-              ? 'bg-primary text-white shadow-lg scale-105 px-2'
-              : 'text-neutral-400 px-1'
-          "
-        >
-          <HugeiconsIcon :icon="UserIcon" size="24" />
-          <span
-            class="text-[9px] font-black uppercase tracking-widest truncate w-full text-center"
-            >{{ $t("nav.people") }}</span
-          >
-        </button>
-      </div>
     </div>
-  </div>
+  </Transition>
 </template>

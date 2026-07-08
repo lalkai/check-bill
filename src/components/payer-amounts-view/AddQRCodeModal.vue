@@ -31,13 +31,16 @@ const isValid = computed(() => {
   return validatePromptpayID(inputPromptpay.value);
 });
 
-watch(() => props.show, (val) => {
-  if (val && props.promptpayID) {
-    inputPromptpay.value = props.promptpayID;
-  } else if (val) {
-    inputPromptpay.value = "";
-  }
-});
+watch(
+  () => props.show,
+  (val) => {
+    if (val && props.promptpayID) {
+      inputPromptpay.value = props.promptpayID;
+    } else if (val) {
+      inputPromptpay.value = "";
+    }
+  },
+);
 
 const handleGenerateQR = () => {
   if (isValid.value && inputPromptpay.value.trim()) {
@@ -52,17 +55,16 @@ const handleDeleteQR = () => {
 </script>
 
 <template>
-  <BaseModal
-    :show="show"
-    :title="$t('qr.addTitle')"
-    @close="emit('close')"
-  >
+  <BaseModal :show="show" :title="$t('qr.addTitle')" @close="emit('close')">
     <FormLabel for="promptpay-input">{{ $t("qr.promptpayId") }}</FormLabel>
     <FormInput
       id="promptpay-input"
       v-model="inputPromptpay"
       :placeholder="$t('qr.promptpayPlaceholder')"
-      :class="{ '!border-red-400 focus:!border-red-500 focus:!ring-red-100/50': !isValid }"
+      :class="{
+        '!border-red-400 focus:!border-red-500 focus:!ring-red-100/50':
+          !isValid,
+      }"
       @keyup.enter="handleGenerateQR"
     />
     <p v-if="!isValid" class="text-xs text-red-500 mt-2 font-bold pl-1">
@@ -90,4 +92,3 @@ const handleDeleteQR = () => {
     </template>
   </BaseModal>
 </template>
-

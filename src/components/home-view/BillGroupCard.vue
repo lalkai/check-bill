@@ -12,10 +12,7 @@ const emit = defineEmits(["click", "edit", "delete"]);
 
 import { formatCurrency } from "../../utils/common";
 import { HugeiconsIcon } from "@hugeicons/vue";
-import {
-  PencilEdit01Icon,
-  Delete02Icon,
-} from "@hugeicons/core-free-icons";
+import { PencilEdit01Icon, Delete02Icon } from "@hugeicons/core-free-icons";
 import { getIcon } from "../../utils/icons";
 
 function onEdit(e) {
@@ -41,7 +38,11 @@ function onDelete(e) {
           class="w-14 h-14 flex-shrink-0 rounded-[1.25rem] flex items-center justify-center text-white shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
           :style="{ backgroundColor: group.color }"
         >
-          <HugeiconsIcon :icon="getIcon(group.icon)" size="28" :stroke-width="2.5" />
+          <HugeiconsIcon
+            :icon="getIcon(group.icon)"
+            size="28"
+            :stroke-width="2.5"
+          />
         </div>
 
         <!-- Title & Subtitle -->

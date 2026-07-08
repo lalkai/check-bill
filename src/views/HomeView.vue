@@ -1,9 +1,15 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch, nextTick, defineAsyncComponent } from "vue";
+import { useDark, useToggle } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 import BillGroupCard from "../components/home-view/BillGroupCard.vue";
-import CreateGroupModal from "../components/home-view/CreateGroupModal.vue";
-import EditGroupModal from "../components/home-view/EditGroupModal.vue";
+
+const CreateGroupModal = defineAsyncComponent(
+  () => import("../components/home-view/CreateGroupModal.vue"),
+);
+const EditGroupModal = defineAsyncComponent(
+  () => import("../components/home-view/EditGroupModal.vue"),
+);
 import EmptyState from "../components/common/EmptyState.vue";
 import SectionLabel from "../components/common/SectionLabel.vue";
 import { useBillGroupsStore } from "../stores/BillGroups";
@@ -30,19 +36,22 @@ const showCreateModal = ref(false);
 const showSettingsModal = ref(false);
 const editingGroup = ref(null);
 
-const isDarkMode = ref(document.documentElement.classList.contains("dark"));
+const isDarkMode = useDark({
+  storageKey: "theme",
+  valueDark: "dark",
+  valueLight: "light",
+});
+const toggleDark = useToggle(isDarkMode);
 
 function toggleDarkMode() {
-  isDarkMode.value = !isDarkMode.value;
-  if (isDarkMode.value) {
-    document.documentElement.classList.add("dark");
-    localStorage.setItem("theme", "dark");
-  } else {
-    document.documentElement.classList.remove("dark");
-    localStorage.setItem("theme", "light");
-  }
-  applyGroupTheme();
+  toggleDark();
 }
+
+watch(isDarkMode, () => {
+  nextTick(() => {
+    applyGroupTheme();
+  });
+});
 
 function setLanguage(lang) {
   locale.value = lang;
@@ -75,7 +84,17 @@ function handleDeleteGroup(groupId) {
 </script>
 
 <template>
-  <div class="space-y-8 pb-8 animate-slide-up">
+  <div
+    class="space-y-8 pb-8"
+    v-motion
+    :initial="{ opacity: 0, scale: 0.97, y: 15 }"
+    :enter="{
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 220, damping: 24 },
+    }"
+  >
     <!-- Dashboard Summary -->
     <div
       class="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 -mx-4 px-4 sm:grid sm:grid-cols-2 sm:mx-0 sm:px-0 sm:overflow-visible"
@@ -164,7 +183,7 @@ function handleDeleteGroup(groupId) {
       />
 
       <!-- Groups List -->
-      <div v-else class="space-y-4">
+      <div v-else class="space-y-4" v-auto-animate>
         <BillGroupCard
           v-for="group in groupsStore.groups"
           :key="group.id"
@@ -199,21 +218,31 @@ function handleDeleteGroup(groupId) {
       <div class="space-y-6">
         <!-- Dark Mode Section -->
         <div>
-          <label class="block text-[11px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-3">
+          <label
+            class="block text-[11px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-3"
+          >
             {{ $t("settings.darkMode") }}
           </label>
           <div class="flex gap-2">
             <button
               @click="toggleDarkMode"
               class="px-4 py-2.5 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-1 text-center"
-              :class="!isDarkMode ? 'bg-primary text-white border-primary shadow-md scale-[1.02]' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700/50 dark:text-neutral-300 dark:hover:bg-neutral-700/80'"
+              :class="
+                !isDarkMode
+                  ? 'bg-primary text-white border-primary shadow-md scale-[1.02]'
+                  : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700/50 dark:text-neutral-300 dark:hover:bg-neutral-700/80'
+              "
             >
               {{ $t("settings.darkModeSubOff") }}
             </button>
             <button
               @click="toggleDarkMode"
               class="px-4 py-2.5 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-1 text-center"
-              :class="isDarkMode ? 'bg-primary text-white border-primary shadow-md scale-[1.02]' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700/50 dark:text-neutral-300 dark:hover:bg-neutral-700/80'"
+              :class="
+                isDarkMode
+                  ? 'bg-primary text-white border-primary shadow-md scale-[1.02]'
+                  : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700/50 dark:text-neutral-300 dark:hover:bg-neutral-700/80'
+              "
             >
               {{ $t("settings.darkModeSubOn") }}
             </button>
@@ -222,21 +251,31 @@ function handleDeleteGroup(groupId) {
 
         <!-- Language Section -->
         <div>
-          <label class="block text-[11px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-3">
+          <label
+            class="block text-[11px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-3"
+          >
             {{ $t("settings.language") }}
           </label>
           <div class="flex gap-2">
             <button
               @click="setLanguage('th')"
               class="px-4 py-2.5 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-1 text-center"
-              :class="locale === 'th' ? 'bg-primary text-white border-primary shadow-md scale-[1.02]' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700/50 dark:text-neutral-300 dark:hover:bg-neutral-700/80'"
+              :class="
+                locale === 'th'
+                  ? 'bg-primary text-white border-primary shadow-md scale-[1.02]'
+                  : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700/50 dark:text-neutral-300 dark:hover:bg-neutral-700/80'
+              "
             >
               {{ $t("settings.thai") }}
             </button>
             <button
               @click="setLanguage('en')"
               class="px-4 py-2.5 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-1 text-center"
-              :class="locale === 'en' ? 'bg-primary text-white border-primary shadow-md scale-[1.02]' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700/50 dark:text-neutral-300 dark:hover:bg-neutral-700/80'"
+              :class="
+                locale === 'en'
+                  ? 'bg-primary text-white border-primary shadow-md scale-[1.02]'
+                  : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700/50 dark:text-neutral-300 dark:hover:bg-neutral-700/80'
+              "
             >
               {{ $t("settings.english") }}
             </button>
@@ -245,21 +284,31 @@ function handleDeleteGroup(groupId) {
 
         <!-- Rounding Mode Section -->
         <div>
-          <label class="block text-[11px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-3">
+          <label
+            class="block text-[11px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest mb-3"
+          >
             {{ $t("settings.roundingMode") }}
           </label>
           <div class="flex gap-2">
             <button
               @click="groupsStore.setRoundingMode('none')"
               class="px-4 py-2.5 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-1 text-center"
-              :class="groupsStore.roundingMode === 'none' ? 'bg-primary text-white border-primary shadow-md scale-[1.02]' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700/50 dark:text-neutral-300 dark:hover:bg-neutral-700/80'"
+              :class="
+                groupsStore.roundingMode === 'none'
+                  ? 'bg-primary text-white border-primary shadow-md scale-[1.02]'
+                  : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700/50 dark:text-neutral-300 dark:hover:bg-neutral-700/80'
+              "
             >
               {{ $t("settings.roundingNone") }}
             </button>
             <button
               @click="groupsStore.setRoundingMode('round')"
               class="px-4 py-2.5 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-1 text-center"
-              :class="groupsStore.roundingMode === 'round' ? 'bg-primary text-white border-primary shadow-md scale-[1.02]' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700/50 dark:text-neutral-300 dark:hover:bg-neutral-700/80'"
+              :class="
+                groupsStore.roundingMode === 'round'
+                  ? 'bg-primary text-white border-primary shadow-md scale-[1.02]'
+                  : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:border-neutral-300 dark:bg-neutral-800 dark:border-neutral-700/50 dark:text-neutral-300 dark:hover:bg-neutral-700/80'
+              "
             >
               {{ $t("settings.roundingRound") }}
             </button>
@@ -267,8 +316,12 @@ function handleDeleteGroup(groupId) {
         </div>
 
         <!-- Version -->
-        <div class="text-center pt-4 border-t border-neutral-100 dark:border-neutral-700/50">
-          <p class="text-[9px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest leading-none">
+        <div
+          class="text-center pt-4 border-t border-neutral-100 dark:border-neutral-700/50"
+        >
+          <p
+            class="text-[9px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest leading-none"
+          >
             {{ $t("settings.version") }} v{{ version }}
           </p>
         </div>

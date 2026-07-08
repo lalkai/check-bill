@@ -85,7 +85,8 @@ const handlePaymentClick = () => {
             class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-0.5 truncate flex items-center gap-1"
           >
             <span class="flex-shrink-0">{{ $t("shared.total") }}</span>
-            <span class="font-black text-neutral-700 dark:text-neutral-200 truncate"
+            <span
+              class="font-black text-neutral-700 dark:text-neutral-200 truncate"
               >฿{{ formatCurrency(payer.totalAmountDue) }}</span
             >
           </div>
@@ -139,7 +140,9 @@ const handlePaymentClick = () => {
               >
             </div>
             <div class="flex items-center gap-3">
-              <p class="text-sm text-neutral-700 dark:text-neutral-200 font-black">
+              <p
+                class="text-sm text-neutral-700 dark:text-neutral-200 font-black"
+              >
                 ฿{{
                   typeof amount.amount === "number"
                     ? formatCurrency(amount.amount)
@@ -191,7 +194,9 @@ const handlePaymentClick = () => {
                 {{ item.date }}
               </p>
             </div>
-            <p class="text-sm font-black text-neutral-800 dark:text-white flex-shrink-0">
+            <p
+              class="text-sm font-black text-neutral-800 dark:text-white flex-shrink-0"
+            >
               ฿{{ formatCurrency(item.amount) }}
             </p>
           </div>

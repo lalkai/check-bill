@@ -82,7 +82,7 @@ const generatePaymentQRCode = async () => {
     };
 
     const qrContainer = document.getElementById(
-      `payment-qrcode-container-${props.payer.name.replace(/\s+/g, "-")}`
+      `payment-qrcode-container-${props.payer.name.replace(/\s+/g, "-")}`,
     );
     if (!qrContainer) {
       console.error("QR Code container not found for payer:", props.payer.name);
@@ -98,7 +98,7 @@ const generatePaymentQRCode = async () => {
       if (err) {
         console.error("Error generating payment QR Code:", err);
         qrContainer.innerHTML = `<p class="text-red-500 font-bold text-center">${$t(
-          "shared.errorGenerateQR"
+          "shared.errorGenerateQR",
         )}</p>`;
         return;
       }
@@ -130,7 +130,7 @@ watch(
         generatePaymentQRCode();
       });
     }
-  }
+  },
 );
 
 const closeModal = () => {
@@ -153,9 +153,13 @@ const closeModal = () => {
           class="relative bg-white dark:bg-neutral-800 rounded-[2.2rem] sm:rounded-[2.5rem] shadow-[0_24px_60px_rgba(0,0,0,0.18)] w-full max-w-sm border border-white/20 dark:border-neutral-700/50 max-h-[85vh] sm:max-h-[90vh] flex flex-col overflow-hidden"
         >
           <!-- Header -->
-          <div class="px-8 pt-8 pb-5 flex justify-between items-start border-b border-neutral-100 dark:border-neutral-700/50 flex-shrink-0">
+          <div
+            class="px-8 pt-8 pb-5 flex justify-between items-start border-b border-neutral-100 dark:border-neutral-700/50 flex-shrink-0"
+          >
             <div>
-              <h2 class="text-2xl font-black text-neutral-800 dark:text-white tracking-tight">
+              <h2
+                class="text-2xl font-black text-neutral-800 dark:text-white tracking-tight"
+              >
                 {{ title || $t("shared.scanToPay") }}
               </h2>
               <p
@@ -172,21 +176,32 @@ const closeModal = () => {
           </div>
 
           <!-- Scrollable Body -->
-          <div data-scroll-inner class="flex-1 overflow-y-auto scrollbar-hide px-8 py-6 flex flex-col justify-center items-center">
+          <div
+            data-scroll-inner
+            class="flex-1 overflow-y-auto scrollbar-hide px-8 py-6 flex flex-col justify-center items-center"
+          >
             <div
               :id="`payment-qrcode-container-${payer.name.replace(/\s+/g, '-')}`"
               class="bg-white dark:bg-neutral-700 p-6 rounded-3xl border border-neutral-100 dark:border-neutral-600 shadow-sm w-full min-h-[300px] flex flex-col justify-center text-center items-center"
+              v-motion
+              :initial="{ opacity: 0 }"
+              :enter="{
+                opacity: 1,
+                transition: { duration: 200, ease: 'easeOut' },
+              }"
             ></div>
           </div>
 
           <!-- Sticky Footer -->
-          <div class="px-8 py-5 border-t border-neutral-100 dark:border-neutral-700/50 bg-white dark:bg-neutral-800 flex-shrink-0">
+          <div
+            class="px-8 py-5 border-t border-neutral-100 dark:border-neutral-700/50 bg-white dark:bg-neutral-800 flex-shrink-0"
+          >
             <button
               @click="closeModal"
               class="w-full text-white font-black text-[12px] uppercase tracking-widest py-4 px-6 rounded-2xl transition-all active:scale-95 shadow-lg cursor-pointer"
               :style="{
                 backgroundColor: groupColor,
-                boxShadow: `0 4px 14px rgba(${groupColorRgb.r}, ${groupColorRgb.g}, ${groupColorRgb.b}, 0.3)`
+                boxShadow: `0 4px 14px rgba(${groupColorRgb.r}, ${groupColorRgb.g}, ${groupColorRgb.b}, 0.3)`,
               }"
             >
               {{ $t("actions.done") }}

@@ -74,8 +74,8 @@ export default {
   bills: {
     billList: "Bills List",
     addBill: "Add Bill",
-    addNewExpense: "Add New Expense",
-    editExpense: "Edit Expense",
+    addNewExpense: "Add Expense",
+    editExpense: "Edit Item",
     scan: "SCAN",
     addExpense: "ADD EXPENSE",
     description: "Description",
@@ -87,9 +87,9 @@ export default {
     taxScPreset: "Tax / Service Charge",
     normalPreset: "Normal (0%)",
     custom: "Custom",
-    totalPreviewBoth: "Total (incl. Tax/SC)",
-    totalPreviewSC: "Total (incl. SC)",
-    totalPreviewVAT: "Total (incl. Tax)",
+    totalPreviewBoth: "Total (SC + VAT)",
+    totalPreviewSC: "Total (SC)",
+    totalPreviewVAT: "Total (VAT)",
     date: "Date",
     totalAmount: "Total Amount",
     items: "Items",
@@ -106,7 +106,7 @@ export default {
   summary: {
     title: "Summary",
     noSummary: "No summary available",
-    addFirst: "Add people and expenses first to see the summary.",
+    addFirst: "Add members & bills to see summary.",
     total: "Total",
     settled: "SETTLED",
     owes: "OWES {amount}",
@@ -138,7 +138,7 @@ export default {
     generate: "GENERATE QR",
     title: "PromptPay QR Code",
     id: "ID",
-    invalidId: "Invalid PromptPay ID (10, 13, or 15 digits only)",
+    invalidId: "Invalid PromptPay ID (10, 13, 15 digits)",
   },
   share: {
     title: "Share Summary",
@@ -166,8 +166,7 @@ export default {
     invalidImage: "Please select a valid image (JPG, PNG, WebP)",
     tooLarge: "File is too large (max 10MB)",
     selectReceipt: "Please select a receipt image",
-    noPrices:
-      "Prices not detected. Enter manually.",
+    noPrices: "Prices not detected. Enter manually.",
     noText: "No text found in the image. Please try a clearer picture.",
     foundItems:
       "Found {count} items ({valid} with prices). Accuracy: {confidence}%",
@@ -225,17 +224,15 @@ export default {
     enterPromptpay: "Please enter PromptPay ID!",
     linkNotGenerated: "Share link not generated yet",
     confirmDelete: "Are you sure you want to delete?",
-    confirmDeleteBillWithPayers:
-      "This bill has payers. Delete it?",
+    confirmDeleteBillWithPayers: "This bill has payers. Delete it?",
     enterDescription: "Please enter a description",
     billNotFound: "Bill not found",
     failedUpdateBill: "Failed to update bill",
     errorSavingData: "Error saving data",
     noPeopleYet: "No people added yet",
-    confirmRemovePersonFromBills:
-      "Remove {name} from [{bills}]? Will affect bill calculations.",
-    confirmChangeOwner: "Are you sure you want to set {name} as the group owner? This will change who is responsible for paying or receiving group balances.",
-    confirmRemoveOwner: "Are you sure you want to remove {name} as the group owner?",
+    confirmRemovePersonFromBills: "Remove {name} from [{bills}]?",
+    confirmChangeOwner: "Set {name} as group owner?",
+    confirmRemoveOwner: "Remove {name} as owner?",
   },
   settings: {
     title: "Settings",

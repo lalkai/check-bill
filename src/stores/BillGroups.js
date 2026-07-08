@@ -1,5 +1,6 @@
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
+import { useLocalStorage } from "@vueuse/core";
 import { applyRounding } from "../utils/common";
 
 const COLOR_PALETTE = [
@@ -95,64 +96,39 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     }
   }
 
-  function initializeGroups() {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+  const groups = useLocalStorage(STORAGE_KEY, () => {
+    const migrated = migrateLegacyData();
+    return migrated ? [migrated] : [];
+  });
 
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // Ensure icons exist for existing loaded groups/bills
-          // Migrate per-bill promptpayID to group level
-          parsed.forEach(group => {
-            if (!group.promptpayID) group.promptpayID = "";
-            if (!group.roundingMode) group.roundingMode = "none";
-            if (group.bills) {
-              group.bills.forEach(bill => {
-                if (!bill.icon) bill.icon = "general";
-                if (bill.serviceCharge === undefined) bill.serviceCharge = 0;
-                if (bill.vat === undefined) bill.vat = 0;
-                // Migrate per-bill promptpayID to group level
-                if (bill.promptpayID && !group.promptpayID) {
-                  group.promptpayID = bill.promptpayID;
-                }
-                delete bill.promptpayID;
-              });
-            }
-          });
-          return parsed;
-        }
+  // Ensure icons/fields exist for existing loaded groups/bills
+  if (Array.isArray(groups.value)) {
+    groups.value.forEach((group) => {
+      if (!group.promptpayID) group.promptpayID = "";
+      if (!group.roundingMode) group.roundingMode = "none";
+      if (group.bills) {
+        group.bills.forEach((bill) => {
+          if (!bill.icon) bill.icon = "general";
+          if (bill.serviceCharge === undefined) bill.serviceCharge = 0;
+          if (bill.vat === undefined) bill.vat = 0;
+          if (bill.promptpayID && !group.promptpayID) {
+            group.promptpayID = bill.promptpayID;
+          }
+          delete bill.promptpayID;
+        });
       }
-
-      const migratedGroup = migrateLegacyData();
-      if (migratedGroup) {
-        const groups = [migratedGroup];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(groups));
-        return groups;
-      }
-
-      return [];
-    } catch (e) {
-      console.error("Error loading bill groups:", e);
-      return [];
-    }
+    });
   }
 
-  const groups = ref(initializeGroups());
   const activeGroupId = ref(null);
-  const roundingMode = ref(localStorage.getItem("roundingMode") || "none");
+  const roundingMode = useLocalStorage("roundingMode", "none");
 
   function setRoundingMode(mode) {
     roundingMode.value = mode;
-    localStorage.setItem("roundingMode", mode);
   }
 
   function saveToLocalStorage() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(groups.value));
-    } catch (e) {
-      console.error("Error saving bill groups:", e);
-    }
+    // No-op: Auto-persisted reactively by useLocalStorage
   }
 
   const activeGroup = computed(() => {
@@ -211,7 +187,14 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     }
   }
 
-  function addBill(description, amount, date, icon = "general", serviceCharge = 0, vat = 0) {
+  function addBill(
+    description,
+    amount,
+    date,
+    icon = "general",
+    serviceCharge = 0,
+    vat = 0,
+  ) {
     const group = activeGroup.value;
     if (!group) return false;
 
@@ -245,7 +228,15 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     return false;
   }
 
-  function updateBill(billId, description, amount, date, icon, serviceCharge = 0, vat = 0) {
+  function updateBill(
+    billId,
+    description,
+    amount,
+    date,
+    icon,
+    serviceCharge = 0,
+    vat = 0,
+  ) {
     const group = activeGroup.value;
     if (!group) return false;
     const bill = group.bills.find((b) => b.id === billId);
@@ -424,8 +415,7 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     const group = activeGroup.value;
     if (!group) return;
     const dateBills = group.bills.filter(
-      (b) =>
-        b.date === date && b.payers.some((p) => p.name === personName)
+      (b) => b.date === date && b.payers.some((p) => p.name === personName),
     );
     const allPaid = dateBills.every((b) => {
       const pi = b.payers.find((p) => p.name === personName);
@@ -451,7 +441,7 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
           const hasActiveBills = group.bills.some(
             (bill) =>
               bill.date === date &&
-              bill.payers.some((p) => p.name === person.name)
+              bill.payers.some((p) => p.name === person.name),
           );
           if (hasActiveBills) {
             validDates[date] = person.dates[date];
@@ -532,7 +522,6 @@ export const useBillGroupsStore = defineStore("billGroups", () => {
     const group = groups.value.find((g) => g.id === groupId);
     return group ? group.people.length : 0;
   }
-
 
   return {
     // Group management

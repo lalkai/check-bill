@@ -11,10 +11,7 @@ const emit = defineEmits(["remove", "edit"]);
 
 import { formatCurrency } from "../../utils/common";
 import { HugeiconsIcon } from "@hugeicons/vue";
-import {
-  PencilEdit01Icon,
-  Delete02Icon,
-} from "@hugeicons/core-free-icons";
+import { PencilEdit01Icon, Delete02Icon } from "@hugeicons/core-free-icons";
 import { getIcon } from "../../utils/icons";
 
 const props = defineProps({
@@ -53,14 +50,16 @@ function editBill() {
   <div
     class="bg-white p-6 rounded-[2rem] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-neutral-100 flex flex-col gap-4 group transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-0.5"
   >
-    <div
-      class="flex items-center justify-between gap-4"
-    >
+    <div class="flex items-center justify-between gap-4">
       <div class="flex-1 min-w-0 flex items-center gap-4">
         <div
           class="w-12 h-12 rounded-2xl bg-primary/10 flex-shrink-0 flex items-center justify-center text-primary border border-primary/20 group-hover:scale-110 transition-transform"
         >
-          <HugeiconsIcon :icon="getIcon(bill.icon)" size="20" :stroke-width="2.5" />
+          <HugeiconsIcon
+            :icon="getIcon(bill.icon)"
+            size="20"
+            :stroke-width="2.5"
+          />
         </div>
         <div class="flex flex-col min-w-0 flex-1">
           <h3
@@ -72,8 +71,14 @@ function editBill() {
             class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-1 flex flex-wrap gap-x-1 items-center"
           >
             <span>{{ bill.date }}</span>
-            <span v-if="bill.serviceCharge || bill.vat" class="lowercase font-medium text-neutral-400">
-              (฿{{ formatCurrency(bill.amount) }} <span v-if="bill.serviceCharge">+{{ bill.serviceCharge }}% SC</span><span v-if="bill.vat">+{{ bill.vat }}% VAT</span>)
+            <span
+              v-if="bill.serviceCharge || bill.vat"
+              class="lowercase font-medium text-neutral-400"
+            >
+              (฿{{ formatCurrency(bill.amount) }}
+              <span v-if="bill.serviceCharge"
+                >+{{ bill.serviceCharge }}% SC</span
+              ><span v-if="bill.vat">+{{ bill.vat }}% VAT</span>)
             </span>
           </div>
         </div>

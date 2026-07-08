@@ -1,6 +1,7 @@
-/**
- * Theme and Dynamic Color Harmonization Utility
- */
+import { colord, extend } from "colord";
+import mixPlugin from "colord/plugins/mix";
+
+extend([mixPlugin]);
 
 /**
  * Converts a hex color string to its R, G, B components.
@@ -9,28 +10,8 @@
  * @returns {{r: number, g: number, b: number}}
  */
 export function hexToRgb(hex) {
-  const cleanHex = String(hex || "").replace(/^#/, "");
-  let r, g, b;
-
-  if (cleanHex.length === 3) {
-    r = parseInt(cleanHex[0] + cleanHex[0], 16);
-    g = parseInt(cleanHex[1] + cleanHex[1], 16);
-    b = parseInt(cleanHex[2] + cleanHex[2], 16);
-  } else if (cleanHex.length === 6) {
-    r = parseInt(cleanHex.substring(0, 2), 16);
-    g = parseInt(cleanHex.substring(2, 4), 16);
-    b = parseInt(cleanHex.substring(4, 6), 16);
-  } else {
-    r = 0;
-    g = 102;
-    b = 204;
-  }
-
-  return {
-    r: isNaN(r) ? 0 : r,
-    g: isNaN(g) ? 102 : g,
-    b: isNaN(b) ? 204 : b,
-  };
+  const rgb = colord(hex || "#0066cc").toRgb();
+  return { r: rgb.r, g: rgb.g, b: rgb.b };
 }
 
 /**
@@ -38,55 +19,23 @@ export function hexToRgb(hex) {
  * @returns {{h: number, s: number, l: number}} h in [0,360], s/l in [0,100]
  */
 export function rgbToHsl(r, g, b) {
-  r /= 255; g /= 255; b /= 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  let h, s, l = (max + min) / 2;
-
-  if (max === min) {
-    h = s = 0;
-  } else {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-      case g: h = ((b - r) / d + 2) / 6; break;
-      case b: h = ((r - g) / d + 4) / 6; break;
-    }
-  }
-  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+  const hsl = colord({ r, g, b }).toHsl();
+  return { h: Math.round(hsl.h), s: Math.round(hsl.s), l: Math.round(hsl.l) };
 }
 
 /**
  * Converts HSL to RGB
  */
 export function hslToRgb(h, s, l) {
-  h /= 360; s /= 100; l /= 100;
-  let r, g, b;
-  if (s === 0) {
-    r = g = b = l;
-  } else {
-    const hue2rgb = (p, q, t) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1 / 6) return p + (q - p) * 6 * t;
-      if (t < 1 / 2) return q;
-      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-      return p;
-    };
-    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-    const p = 2 * l - q;
-    r = hue2rgb(p, q, h + 1 / 3);
-    g = hue2rgb(p, q, h);
-    b = hue2rgb(p, q, h - 1 / 3);
-  }
-  return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+  const rgb = colord({ h, s, l }).toRgb();
+  return { r: rgb.r, g: rgb.g, b: rgb.b };
 }
 
 /**
  * Convert RGB to hex string
  */
 export function rgbToHex(r, g, b) {
-  return `#${[r, g, b].map(c => Math.max(0, Math.min(255, c)).toString(16).padStart(2, '0')).join('')}`;
+  return colord({ r, g, b }).toHexString();
 }
 
 /**
@@ -97,20 +46,22 @@ export function rgbToHex(r, g, b) {
  * @returns {{ primary: string, secondary: string, primaryRgb: {r,g,b}, secondaryRgb: {r,g,b} }}
  */
 export function getThemeColors(primaryHex) {
-  const { r, g, b } = hexToRgb(primaryHex);
-  const { h, s, l } = rgbToHsl(r, g, b);
+  const color = colord(primaryHex);
+  const rgb = color.toRgb();
+  const hsl = color.toHsl();
 
   // Secondary: shift hue +60°, reduce saturation by 20%, keep lightness similar
-  const secH = (h + 60) % 360;
-  const secS = Math.max(20, s - 20);
-  const secL = Math.min(55, l + 5);
-  const secRgb = hslToRgb(secH, secS, secL);
+  const secondary = colord({
+    h: (hsl.h + 60) % 360,
+    s: Math.max(20, hsl.s - 20),
+    l: Math.min(55, hsl.l + 5),
+  });
 
   return {
     primary: primaryHex,
-    secondary: rgbToHex(secRgb.r, secRgb.g, secRgb.b),
-    primaryRgb: { r, g, b },
-    secondaryRgb: secRgb,
+    secondary: secondary.toHexString(),
+    primaryRgb: rgb,
+    secondaryRgb: secondary.toRgb(),
   };
 }
 
@@ -122,7 +73,8 @@ export function getThemeColors(primaryHex) {
 let lastAppliedColor = "#0066cc";
 
 export function applyGroupTheme(hexColor) {
-  if (typeof window === "undefined" || !document || !document.documentElement) return;
+  if (typeof window === "undefined" || !document || !document.documentElement)
+    return;
 
   if (hexColor) {
     lastAppliedColor = hexColor;
@@ -130,57 +82,99 @@ export function applyGroupTheme(hexColor) {
     hexColor = lastAppliedColor;
   }
 
-  const { r, g, b } = hexToRgb(hexColor || "#0066cc");
+  const color = colord(hexColor || "#0066cc");
+  const { r, g, b } = color.toRgb();
 
-  // Calculate Primary Light: blend base with 20% white tint
-  const lightR = Math.round(r + (255 - r) * 0.20);
-  const lightG = Math.round(g + (255 - g) * 0.20);
-  const lightB = Math.round(b + (255 - b) * 0.20);
+  // Calculate Primary Light: blend base with 20% white tint (mix with white at 20%)
+  const light = color.mix("#ffffff", 0.2).toRgb();
 
   // Calculate Primary Dark: shade base by 20% darker
-  const darkR = Math.round(r * 0.80);
-  const darkG = Math.round(g * 0.80);
-  const darkB = Math.round(b * 0.80);
+  const dark = color.darken(0.2).toRgb();
 
   // Inject into root using Tailwind-friendly space-separated RGB channel format
-  document.documentElement.style.setProperty("--color-primary-rgb", `${r} ${g} ${b}`);
-  document.documentElement.style.setProperty("--color-primary-light-rgb", `${lightR} ${lightG} ${lightB}`);
-  document.documentElement.style.setProperty("--color-primary-dark-rgb", `${darkR} ${darkG} ${darkB}`);
+  document.documentElement.style.setProperty(
+    "--color-primary-rgb",
+    `${r} ${g} ${b}`,
+  );
+  document.documentElement.style.setProperty(
+    "--color-primary-light-rgb",
+    `${light.r} ${light.g} ${light.b}`,
+  );
+  document.documentElement.style.setProperty(
+    "--color-primary-dark-rgb",
+    `${dark.r} ${dark.g} ${dark.b}`,
+  );
 
-  // Calculate Secondary color for unpaid/pending states
-  const { h, s, l } = rgbToHsl(r, g, b);
-  const secH = (h + 60) % 360;
-  const secS = Math.max(20, s - 20);
-  const secL = Math.min(55, l + 5);
-  const sec = hslToRgb(secH, secS, secL);
+  // Calculate Secondary color for unpaid/pending states (shift hue +60°, reduce sat, increase light)
+  const hsl = color.toHsl();
+  const secondary = colord({
+    h: (hsl.h + 60) % 360,
+    s: Math.max(20, hsl.s - 20),
+    l: Math.min(55, hsl.l + 5),
+  });
+  const sec = secondary.toRgb();
 
-  document.documentElement.style.setProperty("--color-secondary-rgb", `${sec.r} ${sec.g} ${sec.b}`);
+  document.documentElement.style.setProperty(
+    "--color-secondary-rgb",
+    `${sec.r} ${sec.g} ${sec.b}`,
+  );
 
   // Calculate Primary Container: blend base with 88% white tint
-  const containerR = Math.round(r + (255 - r) * 0.88);
-  const containerG = Math.round(g + (255 - g) * 0.88);
-  const containerB = Math.round(b + (255 - b) * 0.88);
+  const container = color.mix("#ffffff", 0.88).toRgb();
 
-  const isDark = document.documentElement.classList.contains("dark");
+  const isDark =
+    document.documentElement.classList.contains("dark") ||
+    (typeof localStorage !== "undefined" &&
+      localStorage.getItem("theme") === "dark");
 
   // Material Design 3 dynamic color tokens
-  document.documentElement.style.setProperty("--md-sys-color-primary", `rgb(${r}, ${g}, ${b})`);
-  
+  document.documentElement.style.setProperty(
+    "--md-sys-color-primary",
+    `rgb(${r}, ${g}, ${b})`,
+  );
+
   if (isDark) {
-    const darkContainerR = Math.round(r * 0.15);
-    const darkContainerG = Math.round(g * 0.15);
-    const darkContainerB = Math.round(b * 0.15);
-    document.documentElement.style.setProperty("--md-sys-color-primary-container", `rgb(${darkContainerR}, ${darkContainerG}, ${darkContainerB})`);
-    document.documentElement.style.setProperty("--md-sys-color-surface", "#0c0c0e");
-    document.documentElement.style.setProperty("--md-sys-color-surface-container", "#17171c");
-    document.documentElement.style.setProperty("--md-sys-color-on-surface", "#f3f4f6");
-    document.documentElement.style.setProperty("--md-sys-color-outline", "#25252c");
+    const darkContainer = color.darken(0.85).toRgb();
+    document.documentElement.style.setProperty(
+      "--md-sys-color-primary-container",
+      `rgb(${darkContainer.r}, ${darkContainer.g}, ${darkContainer.b})`,
+    );
+    document.documentElement.style.setProperty(
+      "--md-sys-color-surface",
+      "#0c0c0e",
+    );
+    document.documentElement.style.setProperty(
+      "--md-sys-color-surface-container",
+      "#17171c",
+    );
+    document.documentElement.style.setProperty(
+      "--md-sys-color-on-surface",
+      "#f3f4f6",
+    );
+    document.documentElement.style.setProperty(
+      "--md-sys-color-outline",
+      "#25252c",
+    );
   } else {
-    document.documentElement.style.setProperty("--md-sys-color-primary-container", `rgb(${containerR}, ${containerG}, ${containerB})`);
-    document.documentElement.style.setProperty("--md-sys-color-surface", "#f8f9fb");
-    document.documentElement.style.setProperty("--md-sys-color-surface-container", "#ffffff");
-    document.documentElement.style.setProperty("--md-sys-color-on-surface", "#1d1d1f");
-    document.documentElement.style.setProperty("--md-sys-color-outline", "#f1f1f4");
+    document.documentElement.style.setProperty(
+      "--md-sys-color-primary-container",
+      `rgb(${container.r}, ${container.g}, ${container.b})`,
+    );
+    document.documentElement.style.setProperty(
+      "--md-sys-color-surface",
+      "#f8f9fb",
+    );
+    document.documentElement.style.setProperty(
+      "--md-sys-color-surface-container",
+      "#ffffff",
+    );
+    document.documentElement.style.setProperty(
+      "--md-sys-color-on-surface",
+      "#1d1d1f",
+    );
+    document.documentElement.style.setProperty(
+      "--md-sys-color-outline",
+      "#f1f1f4",
+    );
   }
 }
-

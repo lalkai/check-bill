@@ -35,7 +35,10 @@ useScrollLock(computed(() => props.show));
           @focusin="handleFocusIn"
         >
           <!-- Header -->
-          <div v-if="title || $slots.header" class="px-8 pt-8 pb-5 flex justify-between items-center border-b border-neutral-100 flex-shrink-0">
+          <div
+            v-if="title || $slots.header"
+            class="px-8 pt-8 pb-5 flex justify-between items-center border-b border-neutral-100 flex-shrink-0"
+          >
             <slot name="header">
               <h2 class="text-2xl font-black text-neutral-800 tracking-tight">
                 {{ title }}

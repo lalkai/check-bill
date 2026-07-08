@@ -16,17 +16,23 @@ const props = defineProps({
 
 const groupsStore = useBillGroupsStore();
 
-const isOwner = computed(() => groupsStore.activeGroup?.ownerName === props.person.name);
+const isOwner = computed(
+  () => groupsStore.activeGroup?.ownerName === props.person.name,
+);
 
 function toggleOwner() {
   if (isOwner.value) {
-    const confirmMsg = $t("messages.confirmRemoveOwner", { name: props.person.name });
+    const confirmMsg = $t("messages.confirmRemoveOwner", {
+      name: props.person.name,
+    });
     if (confirm(confirmMsg)) {
       groupsStore.setGroupOwner(props.person.name);
     }
     return;
   }
-  const confirmMsg = $t("messages.confirmChangeOwner", { name: props.person.name });
+  const confirmMsg = $t("messages.confirmChangeOwner", {
+    name: props.person.name,
+  });
   if (confirm(confirmMsg)) {
     groupsStore.setGroupOwner(props.person.name);
   }
@@ -35,7 +41,7 @@ function toggleOwner() {
 function removePerson() {
   const personName = props.person.name;
   const billsWithPerson = groupsStore.activeBills.filter((bill) =>
-    bill.payers.some((payer) => payer.name === personName)
+    bill.payers.some((payer) => payer.name === personName),
   );
 
   if (billsWithPerson.length > 0) {
@@ -76,8 +82,11 @@ function removePerson() {
           class="text-base font-black text-neutral-800 tracking-tight truncate block w-full"
           >{{ person.name }}</span
         >
-        <span v-if="isOwner" class="text-[9px] font-black text-amber-500 uppercase tracking-widest block mt-0.5">
-          {{ $t('summary.billOwner') }}
+        <span
+          v-if="isOwner"
+          class="text-[9px] font-black text-amber-500 uppercase tracking-widest block mt-0.5"
+        >
+          {{ $t("summary.billOwner") }}
         </span>
       </div>
     </div>
@@ -86,8 +95,14 @@ function removePerson() {
       <button
         @click="toggleOwner"
         class="w-10 h-10 flex items-center justify-center rounded-xl transition-colors flex-shrink-0 cursor-pointer"
-        :class="isOwner ? 'text-amber-500 hover:text-amber-600 bg-amber-50' : 'text-neutral-300 hover:text-amber-500 hover:bg-amber-50/50'"
-        :title="isOwner ? $t('summary.removeAsOwner') : $t('summary.setAsOwner')"
+        :class="
+          isOwner
+            ? 'text-amber-500 hover:text-amber-600 bg-amber-50'
+            : 'text-neutral-300 hover:text-amber-500 hover:bg-amber-50/50'
+        "
+        :title="
+          isOwner ? $t('summary.removeAsOwner') : $t('summary.setAsOwner')
+        "
       >
         <HugeiconsIcon :icon="CrownIcon" size="18" :stroke-width="2.5" />
       </button>

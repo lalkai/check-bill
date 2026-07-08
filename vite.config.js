@@ -3,10 +3,16 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { VitePWA } from "vite-plugin-pwa";
+import transformImports from "@rolldown/plugin-transform-imports";
 
 export default defineConfig({
   plugins: [
     vue(),
+    transformImports({
+      "@hugeicons/core-free-icons": {
+        transform: "@hugeicons/core-free-icons/{{member}}",
+      },
+    }),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: [
@@ -60,6 +66,14 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === "LARGE_BARREL_MODULES") return;
+        warn(warning);
+      },
+    },
+  },
   optimizeDeps: {
     exclude: ["@hugeicons/core-free-icons", "@hugeicons/vue"],
   },

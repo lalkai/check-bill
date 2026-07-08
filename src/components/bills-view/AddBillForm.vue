@@ -135,7 +135,7 @@ function openOcrModal() {
       </button>
     </div>
 
-    <div class="space-y-5">
+    <div class="space-y-5" v-auto-animate>
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label
@@ -181,15 +181,23 @@ function openOcrModal() {
 
       <!-- Tax/SC Quick Segment Control -->
       <div>
-        <label class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3">
+        <label
+          class="block text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-3"
+        >
           {{ $t("bills.taxScPreset") }}
         </label>
-        <div class="flex sm:flex-wrap gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+        <div
+          class="flex sm:flex-wrap gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide"
+        >
           <button
             type="button"
             @click="selectPreset('0')"
             class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
-            :class="taxPreset === '0' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+            :class="
+              taxPreset === '0'
+                ? 'bg-primary text-white border-primary shadow-sm'
+                : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'
+            "
           >
             {{ $t("bills.normalPreset") }}
           </button>
@@ -197,7 +205,11 @@ function openOcrModal() {
             type="button"
             @click="selectPreset('sc10')"
             class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
-            :class="taxPreset === 'sc10' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+            :class="
+              taxPreset === 'sc10'
+                ? 'bg-primary text-white border-primary shadow-sm'
+                : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'
+            "
           >
             SC 10%
           </button>
@@ -205,7 +217,11 @@ function openOcrModal() {
             type="button"
             @click="selectPreset('vat7')"
             class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
-            :class="taxPreset === 'vat7' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+            :class="
+              taxPreset === 'vat7'
+                ? 'bg-primary text-white border-primary shadow-sm'
+                : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'
+            "
           >
             VAT 7%
           </button>
@@ -213,7 +229,11 @@ function openOcrModal() {
             type="button"
             @click="selectPreset('both')"
             class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
-            :class="taxPreset === 'both' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+            :class="
+              taxPreset === 'both'
+                ? 'bg-primary text-white border-primary shadow-sm'
+                : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'
+            "
           >
             SC 10% + VAT 7% (++)
           </button>
@@ -221,7 +241,11 @@ function openOcrModal() {
             type="button"
             @click="selectPreset('custom')"
             class="px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 cursor-pointer flex-shrink-0"
-            :class="taxPreset === 'custom' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'"
+            :class="
+              taxPreset === 'custom'
+                ? 'bg-primary text-white border-primary shadow-sm'
+                : 'bg-neutral-50 border-neutral-200 text-neutral-600 hover:border-neutral-300'
+            "
           >
             {{ $t("bills.custom") }}
           </button>
@@ -229,7 +253,7 @@ function openOcrModal() {
       </div>
 
       <!-- Expandable Custom SC & VAT Inputs -->
-      <div v-if="taxPreset === 'custom'" class="grid grid-cols-2 gap-4 animate-slide-up">
+      <div v-if="taxPreset === 'custom'" class="grid grid-cols-2 gap-4">
         <div>
           <label
             for="bill-service-charge"
@@ -267,11 +291,16 @@ function openOcrModal() {
       <!-- Live Total Preview -->
       <div
         v-if="finalTotalPreview > 0 && hasTaxOrSC"
-        class="bg-neutral-50 rounded-2xl p-4 border border-neutral-100/50 flex items-center justify-between text-sm animate-slide-up"
+        class="bg-neutral-50 rounded-2xl p-4 border border-neutral-100/50 flex items-center justify-between text-sm"
       >
         <span class="font-bold text-neutral-500">{{ finalTotalLabel }}</span>
         <span class="font-black text-primary text-base"
-          >฿{{ finalTotalPreview.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span
+          >฿{{
+            finalTotalPreview.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
+          }}</span
         >
       </div>
 

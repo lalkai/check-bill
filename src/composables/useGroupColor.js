@@ -5,7 +5,9 @@ import { hexToRgb } from "../utils/theme";
 export function useGroupColor() {
   const groupsStore = useBillGroupsStore();
 
-  const groupColor = computed(() => groupsStore.activeGroup?.color || "#0066cc");
+  const groupColor = computed(
+    () => groupsStore.activeGroup?.color || "#0066cc",
+  );
   const groupColorRgb = computed(() => hexToRgb(groupColor.value));
 
   const getAvatarStyle = (payer) => {

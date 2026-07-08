@@ -37,7 +37,11 @@ export const ICON_LIST = [
   { value: "transport", label: "เดินทาง / Transport", icon: Car01Icon },
   { value: "accommodation", label: "ที่พัก / Hotel", icon: Hotel01Icon },
   { value: "shopping", label: "ช้อปปิ้ง / Shopping", icon: ShoppingBag01Icon },
-  { value: "entertainment", label: "บันเทิง / Entertainment", icon: Ticket01Icon },
+  {
+    value: "entertainment",
+    label: "บันเทิง / Entertainment",
+    icon: Ticket01Icon,
+  },
   { value: "utilities", label: "ค่าน้ำ-ค่าไฟ / Utilities", icon: FlashIcon },
   { value: "internet", label: "อินเทอร์เน็ต / Internet", icon: InternetIcon },
   { value: "gift", label: "ของขวัญ / Gift", icon: GiftIcon },
@@ -52,10 +56,9 @@ export function getIcon(name) {
 
 export function getLocalizedIconLabel(item, lang) {
   if (!item || !item.label) return "";
-  const parts = item.label.split(' / ');
-  if (lang === 'en') {
+  const parts = item.label.split(" / ");
+  if (lang === "en") {
     return parts[1] || parts[0];
   }
   return parts[0];
 }
-

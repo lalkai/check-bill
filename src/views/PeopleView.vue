@@ -8,7 +8,17 @@ const groupsStore = useBillGroupsStore();
 </script>
 
 <template>
-  <div class="pb-12 animate-slide-up">
+  <div
+    class="pb-12"
+    v-motion
+    :initial="{ opacity: 0, scale: 0.97, y: 15 }"
+    :enter="{
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 220, damping: 24 },
+    }"
+  >
     <AddPersonForm />
     <PeopleList v-if="groupsStore.activePeople.length > 0" />
     <EmptyState

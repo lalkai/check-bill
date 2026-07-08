@@ -99,4 +99,3 @@ export function applyRounding(amount, mode) {
   }
   return Number(num.toFixed(2));
 }
-

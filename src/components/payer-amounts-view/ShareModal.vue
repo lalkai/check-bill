@@ -2,6 +2,7 @@
 import { ref, watch, computed, nextTick } from "vue";
 import { useScrollLock } from "../../composables/useScrollLock";
 import { useI18n } from "vue-i18n";
+import { useClipboard } from "@vueuse/core";
 import qrcode from "qrcode";
 import CloseButton from "../common/CloseButton.vue";
 
@@ -23,6 +24,9 @@ const props = defineProps({
   },
 });
 useScrollLock(computed(() => props.show));
+const { copy, copied } = useClipboard({
+  source: computed(() => props.shareUrl),
+});
 
 const emit = defineEmits([
   "close",
@@ -38,10 +42,12 @@ watch(
   () => props.show,
   (newValue) => {
     if (newValue) {
-      selectedPayers.value = props.payerAmounts.filter(p => !p.isOwner).map((payer) => payer.name);
+      selectedPayers.value = props.payerAmounts
+        .filter((p) => !p.isOwner)
+        .map((payer) => payer.name);
       selectAllPayers.value = true;
     }
-  }
+  },
 );
 
 watch(
@@ -51,12 +57,14 @@ watch(
       await nextTick();
       generateShareQRCode(newValue);
     }
-  }
+  },
 );
 
 const toggleSelectAllPayers = () => {
   if (selectAllPayers.value) {
-    selectedPayers.value = props.payerAmounts.filter(p => !p.isOwner).map((payer) => payer.name);
+    selectedPayers.value = props.payerAmounts
+      .filter((p) => !p.isOwner)
+      .map((payer) => payer.name);
   } else {
     selectedPayers.value = [];
   }
@@ -69,9 +77,8 @@ const togglePayerSelection = (payerName) => {
   } else {
     selectedPayers.value.splice(index, 1);
   }
-  const nonOwnersCount = props.payerAmounts.filter(p => !p.isOwner).length;
-  selectAllPayers.value =
-    selectedPayers.value.length === nonOwnersCount;
+  const nonOwnersCount = props.payerAmounts.filter((p) => !p.isOwner).length;
+  selectAllPayers.value = selectedPayers.value.length === nonOwnersCount;
   selectedPayers.value = [...selectedPayers.value];
 };
 
@@ -124,7 +131,9 @@ const handleGenerateShareUrl = () => {
           class="relative bg-white rounded-[2.2rem] sm:rounded-[2.5rem] shadow-[0_24px_60px_rgba(0,0,0,0.18)] w-full max-w-md border border-white/20 max-h-[85vh] sm:max-h-[90vh] flex flex-col overflow-hidden"
         >
           <!-- Header -->
-          <div class="px-8 pt-8 pb-5 flex justify-between items-center border-b border-neutral-100 flex-shrink-0">
+          <div
+            class="px-8 pt-8 pb-5 flex justify-between items-center border-b border-neutral-100 flex-shrink-0"
+          >
             <h2 class="text-2xl font-black text-neutral-800 tracking-tight">
               {{ $t("share.title") }}
             </h2>
@@ -132,7 +141,10 @@ const handleGenerateShareUrl = () => {
           </div>
 
           <!-- Scrollable Body -->
-          <div data-scroll-inner class="flex-1 overflow-y-auto scrollbar-hide px-8 py-6 space-y-6">
+          <div
+            data-scroll-inner
+            class="flex-1 overflow-y-auto scrollbar-hide px-8 py-6 space-y-6"
+          >
             <!-- Payer Selection -->
             <div v-if="!shareUrl">
               <div class="flex items-center justify-between mb-4">
@@ -180,7 +192,7 @@ const handleGenerateShareUrl = () => {
 
               <div class="space-y-2">
                 <div
-                  v-for="payer in payerAmounts.filter(p => !p.isOwner)"
+                  v-for="payer in payerAmounts.filter((p) => !p.isOwner)"
                   :key="payer.name"
                   class="flex items-center p-3 border-2 rounded-xl transition-all cursor-pointer"
                   :class="
@@ -254,21 +266,23 @@ const handleGenerateShareUrl = () => {
                   class="bg-transparent w-full outline-none text-xs font-mono text-neutral-600"
                 />
                 <button
-                  class="ml-2 text-primary font-bold text-[10px] uppercase tracking-widest shrink-0 cursor-pointer"
-                  @click="
-                    () => {
-                      navigator.clipboard.writeText(shareUrl);
-                      alert($t('share.copied'));
-                    }
-                  "
+                  class="ml-2 font-bold text-[10px] uppercase tracking-widest shrink-0 cursor-pointer transition-colors"
+                  :class="copied ? 'text-green-500' : 'text-primary'"
+                  @click="copy()"
                 >
-                  {{ $t("share.copy") }}
+                  {{ copied ? $t("share.copied") : $t("share.copy") }}
                 </button>
               </div>
 
               <!-- Share QR Code -->
               <div
                 class="flex flex-col items-center justify-center bg-white border-2 border-neutral-100 rounded-3xl p-6 shadow-sm"
+                v-motion
+                :initial="{ opacity: 0 }"
+                :enter="{
+                  opacity: 1,
+                  transition: { duration: 200, ease: 'easeOut' },
+                }"
               >
                 <h3
                   class="text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-4"
@@ -281,7 +295,10 @@ const handleGenerateShareUrl = () => {
           </div>
 
           <!-- Sticky Footer -->
-          <div v-if="!shareUrl" class="px-8 py-5 border-t border-neutral-100 bg-white flex-shrink-0">
+          <div
+            v-if="!shareUrl"
+            class="px-8 py-5 border-t border-neutral-100 bg-white flex-shrink-0"
+          >
             <button
               @click="handleGenerateShareUrl"
               :disabled="selectedPayers.length === 0"

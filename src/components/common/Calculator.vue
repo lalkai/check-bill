@@ -42,7 +42,11 @@ function handleDecimal() {
 }
 
 function handleOperator(nextOperator) {
-  if (operator.value && previousValue.value !== "" && !waitingForOperand.value) {
+  if (
+    operator.value &&
+    previousValue.value !== "" &&
+    !waitingForOperand.value
+  ) {
     handleEquals();
   }
   previousValue.value = parseFloat(display.value);
@@ -71,7 +75,7 @@ function handleEquals() {
     const result = performCalculation(
       previousValue.value,
       inputValue,
-      operator.value
+      operator.value,
     );
     display.value = String(result);
     previousValue.value = "";
@@ -124,7 +128,9 @@ function closeCalculator() {
           class="relative calculator-modal bg-white rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_24px_60px_rgba(0,0,0,0.18)] border border-white/20 w-full max-w-[320px] xs:max-w-[340px] overflow-hidden my-auto max-h-[96vh] flex flex-col"
         >
           <!-- Header/Title -->
-          <div class="px-5 pt-5 xs:px-8 xs:pt-8 flex justify-between items-center shrink-0">
+          <div
+            class="px-5 pt-5 xs:px-8 xs:pt-8 flex justify-between items-center shrink-0"
+          >
             <h3
               class="text-[11px] font-black text-neutral-400 uppercase tracking-[0.15em]"
             >
@@ -132,7 +138,7 @@ function closeCalculator() {
             </h3>
             <CloseButton @click="closeCalculator" />
           </div>
- 
+
           <!-- Display Section -->
           <div class="px-5 pt-3 pb-2 xs:px-8 xs:pt-6 xs:pb-4 shrink-0">
             <div
@@ -151,9 +157,11 @@ function closeCalculator() {
               </div>
             </div>
           </div>
- 
+
           <!-- Keypad Section -->
-          <div class="px-5 pb-5 xs:px-8 xs:pb-8 flex flex-col gap-3 xs:gap-4 overflow-y-auto scrollbar-hide">
+          <div
+            class="px-5 pb-5 xs:px-8 xs:pb-8 flex flex-col gap-3 xs:gap-4 overflow-y-auto scrollbar-hide"
+          >
             <div class="grid grid-cols-4 gap-2 xs:gap-3">
               <!-- Row 1 -->
               <button
@@ -193,7 +201,7 @@ function closeCalculator() {
               >
                 ÷
               </button>
- 
+
               <!-- Row 2 -->
               <button
                 v-for="n in ['7', '8', '9']"
@@ -210,7 +218,7 @@ function closeCalculator() {
               >
                 ×
               </button>
- 
+
               <!-- Row 3 -->
               <button
                 v-for="n in ['4', '5', '6']"
@@ -227,7 +235,7 @@ function closeCalculator() {
               >
                 -
               </button>
- 
+
               <!-- Row 4 -->
               <button
                 v-for="n in ['1', '2', '3']"
@@ -244,7 +252,7 @@ function closeCalculator() {
               >
                 +
               </button>
- 
+
               <!-- Row 5 -->
               <button
                 @click="handleDigit('0')"
@@ -265,7 +273,7 @@ function closeCalculator() {
                 =
               </button>
             </div>
- 
+
             <!-- Apply/Action Section -->
             <div class="flex gap-3 shrink-0">
               <button

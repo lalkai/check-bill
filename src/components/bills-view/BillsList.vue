@@ -34,15 +34,14 @@ function openEditModal(bill) {
       :description="$t('bills.addFirstExpense')"
     />
 
-    <div v-else class="space-y-4">
+    <div v-else class="space-y-4" v-auto-animate>
       <div class="flex items-center justify-between mb-4 px-2">
         <SectionLabel>{{ $t("bills.allExpenses") }}</SectionLabel>
       </div>
       <BillCard
-        v-for="(bill, index) in sortedBills"
+        v-for="bill in sortedBills"
         :key="bill.id"
         :bill="bill"
-        :style="{ animationDelay: `${index * 50}ms` }"
         @remove="removeBill"
         @edit="openEditModal"
       />

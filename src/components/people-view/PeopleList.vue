@@ -28,7 +28,7 @@ const sortedPeople = computed(() => {
     <div
       class="bg-white rounded-[2.5rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100/50"
     >
-      <ul class="divide-y divide-neutral-50/50">
+      <ul class="divide-y divide-neutral-50/50" v-auto-animate>
         <PersonCard
           v-for="(person, index) in sortedPeople"
           :key="person.name"
