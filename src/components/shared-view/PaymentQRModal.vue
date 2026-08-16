@@ -89,7 +89,7 @@ const generatePaymentQRCode = async () => {
       return;
     }
 
-    qrContainer.innerHTML = "";
+    qrContainer.replaceChildren();
 
     const canvas = document.createElement("canvas");
     canvas.className = "rounded-2xl mx-auto shadow-sm";
@@ -97,9 +97,10 @@ const generatePaymentQRCode = async () => {
     qrcode.toCanvas(canvas, payload, opts, (err) => {
       if (err) {
         console.error("Error generating payment QR Code:", err);
-        qrContainer.innerHTML = `<p class="text-red-500 font-bold text-center">${$t(
-          "shared.errorGenerateQR",
-        )}</p>`;
+        const errorText = document.createElement("p");
+        errorText.className = "text-red-500 font-bold text-center";
+        errorText.textContent = $t("shared.errorGenerateQR");
+        qrContainer.appendChild(errorText);
         return;
       }
       qrContainer.appendChild(canvas);
@@ -107,13 +108,22 @@ const generatePaymentQRCode = async () => {
       const amountText = document.createElement("div");
       amountText.className =
         "text-center mt-6 text-3xl font-black text-neutral-800 dark:text-white tracking-tight";
-      amountText.innerHTML = `<span class="text-xl opacity-60 mr-1">฿</span>${amount.toLocaleString()}`;
+      const bahtSpan = document.createElement("span");
+      bahtSpan.className = "text-xl opacity-60 mr-1";
+      bahtSpan.textContent = "฿";
+      amountText.appendChild(bahtSpan);
+      amountText.appendChild(document.createTextNode(amount.toLocaleString()));
       qrContainer.appendChild(amountText);
 
       const promptpayInfoText = document.createElement("div");
       promptpayInfoText.className =
         "mt-4 inline-flex items-center justify-center bg-neutral-100 dark:bg-neutral-600 px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-500 mx-auto text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-neutral-300 gap-2";
-      promptpayInfoText.innerHTML = `<span>ID</span><span class="text-neutral-700 dark:text-white">${props.promptpayID}</span>`;
+      const idLabel = document.createElement("span");
+      idLabel.textContent = "ID";
+      const idValue = document.createElement("span");
+      idValue.className = "text-neutral-700 dark:text-white";
+      idValue.textContent = props.promptpayID;
+      promptpayInfoText.append(idLabel, idValue);
       qrContainer.appendChild(promptpayInfoText);
     });
   } catch (error) {

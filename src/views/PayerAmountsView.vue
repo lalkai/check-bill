@@ -314,16 +314,7 @@ const generateShareUrl = async (selectedPayers) => {
 
 const qrCodeUrl = ref("");
 
-const generateQRCode = async (promptpayInput) => {
-  if (!promptpayInput) {
-    alert($t("messages.enterPromptpay"));
-    return;
-  }
-
-  inputPromptpay.value = promptpayInput;
-  showQrCode.value = true;
-  groupsStore.setGroupPromptpayID(promptpayInput);
-
+const generateQRCodeUrl = async (promptpayInput) => {
   const amount = 0;
   const payload = generatePayload(promptpayInput, { amount });
   const opts = {
@@ -340,6 +331,19 @@ const generateQRCode = async (promptpayInput) => {
   } catch (err) {
     console.error("Error generating QR Code: ", err);
   }
+};
+
+const generateQRCode = async (promptpayInput) => {
+  if (!promptpayInput) {
+    alert($t("messages.enterPromptpay"));
+    return;
+  }
+
+  inputPromptpay.value = promptpayInput;
+  showQrCode.value = true;
+  groupsStore.setGroupPromptpayID(promptpayInput);
+
+  await generateQRCodeUrl(promptpayInput);
 
   showAddQrCodePopup.value = false;
 };
@@ -397,11 +401,16 @@ const toggleItemStatus = (payerName, itemId) => {
   groupsStore.togglePayerStatus(itemId, payerName);
 };
 
-const groupPromptpayID = groupsStore.activeGroup?.promptpayID || "";
-if (groupPromptpayID) {
-  inputPromptpay.value = groupPromptpayID;
-  generateQRCode(groupPromptpayID);
-}
+const preloadGroupQR = () => {
+  const groupPromptpayID = groupsStore.activeGroup?.promptpayID || "";
+  if (groupPromptpayID) {
+    inputPromptpay.value = groupPromptpayID;
+    showQrCode.value = true;
+    generateQRCodeUrl(groupPromptpayID);
+  }
+};
+
+preloadGroupQR();
 
 onMounted(() => {
   if (typeof groupsStore.cleanUpDatesWithoutBills === "function") {

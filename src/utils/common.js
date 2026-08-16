@@ -16,18 +16,24 @@ export function formatCurrency(amount) {
  * @param {Event} event - The keyboard event
  */
 export function preventNonNumberInput(event) {
-  const char = String.fromCharCode(event.keyCode || event.which);
+  if (event.ctrlKey || event.metaKey || event.altKey) return;
   if (
-    !/[\d.]/.test(char) &&
-    ![
+    [
       "Backspace",
       "Delete",
       "Tab",
       "ArrowLeft",
       "ArrowRight",
+      "ArrowUp",
+      "ArrowDown",
       "Enter",
+      "Home",
+      "End",
     ].includes(event.key)
   ) {
+    return;
+  }
+  if (!/^[\d.]$/.test(event.key)) {
     event.preventDefault();
   }
 }

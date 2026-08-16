@@ -2,59 +2,54 @@ import { createWorker, OEM, PSM } from "tesseract.js";
 import { preprocessImage } from "./imagePreprocess.js";
 
 let worker = null;
-let isInitializing = false;
+let workerPromise = null;
 let lastProgress = 0;
 let currentOnProgress = null;
 
-async function getWorker() {
-  if (worker) return worker;
+function getWorker() {
+  if (worker) return Promise.resolve(worker);
+  if (workerPromise) return workerPromise;
 
-  if (isInitializing) {
-    while (isInitializing) {
-      await new Promise((r) => setTimeout(r, 100));
+  workerPromise = (async () => {
+    try {
+      const corePath =
+        "https://cdn.jsdelivr.net/npm/tesseract.js-core@7.0.0/tesseract-core-simd-lstm.wasm.js";
+
+      worker = await createWorker("tha+eng", OEM.LSTM_ONLY, {
+        corePath,
+        langPath: "https://tessdata.projectnaptha.com/4.0.0_best",
+        logger: (m) => {
+          if (currentOnProgress) {
+            let p = 0;
+            if (m.status === "recognizing text") {
+              p = Math.round(m.progress * 100);
+            }
+
+            if (
+              p !== lastProgress &&
+              (p - lastProgress >= 5 || p === 100 || p === 0)
+            ) {
+              lastProgress = p;
+              currentOnProgress({ status: "กำลังประมวลผล...", progress: p });
+            }
+          }
+        },
+      });
+
+      await worker.setParameters({
+        tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+        preserve_interword_spaces: "1",
+      });
+
+      return worker;
+    } catch (error) {
+      worker = null;
+      workerPromise = null;
+      throw error;
     }
-    return worker;
-  }
+  })();
 
-  isInitializing = true;
-
-  try {
-    const corePath =
-      "https://cdn.jsdelivr.net/npm/tesseract.js-core@7.0.0/tesseract-core-simd-lstm.wasm.js";
-
-    worker = await createWorker("tha+eng", OEM.LSTM_ONLY, {
-      corePath,
-      langPath: "https://tessdata.projectnaptha.com/4.0.0_best",
-      logger: (m) => {
-        if (currentOnProgress) {
-          let p = 0;
-          if (m.status === "recognizing text") {
-            p = Math.round(m.progress * 100);
-          }
-
-          if (
-            p !== lastProgress &&
-            (p - lastProgress >= 5 || p === 100 || p === 0)
-          ) {
-            lastProgress = p;
-            currentOnProgress({ status: "กำลังประมวลผล...", progress: p });
-          }
-        }
-      },
-    });
-
-    await worker.setParameters({
-      tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
-      preserve_interword_spaces: "1",
-    });
-
-    return worker;
-  } catch (error) {
-    worker = null;
-    throw error;
-  } finally {
-    isInitializing = false;
-  }
+  return workerPromise;
 }
 
 export async function terminateWorker() {
@@ -62,6 +57,7 @@ export async function terminateWorker() {
     await worker.terminate();
     worker = null;
   }
+  workerPromise = null;
 }
 
 export async function recognizeReceipt(imageFile, onProgress) {

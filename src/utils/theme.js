@@ -70,17 +70,9 @@ export function getThemeColors(primaryHex) {
  * then updates the document root with space-separated RGB values for Tailwind compatibility.
  * @param {string} hexColor - The main accent color chosen for the group.
  */
-let lastAppliedColor = "#0066cc";
-
 export function applyGroupTheme(hexColor) {
   if (typeof window === "undefined" || !document || !document.documentElement)
     return;
-
-  if (hexColor) {
-    lastAppliedColor = hexColor;
-  } else {
-    hexColor = lastAppliedColor;
-  }
 
   const color = colord(hexColor || "#0066cc");
   const { r, g, b } = color.toRgb();

@@ -2,27 +2,6 @@
 import { ref, computed, watch, nextTick, defineAsyncComponent } from "vue";
 import { useDark, useToggle } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
-import BillGroupCard from "../components/home-view/BillGroupCard.vue";
-
-const CreateGroupModal = defineAsyncComponent(
-  () => import("../components/home-view/CreateGroupModal.vue"),
-);
-const EditGroupModal = defineAsyncComponent(
-  () => import("../components/home-view/EditGroupModal.vue"),
-);
-import EmptyState from "../components/common/EmptyState.vue";
-import walletData from "../assets/animations/wallet.json";
-import SectionLabel from "../components/common/SectionLabel.vue";
-import { useBillGroupsStore } from "../stores/BillGroups";
-import { version } from "../../package.json";
-
-const { locale, t: $t } = useI18n();
-const groupsStore = useBillGroupsStore();
-const emit = defineEmits(["open-group"]);
-
-import BaseModal from "../components/common/BaseModal.vue";
-import { formatCurrency } from "../utils/common";
-import { applyGroupTheme } from "../utils/theme";
 import { HugeiconsIcon } from "@hugeicons/vue";
 import {
   Wallet01Icon,
@@ -32,6 +11,26 @@ import {
   Sun01Icon,
   TranslationIcon,
 } from "@hugeicons/core-free-icons";
+import BillGroupCard from "../components/home-view/BillGroupCard.vue";
+import EmptyState from "../components/common/EmptyState.vue";
+import SectionLabel from "../components/common/SectionLabel.vue";
+import BaseModal from "../components/common/BaseModal.vue";
+import walletData from "../assets/animations/wallet.json";
+import { useBillGroupsStore } from "../stores/BillGroups";
+import { formatCurrency } from "../utils/common";
+import { applyGroupTheme } from "../utils/theme";
+import { version } from "../../package.json";
+
+const CreateGroupModal = defineAsyncComponent(
+  () => import("../components/home-view/CreateGroupModal.vue"),
+);
+const EditGroupModal = defineAsyncComponent(
+  () => import("../components/home-view/EditGroupModal.vue"),
+);
+
+const { locale, t: $t } = useI18n();
+const groupsStore = useBillGroupsStore();
+const emit = defineEmits(["open-group"]);
 
 const showCreateModal = ref(false);
 const showSettingsModal = ref(false);

@@ -1,21 +1,6 @@
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { applyGroupTheme } from "./utils/theme";
-
-const { t: $t } = useI18n();
-import PeopleView from "./views/PeopleView.vue";
-import BillsView from "./views/BillsView.vue";
-import PayerAmountsView from "./views/PayerAmountsView.vue";
-import DashboardView from "./views/DashboardView.vue";
-import SharedView from "./views/SharedView.vue";
-import HomeView from "./views/HomeView.vue";
-import { useBillGroupsStore } from "./stores/BillGroups";
-
-const currentPage = ref("home"); // 'home' | 'group-detail' | 'shared'
-const currentView = ref("dashboard");
-const groupsStore = useBillGroupsStore();
-const isSharedView = ref(false);
 import { HugeiconsIcon } from "@hugeicons/vue";
 import {
   ArrowLeft01Icon,
@@ -24,6 +9,21 @@ import {
   Wallet01Icon,
   UserIcon,
 } from "@hugeicons/core-free-icons";
+import { useBillGroupsStore } from "./stores/BillGroups";
+import { applyGroupTheme } from "./utils/theme";
+import PeopleView from "./views/PeopleView.vue";
+import BillsView from "./views/BillsView.vue";
+import PayerAmountsView from "./views/PayerAmountsView.vue";
+import DashboardView from "./views/DashboardView.vue";
+import SharedView from "./views/SharedView.vue";
+import HomeView from "./views/HomeView.vue";
+
+const { t: $t } = useI18n();
+
+const urlParams = new URLSearchParams(window.location.search);
+const currentPage = ref(urlParams.has("payer_info") ? "shared" : "home"); // 'home' | 'group-detail' | 'shared'
+const currentView = ref("dashboard");
+const groupsStore = useBillGroupsStore();
 
 const activeGroupColor = computed(() => {
   return groupsStore.activeGroup ? groupsStore.activeGroup.color : "#0066cc";
@@ -52,14 +52,6 @@ watch(
   },
   { immediate: true },
 );
-
-onMounted(() => {
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has("payer_info")) {
-    isSharedView.value = true;
-    currentPage.value = "shared";
-  }
-});
 
 const pendingGroupId = ref(null);
 const hasPendingThemeUpdate = ref(false);
